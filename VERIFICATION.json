@@ -1,16 +1,48 @@
 {
-  "unit_tests": 39,
-  "test_failures": 0,
-  "mcp_roundtrip": [
+  "unit_tests": 41,
+  "failures": 0,
+  "real_hermes_runtime_installed": true,
+  "real_workspace_bootstrap_verified": true,
+  "real_api_checks": {
+    "/health": {
+      "http": 200,
+      "data": {
+        "status": "ok",
+        "platform": "hermes-agent",
+        "version": "unknown"
+      }
+    },
+    "/v1/capabilities": {
+      "http": 200,
+      "data": {
+        "platform": "hermes-agent",
+        "responses_api": true
+      }
+    },
+    "/v1/toolsets": {
+      "http": 200,
+      "data": {
+        "enabled_builtin_or_plugin_toolsets": []
+      }
+    }
+  },
+  "actual_audited_tools": [
+    "mcp__merly__get_policy",
+    "mcp__merly__get_promotions",
+    "mcp__merly__quote_variant",
+    "mcp__merly__search_products",
+    "mcp__merly__size_guide"
+  ],
+  "mcp": [
     "PASS_REAL_MCP initialize, exactly five read-only tools, size39=24.5cm,26.5cm=size43, invalid arguments rejected",
     "NOT_TESTED Hermes model reasoning/live sales dialogue"
   ],
-  "http_contract": [
+  "http_contract_fixture": [
     "PASS_HTTP gateway -> SYNTHETIC Hermes Responses, session-key and response-chain isolation, raw user text, final-only reply",
     "NOT_TESTED real Hermes runtime/model, live Haravan, production deploy or Dify replacement acceptance"
   ],
-  "real_hermes_model_tested": false,
-  "production_changed": false,
-  "dify_deleted": false,
-  "dify_deletion_gate": "actual live sales/security/UI acceptance not yet passed"
+  "real_model_tested": false,
+  "coolify_deployed": false,
+  "dify_deleted": true,
+  "production_changed": false
 }

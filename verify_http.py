@@ -30,7 +30,7 @@ with tempfile.TemporaryDirectory(dir='/workspace/tmp',prefix='merly-hermes-http-
     record={'created_at':time.time(),'api_base':base,'tools':sorted(safety.NAMES),'memory_enabled':False,'user_profile_enabled':False}
     audit.write_text(json.dumps({'record':record,'signature':safety.digest(record,'K'*40)}))
     env=dict(os.environ,PILOT_ACCESS_KEY='P'*40,PILOT_SESSION_SECRET='S'*40,HERMES_PILOT_STATE_DB=tmp+'/state.db',HERMES_SALES_API_BASE=base,HERMES_SALES_API_KEY='K'*40,HERMES_SALES_ISOLATION_APPROVED='1',HERMES_CUSTOMER_DATA_APPROVED='1',HERMES_MODEL_COST_APPROVED='1',HERMES_ALLOW_HTTP='1',HERMES_SALES_ATTESTATION=str(audit))
-    p=subprocess.Popen([sys.executable,'-m','gunicorn','--no-control-socket','--bind',f'127.0.0.1:{port}','--workers','1','--threads','2','gateway:application'],cwd=ROOT,env=env,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
+    p=subprocess.Popen([sys.executable,'-m','gunicorn','--no-control-socket','--bind',f'127.0.0.1:{port}','--workers','1','--threads','2','sales_gateway:application'],cwd=ROOT,env=env,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
     try:
         for _ in range(70):
             if p.poll() is not None:raise RuntimeError(p.stderr.read().decode())

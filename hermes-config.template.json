@@ -33,7 +33,12 @@
       "code_execution",
       "context_engine",
       "computer_use"
-    ]
+    ],
+    "agent_cache": {
+      "max_size": 16,
+      "idle_ttl_secs": 600,
+      "memory_high_mb": 512
+    }
   },
   "mcp_servers": {
     "merly": {
@@ -57,6 +62,9 @@
   "tools": {
     "tool_search": {
       "enabled": "off"
+    },
+    "connectors": {
+      "enabled": false
     }
   },
   "skills": {
@@ -67,5 +75,10 @@
   },
   "plugins": {
     "enabled": []
-  }
+  },
+  "gateway": {
+    "multiplex_profiles": false
+  },
+  "max_concurrent_sessions": 16,
+  "max_live_sessions": 8
 }

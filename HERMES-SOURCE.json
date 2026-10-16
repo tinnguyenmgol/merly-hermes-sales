@@ -1,0 +1,7 @@
+{
+  "repository": "https://github.com/NousResearch/hermes-agent",
+  "commit": "848fc0ad8be766b9dc10fe42bd80b5fc2d45d95c",
+  "archive_sha256": "1e4d70199e9153b1a202f73d37c9316831b3df9b77a7449487d78fdbeeb922a7",
+  "tested_python": "3.14.8",
+  "base_image": "python:3.14-slim@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170"
+}

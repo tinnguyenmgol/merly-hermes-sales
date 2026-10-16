@@ -1,6 +1,7 @@
 import io,json
 import pytest
-import gateway,state,hermes_client as client
+import sales_gateway as gateway
+import state,hermes_client as client
 
 def call(message,key='P'*40,cookie='',extra=None):
     data={'message':message};data.update(extra or {});raw=json.dumps(data).encode();out={}

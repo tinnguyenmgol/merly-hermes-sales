@@ -18,6 +18,8 @@ def main():
     home=Path(os.environ['HERMES_HOME']).resolve()
     if home.name in ('default','data','.hermes') or home==Path.home():raise ValueError('dedicated_sales_home_required')
     # Do not import owner runtime/profile. Operator supplies this dedicated install.
+    adapter_dir=str(Path(__file__).resolve().parent)
+    sys.path[:]=[p for p in sys.path if p not in ('',adapter_dir)]
     with contextlib.redirect_stdout(sys.stderr):
         from hermes_cli.config import load_config
         config=load_config();check_config(config)

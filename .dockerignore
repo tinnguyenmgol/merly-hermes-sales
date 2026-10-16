@@ -4,7 +4,7 @@
 !mcp_server.py
 !tool-schema.json
 !catalog-enrichment.json
-!gateway.py
+!sales_gateway.py
 !hermes_client.py
 !state.py
 !safety.py
@@ -13,3 +13,8 @@
 !vendor/**
 **/__pycache__/**
 **/*.pyc
+!HERMES-SOURCE.json
+!fetch_hermes.py
+!audit_instance.py
+!run_sales.py
+!hermes-config.template.json

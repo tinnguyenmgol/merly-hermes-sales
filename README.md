@@ -2,10 +2,10 @@
 
 ## Status / architecture
 Gateway -> dedicated Hermes Responses API -> five read-only MCP tools -> Haravan.
-Actual MCP2 SDK server/client roundtrip is tested. Full Hermes model runtime is
-NOT installed in this isolated workspace. No live model/customer/provider call or
-production config change. Do not substitute the owner's current API server.
-Dify pilot remains intact until real Hermes quality/security acceptance passes.
+Actual MCP2 SDK roundtrip and a pinned real Hermes runtime are now installed/tested
+in the workspace. A dedicated local listener is bootstrapped for development only.
+No live model/customer/provider call or production config change. Do not substitute
+the owner's current API server. Dify local pilot was deleted by explicit owner approval.
 
 Python here is transport and tools, NOT a rule-based conversational engine.
 Hermes owns free-form dialogue and tool/context history via previous_response_id.
@@ -15,7 +15,7 @@ strips reasoning/commentary and treats failed/cancelled turns as errors.
 ## Files
 mcp_server.py: real MCP2 stdio with exactly five read-only annotated tools.
 merly_tools.py/vendor: typed catalogue, live quote, size, policy, promo data.
-hermes_client.py/gateway.py/state.py: API transport/per-customer chaining.
+hermes_client.py/sales_gateway.py/state.py: API transport/per-customer chaining.
 hermes-config.template.json: NEW isolated-home settings, not applied anywhere.
 audit_instance.py/safety.py: actual startup schema check + signed inventory;
 API capability/toolset discovery additionally rejects broad enabled toolsets.
@@ -42,7 +42,7 @@ Run audit_instance.py INSIDE the dedicated Hermes install under its HERMES_HOME.
 It requires actual model_tools/MCP discovery, verifies raw AND model-visible
 schema names, memory flags and allowlist; no model call. API_SERVER_KEY signs
 inventory at HERMES_SALES_ATTESTATION; read-only mount into pilot gateway with
-matching HERMES_SALES_API_KEY. Current workspace has no actual Hermes install.
+matching HERMES_SALES_API_KEY. Startup audit has now passed against the installed pinned Hermes runtime in workspace.
 
 Gateway checks /v1/capabilities and /v1/toolsets too. Discovery can omit MCP rows,
 so signed startup inventory is required. Expires24h: renew and re-audit on config
@@ -78,12 +78,14 @@ python evaluate_live.py --live --case size-to-heel --gateway https://PILOT_GATEW
 Requires live configured dedicated instance, startup audit and all approvals;
 captures ACTUAL replies for human review. Respect6/min budget. No credential in chat.
 
-## Conditional Dify removal
-Keep local /workspace/merly-dify-pilot until real Hermes passes ALL acceptance
-cases, accurate tool use, privacy/isolation, images/links in chosen UI, and measured
-latency/cost. No live model/public-widget test yet: NOT an approved cutover.
-User conditionally authorized deletion of that obsolete local pilot after passing,
-not unrelated Dify services, apps or production volumes. No cleanup/deploy performed.
+## Owner approval update
+Owner approved a new Hermes instance and unconditional deletion of local Dify pilot.
+/workspace/merly-dify-pilot was deleted and absence verified; production webchat and
+owner Hermes remain untouched. No Dify stack/production volume was present or removed.
+New Hermes currently runs only in isolated workspace, NOT as a Coolify application.
+Coolify API URL/token/tools are unavailable here; deployment bundle is prepared but
+cannot be applied from this sandbox. Do not bypass this with SSH/root/Docker socket.
+Actual live model, final website integration and sales acceptance remain untested.
 
 References:
 https://hermes-agent.nousresearch.com/docs/user-guide/features/api-server

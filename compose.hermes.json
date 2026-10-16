@@ -1,0 +1,90 @@
+{
+  "name": "merly-hermes-sales",
+  "services": {
+    "hermes-sales": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile.hermes"
+      },
+      "restart": "unless-stopped",
+      "mem_limit": "1g",
+      "cpus": 1.0,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "environment": {
+        "PILOT_ROLE": "hermes",
+        "HERMES_HOME": "/data/hermes-sales",
+        "API_SERVER_KEY": "${MERLY_SALES_API_KEY:?new dedicated key required}",
+        "HERMES_SALES_API_BASE": "http://hermes-sales:8643/v1",
+        "HERMES_SALES_ATTESTATION": "/data/sales-audit/inventory.json",
+        "HARAVAN_ACCESS_TOKEN": "${HARAVAN_ACCESS_TOKEN:-}",
+        "CATALOG_CACHE_PATH": "/data/hermes-sales/catalog.json"
+      },
+      "volumes": [
+        "sales-home:/data/hermes-sales",
+        "sales-audit:/data/sales-audit"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8643/health',timeout=3)"
+        ],
+        "interval": "30s",
+        "timeout": "5s",
+        "start_period": "90s",
+        "retries": 3
+      }
+    },
+    "sales-gateway": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile.hermes"
+      },
+      "restart": "unless-stopped",
+      "mem_limit": "256m",
+      "cpus": 0.5,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "ports": [
+        "127.0.0.1:8789:8080"
+      ],
+      "depends_on": {
+        "hermes-sales": {
+          "condition": "service_healthy"
+        }
+      },
+      "environment": {
+        "PILOT_ROLE": "gateway",
+        "PILOT_ACCESS_KEY": "${PILOT_ACCESS_KEY:?pilot gateway key required}",
+        "PILOT_SESSION_SECRET": "${PILOT_SESSION_SECRET:?session secret required}",
+        "HERMES_SALES_API_BASE": "http://hermes-sales:8643/v1",
+        "HERMES_SALES_API_KEY": "${MERLY_SALES_API_KEY:?new dedicated key required}",
+        "HERMES_SALES_ISOLATION_APPROVED": "${HERMES_SALES_ISOLATION_APPROVED:-0}",
+        "HERMES_CUSTOMER_DATA_APPROVED": "${HERMES_CUSTOMER_DATA_APPROVED:-0}",
+        "HERMES_MODEL_COST_APPROVED": "${HERMES_MODEL_COST_APPROVED:-0}",
+        "HERMES_ALLOW_HTTP": "1",
+        "HERMES_SALES_ATTESTATION": "/data/sales-audit/inventory.json",
+        "HERMES_PILOT_STATE_DB": "/data/pilot-gateway/sessions.sqlite3"
+      },
+      "volumes": [
+        "sales-audit:/data/sales-audit:ro",
+        "gateway-data:/data/pilot-gateway"
+      ]
+    }
+  },
+  "volumes": {
+    "sales-home": {},
+    "sales-audit": {},
+    "gateway-data": {}
+  }
+}
