@@ -1,0 +1,285 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Merly Read-only Sales Tools",
+    "version": "0.1.0"
+  },
+  "servers": [
+    {
+      "url": "https://merly-tools.invalid",
+      "description": "REPLACE with separately approved private pilot service URL"
+    }
+  ],
+  "security": [
+    {
+      "MerlyBearer": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "MerlyBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "paths": {
+    "/tools/search_products": {
+      "post": {
+        "operationId": "search_products",
+        "summary": "Search catalog using structured customer needs. Never ignore unsupported constraints; partial_metadata is not no stock. No live prices/stock returned.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "model_code": {
+                    "type": "string",
+                    "description": "Exact model code/SKU if provided.",
+                    "minLength": 1,
+                    "maxLength": 32
+                  },
+                  "color": {
+                    "type": "string",
+                    "description": "Customer selected color.",
+                    "minLength": 1,
+                    "maxLength": 40
+                  },
+                  "size": {
+                    "type": "integer",
+                    "description": "Shoe size explicitly selected, NOT inferred as confirmed.",
+                    "minimum": 35,
+                    "maximum": 43
+                  },
+                  "heel_cm": {
+                    "type": "number",
+                    "description": "Heel height in cm, never foot length.",
+                    "minimum": 0,
+                    "maximum": 15
+                  },
+                  "category": {
+                    "type": "string",
+                    "description": "Shoe category; requires verified metadata.",
+                    "minLength": 1,
+                    "maxLength": 60
+                  },
+                  "occasion": {
+                    "type": "string",
+                    "description": "Use occasion; requires verified metadata.",
+                    "minLength": 1,
+                    "maxLength": 60
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "description": "Max product cards.",
+                    "minimum": 1,
+                    "maximum": 6
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Source-grounded result; inspect status before answering.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/quote_variant": {
+      "post": {
+        "operationId": "quote_variant",
+        "summary": "Fetch live price and stock of an exact product/variant. Partial inventory is not zero. No reservation or discount calculation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "product_id": {
+                    "type": "integer",
+                    "description": "Immutable ID returned by Haravan tools.",
+                    "minimum": 1,
+                    "maximum": 9999999999999999
+                  },
+                  "variant_id": {
+                    "type": "integer",
+                    "description": "Immutable ID returned by Haravan tools.",
+                    "minimum": 1,
+                    "maximum": 9999999999999999
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "description": "Requested pairs.",
+                    "minimum": 1,
+                    "maximum": 20
+                  }
+                },
+                "required": [
+                  "product_id",
+                  "variant_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Source-grounded result; inspect status before answering.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/size_guide": {
+      "post": {
+        "operationId": "size_guide",
+        "summary": "Official owner-approved Merly chart. Distinguish foot length/girth from heel height. Size is reference, not guaranteed fit.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "size": {
+                    "type": "integer",
+                    "description": "Shoe size explicitly selected, NOT inferred as confirmed.",
+                    "minimum": 35,
+                    "maximum": 43
+                  },
+                  "length_cm": {
+                    "type": "number",
+                    "description": "Foot length in cm.",
+                    "minimum": 15,
+                    "maximum": 35
+                  },
+                  "girth_cm": {
+                    "type": "number",
+                    "description": "Foot circumference at widest point, not width.",
+                    "minimum": 10,
+                    "maximum": 40
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Source-grounded result; inspect status before answering.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/get_policy": {
+      "post": {
+        "operationId": "get_policy",
+        "summary": "Retrieve approved Merly policy. Unverified means ask staff, do not invent.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "topic": {
+                    "type": "string",
+                    "enum": [
+                      "shipping",
+                      "size_exchange",
+                      "warranty",
+                      "store_hours",
+                      "store_address"
+                    ]
+                  }
+                },
+                "required": [
+                  "topic"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Source-grounded result; inspect status before answering.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/get_promotions": {
+      "post": {
+        "operationId": "get_promotions",
+        "summary": "Read only owner-approved public offers. Never infer no shop promotions from missing publication config. Not an eligibility or stacking calculator.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {},
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Source-grounded result; inspect status before answering.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

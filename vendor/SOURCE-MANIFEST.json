@@ -1,0 +1,12 @@
+{
+  "source": "merly-chat-autoreply-all",
+  "files": {
+    "catalog.py": "0077573392d9123d3867f2538a7aabc3255a5d1ea79d9554aa3e88265781ecf2",
+    "catalog_store.py": "d0296f48a6b4568b088ab01f1682a7e3aabd6eb1937518027a09769b8d75dd01",
+    "haravan_client.py": "8827ee23ddc1a67322c4b32e3c15d0d53bbad25a508d9fe43edc2905615b30d5",
+    "promotions.py": "db29c29a08b2b35d88b1f804c142ddbf27a7bf88d51a13ac5a296c33207fce36",
+    "promotions-public.json": "d889bd0bacf3f49fe4f54fb04dcd9381b946e245fe5f9cf6844aa98c21965116",
+    "knowledge-public-draft.json": "3cc70abae171e13c2a6924ccfd2946569aa1d723b3eea88a29893ae3fdf4baf0"
+  },
+  "source_commit": "ac97d1cbe018bd74cb5beb42b4f3dba311e99822"
+}

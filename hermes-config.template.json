@@ -1,0 +1,71 @@
+{
+  "toolsets": [
+    "merly"
+  ],
+  "platform_toolsets": {
+    "api_server": [
+      "merly"
+    ],
+    "cli": [
+      "merly"
+    ]
+  },
+  "memory": {
+    "memory_enabled": false,
+    "user_profile_enabled": false,
+    "provider": "",
+    "prefetch_spill_enabled": false
+  },
+  "agent": {
+    "max_turns": 4,
+    "run_budget_seconds": 40,
+    "disabled_toolsets": [
+      "terminal",
+      "file",
+      "web",
+      "browser",
+      "memory",
+      "session_search",
+      "skills",
+      "delegation",
+      "cronjob",
+      "connections",
+      "code_execution",
+      "context_engine",
+      "computer_use"
+    ]
+  },
+  "mcp_servers": {
+    "merly": {
+      "command": "${MERLY_MCP_PYTHON}",
+      "args": [
+        "${MERLY_MCP_SCRIPT}"
+      ],
+      "trust": "untrusted",
+      "timeout": 30,
+      "tools": {
+        "include": [
+          "search_products",
+          "quote_variant",
+          "size_guide",
+          "get_policy",
+          "get_promotions"
+        ]
+      }
+    }
+  },
+  "tools": {
+    "tool_search": {
+      "enabled": "off"
+    }
+  },
+  "skills": {
+    "external_dirs": [],
+    "project_discovery": false,
+    "trusted_project_dirs": [],
+    "auto_load": []
+  },
+  "plugins": {
+    "enabled": []
+  }
+}

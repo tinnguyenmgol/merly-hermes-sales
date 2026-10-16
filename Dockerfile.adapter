@@ -1,0 +1,12 @@
+FROM python:3.12-slim
+WORKDIR /app/merly-adapter
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+COPY merly_tools.py mcp_server.py tool-schema.json catalog-enrichment.json ./
+COPY gateway.py hermes_client.py state.py safety.py SYSTEM-PROMPT.md ./
+COPY vendor/ ./vendor/
+RUN mkdir -p /app/pilot-data && chown 10001:10001 /app/pilot-data
+USER 10001:10001
+EXPOSE 8080
+CMD ["gunicorn","--no-control-socket","--bind","0.0.0.0:8080","--workers","1","--threads","4","--timeout","60","gateway:application"]

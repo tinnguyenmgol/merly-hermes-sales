@@ -1,0 +1,16 @@
+{
+  "unit_tests": 39,
+  "test_failures": 0,
+  "mcp_roundtrip": [
+    "PASS_REAL_MCP initialize, exactly five read-only tools, size39=24.5cm,26.5cm=size43, invalid arguments rejected",
+    "NOT_TESTED Hermes model reasoning/live sales dialogue"
+  ],
+  "http_contract": [
+    "PASS_HTTP gateway -> SYNTHETIC Hermes Responses, session-key and response-chain isolation, raw user text, final-only reply",
+    "NOT_TESTED real Hermes runtime/model, live Haravan, production deploy or Dify replacement acceptance"
+  ],
+  "real_hermes_model_tested": false,
+  "production_changed": false,
+  "dify_deleted": false,
+  "dify_deletion_gate": "actual live sales/security/UI acceptance not yet passed"
+}

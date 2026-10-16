@@ -1,0 +1,15 @@
+*
+!requirements.txt
+!merly_tools.py
+!mcp_server.py
+!tool-schema.json
+!catalog-enrichment.json
+!gateway.py
+!hermes_client.py
+!state.py
+!safety.py
+!SYSTEM-PROMPT.md
+!vendor/
+!vendor/**
+**/__pycache__/**
+**/*.pyc

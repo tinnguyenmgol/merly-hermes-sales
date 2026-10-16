@@ -1,0 +1,93 @@
+{
+  "approved": false,
+  "sources": [
+    {
+      "file": "01_MERLY_CHINH_SACH_BAN_HANG.md",
+      "version": "1.1",
+      "effective_date": "2026-09-21"
+    },
+    {
+      "file": "07_MERLY_FAQ.md",
+      "version": "1.1",
+      "updated_date": "2026-09-21"
+    }
+  ],
+  "review_status": "Public-facing excerpt draft; current validity and publication approval pending owner confirmation.",
+  "shipping": "Theo tài liệu hiệu lực 21/09/2026, đơn từ 300.000đ sau giảm được freeship theo điều kiện áp dụng. Merly cần kiểm tra điều kiện thực tế của đơn. Giao hàng thông thường qua J&T Express; hỏa tốc TP.HCM qua Ahamove khi phù hợp. Chưa thể cam kết ngày giao chính xác khi chưa có dữ liệu vận chuyển.",
+  "size_exchange": "Theo tài liệu hiệu lực 21/09/2026: đổi hàng trong 30 ngày, thông thường 01 lần/đơn. Sản phẩm phải còn mới, đủ hộp, đủ phụ kiện và đáp ứng điều kiện đổi. Hàng giảm giá từ 30% trở lên không áp dụng đổi trả, trừ chương trình hoặc ngoại lệ được duyệt. Đổi online: phí 20.000đ/đơn, nhận voucher 20.000đ; giao đôi mới đồng thời thu hồi đôi cũ (cross-ship). Cần ảnh mặt đế và kiểm tra tồn size/màu mới trước khi xác nhận. Đổi tại cửa hàng: phí 0đ, vẫn phải kiểm tra điều kiện. Anh/chị mua online hay tại cửa hàng, và mua ngày nào?",
+  "warranty": "Theo tài liệu hiệu lực 21/09/2026: bảo hành 365 ngày. Cần xác minh đơn hàng, ngày mua, tình trạng sản phẩm và đối chiếu điều kiện bảo hành. Không mặc định đổi mới, hoàn tiền hoặc bồi thường. Anh/chị có mã đơn và ảnh tình trạng sản phẩm không?",
+  "store_hours": "Theo tài liệu hiệu lực 21/09/2026: cửa hàng hoạt động 09:30 – 21:30, Thứ Hai đến Chủ Nhật. Giờ hoạt động có thể cần xác nhận nếu có thông báo mới.",
+  "store_address": "Theo tài liệu hiệu lực 21/09/2026: 876 Trường Sa, TP.HCM; 561 Lũy Bán Bích, TP.HCM.",
+  "human_contact_url": null,
+  "contact_candidate": {
+    "phone": "0908 190 856",
+    "public_url": null,
+    "lark_delivery_configured": false
+  },
+  "excluded_categories": [
+    "HR",
+    "salary",
+    "attendance",
+    "internal_permissions",
+    "internal_application_registry",
+    "internal_SOP",
+    "enterprise_contract_tools"
+  ],
+  "pending_confirmation": [
+    "Chính sách 21/09/2026 còn hiện hành và được dùng cho khách website?",
+    "Phạm vi/kênh áp dụng freeship và ưu đãi; điều kiện voucher đổi hàng.",
+    "Link liên hệ công khai hoặc yêu cầu thông báo nhóm Lark."
+  ],
+  "sizing": {
+    "approved": true,
+    "source_url": "https://merlyshoes.com/pages/huong-dan-do-size-giay",
+    "size_43_confirmation": "Owner confirmed 26.5 cm length / 24.6 cm circumference in chat on 2026-10-16.",
+    "rows": [
+      {
+        "size": 35,
+        "length_cm": 22.5,
+        "circumference_cm": 20.6
+      },
+      {
+        "size": 36,
+        "length_cm": 23.0,
+        "circumference_cm": 21.1
+      },
+      {
+        "size": 37,
+        "length_cm": 23.5,
+        "circumference_cm": 21.6
+      },
+      {
+        "size": 38,
+        "length_cm": 24.0,
+        "circumference_cm": 22.1
+      },
+      {
+        "size": 39,
+        "length_cm": 24.5,
+        "circumference_cm": 22.6
+      },
+      {
+        "size": 40,
+        "length_cm": 25.0,
+        "circumference_cm": 23.1
+      },
+      {
+        "size": 41,
+        "length_cm": 25.5,
+        "circumference_cm": 23.6
+      },
+      {
+        "size": 42,
+        "length_cm": 26.0,
+        "circumference_cm": 24.1
+      },
+      {
+        "size": 43,
+        "length_cm": 26.5,
+        "circumference_cm": 24.6
+      }
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+.env
+*.sqlite3*
+*.hmac-key
+__pycache__/
+.pytest_cache/
+exports/
+.venv/
+*.db
+sales-audit/
+*.env
+!*.env.example
