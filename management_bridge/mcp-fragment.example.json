@@ -1,0 +1,12 @@
+{
+  "mcp_servers": {
+    "merly_coolify_logs": {
+      "command": "/ABSOLUTE/PATH/TO/MANAGEMENT/PYTHON",
+      "args": ["/ABSOLUTE/PATH/TO/INTEGRATION/server.py"],
+      "env": {"COOLIFY_DIAGNOSTICS_TOKEN": "${COOLIFY_DIAGNOSTICS_TOKEN}"},
+      "trust": "untrusted",
+      "timeout": 20,
+      "tools": {"include": ["recent_hermes_deployments", "hermes_build_log"]}
+    }
+  }
+}
