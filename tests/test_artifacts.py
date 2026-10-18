@@ -48,7 +48,7 @@ def test_runtime_image_context_complete():
 def test_deployment_new_resources_only():
     services=json.loads((ROOT/'compose.hermes.json').read_text())['services']
     assert 'ports' not in services['hermes-sales']
-    assert services['sales-gateway']['environment']['HARAVAN_ACCESS_TOKEN']==''
+    assert services['sales-gateway']['environment']['HARAVAN_ACCESS_TOKEN']=='${MERLY_GATEWAY_HARAVAN_EMPTY:-}'
     for role in services.values():
         assert role['cap_drop']==['ALL'] and role['mem_limit']
         for volume in role['volumes']:assert not any(x in volume for x in ['/opt/data','docker.sock','coolify-db'])

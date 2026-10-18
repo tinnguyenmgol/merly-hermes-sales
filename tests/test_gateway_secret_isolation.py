@@ -6,11 +6,10 @@ import run_sales
 
 class ExecReached(Exception):pass
 
-def test_explicit_empty_masks_platform_env():
+def test_compose_preserves_explicit_runtime_empty_expression():
     services=json.loads((Path(__file__).resolve().parents[1]/'compose.hermes.json').read_text())['services']
-    platform_env={'HARAVAN_ACCESS_TOKEN':'synthetic-offline-test-value'}
-    effective={**platform_env,**services['sales-gateway']['environment']}
-    assert effective['HARAVAN_ACCESS_TOKEN']==''
+    # Nonempty Compose text avoids Coolify's literal-empty DB fallback.
+    assert services['sales-gateway']['environment']['HARAVAN_ACCESS_TOKEN']=='${MERLY_GATEWAY_HARAVAN_EMPTY:-}'
     assert services['hermes-sales']['environment']['HARAVAN_ACCESS_TOKEN']=='${HARAVAN_ACCESS_TOKEN:-}'
 
 
