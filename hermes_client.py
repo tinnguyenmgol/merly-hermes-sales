@@ -52,7 +52,9 @@ def audit():
 
 def chat(message,user,previous_response_id=''):
     audit()
-    payload={'model':os.getenv('HERMES_SALES_MODEL_ALIAS','merly-sales'),'input':message,'instructions':Path(__file__).with_name('SYSTEM-PROMPT.md').read_text(),'stream':False,'store':True}
+    payload={'input':message,'instructions':Path(__file__).with_name('SYSTEM-PROMPT.md').read_text(),'stream':False,'store':True}
+    model=os.getenv('HERMES_SALES_MODEL_ALIAS','')
+    if model:payload['model']=model
     if previous_response_id:payload['previous_response_id']=previous_response_id
     payload['_session_scope']=user
     data=request('/responses',payload)

@@ -1,7 +1,38 @@
 """Entrypoint for NEW sales resources; never edits owner's existing profile."""
-import os,shutil,subprocess,sys,threading,time
+import os,shutil,subprocess,sys,threading,time,tempfile
 from pathlib import Path
 ROOT=Path(__file__).parent
+
+
+def ensure_merly_child_env(home):
+    """Narrow migration for existing sales volumes; preserves model/provider/settings."""
+    import hermes_yaml
+    from audit_instance import check_config
+    path=Path(home)/'config.yaml'
+    if path.is_symlink():raise RuntimeError('sales_config_symlink_not_supported')
+    before=path.read_bytes()
+    config=hermes_yaml.safe_load(before.decode())
+    check_config(config)
+    server=config['mcp_servers']['merly']
+    required={'HARAVAN_ACCESS_TOKEN':'${HARAVAN_ACCESS_TOKEN}','CATALOG_CACHE_PATH':'${CATALOG_CACHE_PATH}'}
+    previous=server.get('env',{})
+    if not isinstance(previous,dict) or set(previous)-set(required):raise RuntimeError('unexpected_merly_child_environment')
+    if any(previous[k]!=required[k] for k in previous):raise RuntimeError('conflicting_merly_child_environment')
+    if previous==required:return False
+    server['env']=required
+    after=hermes_yaml.safe_dump(config,sort_keys=False,allow_unicode=True).encode()
+    if hermes_yaml.safe_load(after.decode())!=config:raise RuntimeError('sales_config_roundtrip_failed')
+    def write(target,data):
+        fd,name=tempfile.mkstemp(prefix='.merly-config-',dir=path.parent)
+        try:
+            with os.fdopen(fd,'wb') as stream:stream.write(data);stream.flush();os.fsync(stream.fileno())
+            os.replace(name,target)
+        finally:Path(name).unlink(missing_ok=True)
+    if path.read_bytes()!=before:raise RuntimeError('sales_config_changed_during_migration')
+    write(path.with_name('config.before-merly-env-'+str(time.time_ns())+'.yaml'),before)
+    write(path,after)
+    if hermes_yaml.safe_load(path.read_text())!=config:raise RuntimeError('sales_config_readback_failed')
+    return True
 
 def main():
     role=os.getenv('PILOT_ROLE','hermes')
@@ -16,6 +47,7 @@ def main():
     home.mkdir(parents=True,exist_ok=True)
     if not (home/'config.yaml').exists():shutil.copy2(ROOT/'hermes-config.template.json',home/'config.yaml')
     if not (home/'SOUL.md').exists():shutil.copy2(ROOT/'SYSTEM-PROMPT.md',home/'SOUL.md')
+    ensure_merly_child_env(home)
     os.environ.setdefault('MERLY_MCP_PYTHON',sys.executable)
     def audit():
         return subprocess.run([sys.executable,str(ROOT/'audit_instance.py')],cwd=home).returncode==0
