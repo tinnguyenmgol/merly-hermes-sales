@@ -56,6 +56,10 @@
           "get_policy",
           "get_promotions"
         ]
+      },
+      "env": {
+        "HARAVAN_ACCESS_TOKEN": "${HARAVAN_ACCESS_TOKEN}",
+        "CATALOG_CACHE_PATH": "${CATALOG_CACHE_PATH}"
       }
     }
   },

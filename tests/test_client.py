@@ -66,3 +66,21 @@ def test_http_headers_not_payload_scope(approved,monkeypatch):
             return io.BytesIO(json.dumps(responses()).encode())
     monkeypatch.setattr(c.urllib.request,'build_opener',lambda *a:Opener())
     assert c.request('/responses',{'input':'hello','_session_scope':'merly-sales:web:opaque'})['status']=='completed'
+
+def test_default_request_uses_server_configured_model(approved,monkeypatch):
+    monkeypatch.delenv('HERMES_SALES_MODEL_ALIAS',raising=False)
+    monkeypatch.setattr(c,'audit',lambda:True)
+    def request(path,payload):
+        assert 'model' not in payload
+        return responses()
+    monkeypatch.setattr(c,'request',request)
+    assert c.chat('test','offline-test')['reply']=='FINAL'
+
+def test_explicit_model_selection_is_preserved(approved,monkeypatch):
+    monkeypatch.setenv('HERMES_SALES_MODEL_ALIAS','explicit-owner-model')
+    monkeypatch.setattr(c,'audit',lambda:True)
+    def request(path,payload):
+        assert payload['model']=='explicit-owner-model'
+        return responses()
+    monkeypatch.setattr(c,'request',request)
+    assert c.chat('test','offline-test')['reply']=='FINAL'
