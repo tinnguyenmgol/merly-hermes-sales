@@ -74,7 +74,8 @@
         "HERMES_MODEL_COST_APPROVED": "${HERMES_MODEL_COST_APPROVED:-0}",
         "HERMES_ALLOW_HTTP": "1",
         "HERMES_SALES_ATTESTATION": "/data/sales-audit/inventory.json",
-        "HERMES_PILOT_STATE_DB": "/data/pilot-gateway/sessions.sqlite3"
+        "HERMES_PILOT_STATE_DB": "/data/pilot-gateway/sessions.sqlite3",
+        "HARAVAN_ACCESS_TOKEN": ""
       },
       "volumes": [
         "sales-audit:/data/sales-audit:ro",
