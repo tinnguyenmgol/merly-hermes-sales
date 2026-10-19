@@ -25,7 +25,10 @@
         "CATALOG_CACHE_PATH": "/data/hermes-sales/catalog.json",
         "GEMINI_API_KEY": "${GEMINI_API_KEY:-}",
         "GOOGLE_API_KEY": "${GOOGLE_API_KEY:-}",
-        "MERLY_GEMINI_MODEL": "${MERLY_GEMINI_MODEL:-}"
+        "MERLY_GEMINI_MODEL": "${MERLY_GEMINI_MODEL:-}",
+        "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY:-}",
+        "MERLY_OPENROUTER_MODEL": "${MERLY_OPENROUTER_MODEL:-openai/gpt-4.1-mini}",
+        "MERLY_SALES_PROVIDER": "${MERLY_SALES_PROVIDER:-}"
       },
       "volumes": [
         "sales-home:/data/hermes-sales",
@@ -80,7 +83,8 @@
         "HERMES_PILOT_STATE_DB": "/data/pilot-gateway/sessions.sqlite3",
         "HARAVAN_ACCESS_TOKEN": "${MERLY_GATEWAY_HARAVAN_EMPTY:-}",
         "GEMINI_API_KEY": "${MERLY_GATEWAY_PROVIDER_EMPTY:-}",
-        "GOOGLE_API_KEY": "${MERLY_GATEWAY_PROVIDER_EMPTY:-}"
+        "GOOGLE_API_KEY": "${MERLY_GATEWAY_PROVIDER_EMPTY:-}",
+        "OPENROUTER_API_KEY": "${MERLY_GATEWAY_PROVIDER_EMPTY:-}"
       },
       "volumes": [
         "sales-audit:/data/sales-audit:ro",

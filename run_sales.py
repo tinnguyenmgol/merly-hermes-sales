@@ -65,11 +65,50 @@ def ensure_gemini_model(home):
     save_sales_config(path,before,config,'gemini')
     return True
 
+def ensure_openrouter_model(home):
+    """Explicit sales-only migration; never copy credentials into config/backups."""
+    import hermes_yaml,re
+    key=os.getenv('OPENROUTER_API_KEY','')
+    if not key:raise RuntimeError('openrouter_runtime_key_missing')
+    if re.search(r'\s',key):raise RuntimeError('openrouter_key_whitespace')
+    if not 20<=len(key)<=512:raise RuntimeError('invalid_openrouter_key_length')
+    model=os.getenv('MERLY_OPENROUTER_MODEL','openai/gpt-4.1-mini')
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,99}/[A-Za-z0-9][A-Za-z0-9._:-]{0,149}',model):raise RuntimeError('invalid_openrouter_model_id')
+    path=Path(home)/'config.yaml'
+    if path.is_symlink():raise RuntimeError('sales_config_symlink_not_supported')
+    before=path.read_bytes();config=hermes_yaml.safe_load(before.decode())
+    from audit_instance import check_config
+    check_config(config)
+    previous=config.get('model')
+    if previous is None:previous={}
+    if not isinstance(previous,dict):raise RuntimeError('existing_model_config_requires_review')
+    if previous.get('provider') not in (None,'','gemini','google','google-gemini','google-ai-studio','openrouter'):raise RuntimeError('existing_model_provider_requires_review')
+    if previous.get('api_key'):raise RuntimeError('model_inline_key_requires_review')
+    configured=dict(previous)
+    configured.update({'provider':'openrouter','default':model,'base_url':'https://openrouter.ai/api/v1','api_mode':'chat_completions'})
+    if configured==previous:return False
+    config['model']=configured
+    save_sales_config(path,before,config,'openrouter')
+    return True
+
+def ensure_sales_model(home):
+    provider=os.getenv('MERLY_SALES_PROVIDER','')
+    if provider not in ('','gemini','openrouter'):raise RuntimeError('invalid_sales_provider')
+    if provider=='openrouter' or (not provider and os.getenv('OPENROUTER_API_KEY')):return ensure_openrouter_model(home)
+    if not provider:
+        import hermes_yaml
+        path=Path(home)/'config.yaml'
+        if path.is_symlink():raise RuntimeError('sales_config_symlink_not_supported')
+        config=hermes_yaml.safe_load(path.read_text())
+        model=config.get('model') if isinstance(config,dict) else None
+        if isinstance(model,dict) and model.get('provider')=='openrouter':return ensure_openrouter_model(home)
+    return ensure_gemini_model(home)
+
 def main():
     role=os.getenv('PILOT_ROLE','hermes')
     if role=='gateway':
         if os.getenv('HARAVAN_ACCESS_TOKEN'):raise RuntimeError('gateway_must_not_hold_haravan_token')
-        if os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY'):raise RuntimeError('gateway_must_not_hold_model_key')
+        if any(os.getenv(k) for k in ('GEMINI_API_KEY','GOOGLE_API_KEY','OPENROUTER_API_KEY')):raise RuntimeError('gateway_must_not_hold_model_key')
         os.execvp(sys.executable,[sys.executable,'-m','gunicorn','--no-control-socket','--bind','0.0.0.0:8080','--workers','1','--threads','4','--timeout','60','sales_gateway:application'])
     if role!='hermes':raise RuntimeError('invalid_role')
     home=Path(os.environ['HERMES_HOME']).resolve()
@@ -80,7 +119,7 @@ def main():
     if not (home/'config.yaml').exists():shutil.copy2(ROOT/'hermes-config.template.json',home/'config.yaml')
     if not (home/'SOUL.md').exists():shutil.copy2(ROOT/'SYSTEM-PROMPT.md',home/'SOUL.md')
     ensure_merly_child_env(home)
-    ensure_gemini_model(home)
+    ensure_sales_model(home)
     os.environ.setdefault('MERLY_MCP_PYTHON',sys.executable)
     def audit():
         return subprocess.run([sys.executable,str(ROOT/'audit_instance.py')],cwd=home).returncode==0
