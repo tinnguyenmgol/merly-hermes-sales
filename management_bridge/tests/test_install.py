@@ -28,6 +28,9 @@ def test_atomic_install_backup(tmp_path):
     current=json.loads((tmp_path/'config.yaml').read_text());assert current['model']==original['model']
     assert json.loads(next((tmp_path/'config-backups/coolify-diagnostics').glob('*')).read_text())==original
     assert (tmp_path/'integrations/coolify-diagnostics/server.py').exists()
+    assert (tmp_path/'integrations/coolify-diagnostics/server.py').stat().st_mode&0o777==0o644
+    assert (tmp_path/'integrations/coolify-diagnostics/reader.py').stat().st_mode&0o777==0o644
+    assert (tmp_path/'integrations/coolify-diagnostics').stat().st_mode&0o777==0o711
     assert (tmp_path/'config.yaml').stat().st_mode&0o777==0o600
 
 def test_bad_download_no_config_write(tmp_path):
