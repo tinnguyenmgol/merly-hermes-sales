@@ -18,3 +18,6 @@
 !audit_instance.py
 !run_sales.py
 !hermes-config.template.json
+
+!build-sources/
+!build-sources/hermes-agent-848fc0ad8be766b9dc10fe42bd80b5fc2d45d95c.tar.gz
