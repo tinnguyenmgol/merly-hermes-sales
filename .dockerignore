@@ -24,3 +24,6 @@
 
 !pilot-web/
 !pilot-web/**
+
+!stock_options.py
+!stock_report.py

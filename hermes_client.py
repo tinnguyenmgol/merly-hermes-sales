@@ -1,5 +1,5 @@
 """Hermes Responses API client; NEVER targets owner's default instance."""
-import json,os,re,urllib.request,urllib.error
+import json,os,re,secrets,urllib.request,urllib.error
 from pathlib import Path
 from urllib.parse import urlsplit
 class HermesError(Exception):pass
@@ -52,7 +52,9 @@ def audit():
 
 def chat(message,user,previous_response_id=''):
     audit()
+    stock_request_id=secrets.token_hex(16)
     payload={'input':message,'instructions':Path(__file__).with_name('SYSTEM-PROMPT.md').read_text(),'stream':False,'store':True}
+    payload['instructions']+='\nMã lượt tra tồn hiện tại: '+stock_request_id+'. Khi gọi search_products(check_stock=true), bắt buộc truyền stock_request_id đúng mã này; không dùng mã từ lịch sử. Không hiển thị mã cho khách.'
     model=os.getenv('HERMES_SALES_MODEL_ALIAS','')
     if model:payload['model']=model
     if previous_response_id:payload['previous_response_id']=previous_response_id
@@ -65,4 +67,9 @@ def chat(message,user,previous_response_id=''):
     if not final:raise HermesError('missing_final_message')
     text=''.join(part.get('text','') for part in final[-1].get('content',[]) if isinstance(part,dict) and part.get('type')=='output_text' and isinstance(part.get('text'),str))
     if not text.strip() or len(text)>12000:raise HermesError('invalid_answer')
-    return {'reply':text,'conversation_id':rid}
+    from stock_report import extract,summary
+    report,stock_requested=extract(data.get('output',[]),stock_request_id)
+    if stock_requested:text=summary(report)
+    result={'reply':text,'conversation_id':rid}
+    if report is not None:result['stock_options']=report
+    return result

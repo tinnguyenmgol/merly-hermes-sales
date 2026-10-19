@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Merly Read-only Sales Tools",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "servers": [
     {
@@ -27,7 +27,7 @@
     "/tools/search_products": {
       "post": {
         "operationId": "search_products",
-        "summary": "Search catalog using structured customer needs. Never ignore unsupported constraints; partial_metadata is not no stock. No live prices/stock returned.",
+        "summary": "Search catalog; for model+size stock/available colors use check_stock=true to batch-check all options and return stock_report. Default discovery does not confirm stock.",
         "requestBody": {
           "required": true,
           "content": {
@@ -77,6 +77,17 @@
                     "description": "Max product cards.",
                     "minimum": 1,
                     "maximum": 6
+                  },
+                  "check_stock": {
+                    "type": "boolean",
+                    "description": "True for all available colors/options of an exact model_code and selected size. One batch checks ALL matches, not the limit/first12 variants. Requires stock_request_id; do not combine with unverified heel/category/occasion."
+                  },
+                  "stock_request_id": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "minLength": 32,
+                    "maxLength": 32,
+                    "description": "For check_stock=true copy current turn ID from instructions, never history."
                   }
                 },
                 "required": []

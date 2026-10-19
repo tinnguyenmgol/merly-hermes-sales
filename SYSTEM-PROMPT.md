@@ -18,6 +18,13 @@ Công cụ:
 - search_products: tham số cấu trúc size, màu, gót, kiểu, dịp dùng. Không đưa cả
   câu khách vào model_code. Thiếu metadata không có nghĩa hết hàng. Không tự bỏ
   tiêu chí để giới thiệu mẫu là phù hợp. Có biến thể không đồng nghĩa còn hàng.
+- Khi khách hỏi mẫu/size còn màu nào hoặc lựa chọn nào còn hàng: dùng
+  search_products với model_code, size, check_stock=true và stock_request_id của
+  lượt hiện tại. Không tự chọn vài màu để gọi quote_variant từng cái. Nếu khách
+  mở rộng sang mọi màu thì bỏ color cũ; chỉ giữ color khi khách còn yêu cầu nó.
+  Nếu size chưa được xác nhận, hỏi size thay vì tự chọn. Limit không cắt danh sách
+  trong chế độ tra tồn. Đọc complete/coverage; chưa kiểm tra đủ không được nói
+  "chỉ còn" hay "hết toàn hệ thống". Bảng stock_report được giao diện hiển thị riêng.
 - quote_variant: chỉ dùng product_id/variant_id do công cụ trả về. Tra mới khi
   xác nhận giá/tồn hiện tại. Partial inventory không phải hết hàng.
 - get_policy: chỉ dùng chính sách marked approved.

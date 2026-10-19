@@ -42,8 +42,22 @@ def variant_color(product,variant):
             if isinstance(value,str) and value.strip():values.append(value)
     return ' / '.join(values) if values else None
 
+def matches_model(product,code):
+    return bool(re.search(r'(?<!\w)'+re.escape(catalog.norm(code))+r'(?!\w)',catalog.norm(product.get('title',''))) or any(catalog.norm(v.get('sku',''))==catalog.norm(code) for v in product['variants']))
+
+def variant_price(variant):
+    try:
+        value=promotions.number(variant.get('price'))
+        return int(value) if value>=0 and value==value.to_integral_value() else None
+    except (ValueError,TypeError):return None
+
 def search_products(data):
-    validate(data,{'model_code':(str,1,32),'color':(str,1,40),'size':(int,35,43),'heel_cm':(float,0,15),'category':(str,1,60),'occasion':(str,1,60),'limit':(int,1,6)})
+    validate(data,{'model_code':(str,1,32),'color':(str,1,40),'size':(int,35,43),'heel_cm':(float,0,15),'category':(str,1,60),'occasion':(str,1,60),'limit':(int,1,6),'check_stock':(bool,0,0),'stock_request_id':(str,32,32)})
+    if data.get('check_stock'):
+        if not {'model_code','size','stock_request_id'}<=set(data) or not re.fullmatch(r'[0-9a-f]{32}',data['stock_request_id']):raise Invalid('stock_scope_required')
+        if any(k in data for k in ('heel_cm','category','occasion')):raise Invalid('verify_specs_before_stock_scope')
+        import stock_options
+        return stock_options.lookup(data,sys.modules[__name__])
     rows=catalog.snapshot()
     if rows is None:return {'status':'catalog_loading','retryable':True,'products':[]}
     metadata=enrichment();results=[];unknown=0
@@ -68,8 +82,8 @@ def search_products(data):
             if 'color' in data and (color is None or catalog.norm(data['color']) not in catalog.norm(color)):continue
             variants.append({'variant_id':v['id'],'size':size,'color':color})
         if variants:
-            results.append({'product_id':p['id'],'title':p.get('title',''),'image_url':image(p),'product_url':product_url(p),'variants':variants[:12],'verified_specs':{k:meta[k] for k in ('heel_cm','category','occasion') if k in meta},'availability':'not_checked'})
-    return {'status':'partial_metadata' if unknown else 'ok','products':results[:data.get('limit',4)],'unknown_spec_products':unknown,'stock_checked':False,'note':'No price/stock claim until quote_variant; missing metadata is not no stock.'}
+            results.append({'product_id':p['id'],'title':p.get('title',''),'image_url':image(p),'product_url':product_url(p),'variants':variants[:12],'variants_total':len(variants),'variants_truncated':len(variants)>12,'verified_specs':{k:meta[k] for k in ('heel_cm','category','occasion') if k in meta},'availability':'not_checked'})
+    return {'status':'partial_metadata' if unknown else 'ok','products':results[:data.get('limit',4)],'unknown_spec_products':unknown,'stock_checked':False,'matched_products':len(results),'products_truncated':len(results)>data.get('limit',4),'note':'No price/stock claim until quote_variant; missing metadata is not no stock.'}
 
 def quote_variant(data):
     validate(data,{'product_id':(int,1,10**16-1),'variant_id':(int,1,10**16-1),'quantity':(int,1,20)})

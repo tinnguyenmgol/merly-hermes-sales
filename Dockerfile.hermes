@@ -4,7 +4,7 @@ WORKDIR /app/merly-adapter
 COPY HERMES-SOURCE.json fetch_hermes.py ./
 COPY build-sources/ ./build-sources/
 RUN pip install --no-cache-dir uv==0.13.1 && python fetch_hermes.py && uv pip install --system -e '/opt/hermes-src/hermes-agent-848fc0ad8be766b9dc10fe42bd80b5fc2d45d95c[mcp,web]' aiohttp==3.14.3 gunicorn==26.2.0
-COPY merly_tools.py mcp_server.py tool-schema.json catalog-enrichment.json ./
+COPY stock_options.py stock_report.py merly_tools.py mcp_server.py tool-schema.json catalog-enrichment.json ./
 COPY sales_gateway.py hermes_client.py state.py safety.py audit_instance.py run_sales.py SYSTEM-PROMPT.md hermes-config.template.json ./
 COPY vendor/ ./vendor/
 COPY pilot-web/ ./pilot-web/
