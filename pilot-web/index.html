@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Merly — Chat thử nghiệm</title><link rel="stylesheet" href="/pilot.css">
+<script src="/pilot.js" defer></script>
+</head>
+<body><main>
+<header><h1>Merly · Chat thử nghiệm</h1><p>Chỉ dành cho kiểm thử nội bộ. Không nhập thông tin khách thật.</p></header>
+<section aria-label="Kết nối thử nghiệm">
+<form id="login-form"><label for="access-key">Mã truy cập thử nghiệm (PILOT_ACCESS_KEY)</label>
+<input id="access-key" type="password" autocomplete="off" minlength="32" required placeholder="Không dùng key Gemini hoặc token Haravan">
+<button id="login-button" type="submit">Kết nối</button></form>
+<div id="session-controls" hidden><button id="refresh" type="button">Kiểm tra lại kết nối</button><button id="new-chat" type="button">Cuộc trò chuyện mới</button><button id="logout" type="button">Đăng xuất</button></div>
+<p id="status" role="status" aria-live="polite">Chưa kết nối. Mã truy cập chỉ giữ trong bộ nhớ trang.</p>
+</section>
+<section id="conversation" aria-label="Hội thoại" aria-live="polite"></section>
+<form id="chat-form"><label><input id="test-consent" type="checkbox"> Tôi chỉ dùng dữ liệu giả lập và hiểu lượt hỏi có thể phát sinh phí API.</label>
+<label for="message">Câu hỏi thử nghiệm</label><textarea id="message" maxlength="1000" rows="3" disabled placeholder="Ví dụ: Chân dài 24 cm thì tham khảo size nào?"></textarea>
+<button id="send" type="submit" disabled>Gửi câu hỏi</button></form>
+<footer>Không tự gửi lại khi lỗi. Lịch sử API có thể còn được lưu sau khi đóng trang; đây chưa phải kênh chăm sóc khách hàng.</footer>
+</main></body></html>
