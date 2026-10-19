@@ -3,7 +3,13 @@ import asyncio,json
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
 import mcp.types as t
-import reader
+from pathlib import Path
+from importlib.util import module_from_spec,spec_from_file_location
+# Resolve only the trusted sibling, independent of cwd/PYTHONPATH/safe-path mode.
+_spec=spec_from_file_location('merly_coolify_reader',Path(__file__).resolve().with_name('reader.py'))
+if _spec is None or _spec.loader is None:raise RuntimeError('reader_loader_unavailable')
+reader=module_from_spec(_spec)
+_spec.loader.exec_module(reader)
 
 async def listing(ctx,params):
     hint=t.ToolAnnotations(readOnlyHint=True,destructiveHint=False,idempotentHint=True,openWorldHint=False)
