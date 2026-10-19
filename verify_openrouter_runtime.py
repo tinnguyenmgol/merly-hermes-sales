@@ -25,7 +25,7 @@ client=OpenAI(api_key=runtime['api_key'],base_url=runtime['base_url'])
 assert str(client.base_url).rstrip('/')=='https://openrouter.ai/api/v1'
 assert client.auth_headers['Authorization']=='Bearer '+os.environ['OPENROUTER_API_KEY']
 client.close()
-print('PASS_PINNED_HERMES_OPENROUTER migrated_from_gemini=true provider=openrouter api_mode=chat_completions model=openai/gpt-4.1-mini native_key_resolution=true inference_calls=0')
+print('PASS_PINNED_HERMES_OPENROUTER migrated_from_gemini=true provider=openrouter api_mode=chat_completions model=openai/gpt-oss-20b native_key_resolution=true inference_calls=0')
 '''
 def main():
     with tempfile.TemporaryDirectory(prefix='verify-openrouter-') as tmp:
