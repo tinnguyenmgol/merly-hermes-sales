@@ -55,7 +55,9 @@ def application(env,start):
             if cid is None:return result('429 Too Many Requests',{'error':'pilot_budget_limit'})
             reply=hermes_client.chat(data['message'],'merly-sales:web:'+sid,cid)
             state.save(sid,reply['conversation_id'])
-            return result('200 OK',{'reply':reply['reply'],'engine':'hermes'},token)
+            body={'reply':reply['reply'],'engine':'hermes'}
+            if 'stock_options' in reply:body['stock_options']=reply['stock_options']
+            return result('200 OK',body,token)
         finally:lock.release()
     except hermes_client.HermesError:return result('503 Service Unavailable',{'error':'hermes_unavailable','retry_automatically':False})
     except Exception:return result('503 Service Unavailable',{'error':'pilot_unavailable'})

@@ -58,6 +58,42 @@
     box.append(label, content); $('conversation').append(box);
     box.scrollIntoView({block:'nearest'});
   }
+  function stockTable(report) {
+    if (!report || typeof report !== 'object') return;
+    if (report.mode === 'groups') { for (const group of report.groups) stockTable(group); return; }
+    const panel = document.createElement('section'); panel.className = 'stock-report';
+    const title = document.createElement('h3');
+    title.textContent = report.mode === 'unverified' ? 'Chưa xác minh đủ tồn' + (report.model_code ? ' · mẫu ' + report.model_code : '') + (report.size ? ' · size ' + report.size : '') : 'Mẫu ' + report.model_code + ' · size ' + report.size + (report.color_filter ? ' · màu ' + report.color_filter : ' · các màu');
+    panel.append(title);
+    const note = document.createElement('p');
+    note.textContent = report.complete === true ? 'Đã tra đủ các biến thể trong phạm vi mẫu/size của danh sách đang đồng bộ. Chưa giữ hàng.' : 'Chưa kiểm tra đầy đủ. Không coi màu/kho chưa xác minh là hết hàng.';
+    panel.append(note);
+    const rows = Array.isArray(report.variants) ? report.variants : [];
+    for (const [value,label] of [[true,'Còn hàng đã xác minh'],[null,'Chưa xác minh đủ tồn'],[false,'Tồn 0 đã xác minh']]) {
+      const items = rows.filter(row => row.available === value);
+      if (!items.length) continue;
+      const heading = document.createElement('h4'); heading.textContent = label + ' (' + items.length + ')'; panel.append(heading);
+      for (const item of items) {
+        const card = document.createElement('div'); card.className = 'stock-option';
+        const name = document.createElement('strong'); name.textContent = (item.color || 'Tên màu chưa xác minh') + ' · size ' + item.size; card.append(name);
+        const price = document.createElement('p'); price.textContent = item.price_vnd === null ? 'Giá cần xác minh' : item.price_vnd.toLocaleString('vi-VN') + 'đ'; card.append(price);
+        const stock = document.createElement('p');
+        stock.textContent = item.available === true ? (item.inventory_complete ? 'Tồn đã tra: ' : 'Đã xác minh ít nhất: ') + item.known_available + ' đôi' : item.available === false ? 'Tồn khả dụng đã tra: 0' : 'Chưa đủ dữ liệu để kết luận';
+        card.append(stock);
+        for (const location of item.locations) {
+          if (location.available > 0) { const line = document.createElement('p'); line.textContent = location.name + ': ' + location.available + ' đôi'; card.append(line); }
+        }
+        if (item.product_url) {
+          const link = document.createElement('a'); link.textContent = 'Xem sản phẩm'; link.href = item.product_url; link.target = '_blank'; link.rel = 'noopener noreferrer'; card.append(link);
+        }
+        panel.append(card);
+      }
+    }
+    if (report.coverage && (report.coverage.unverified_products || report.coverage.omitted_variants)) {
+      const warning = document.createElement('p');warning.textContent = 'Còn sản phẩm/biến thể chưa kiểm tra; danh sách này chưa phải toàn bộ lựa chọn.';panel.append(warning);
+    }
+    $('conversation').append(panel);
+  }
   $('login-form').addEventListener('submit', async event => {
     event.preventDefault();
     if (busy) return;
@@ -79,7 +115,7 @@
     try {
       const data = await api('/api/chat', 'POST', {message});
       if (typeof data.reply !== 'string' || !data.reply.trim()) throw new Error('Server không trả về nội dung hợp lệ.');
-      turn('assistant', data.reply); status('Đã nhận phản hồi từ hệ thống.');
+      turn('assistant', data.reply); stockTable(data.stock_options); status('Đã nhận phản hồi từ hệ thống.');
     } catch (error) { status(error.message); }
     finally { busy = false; controls(); }
   });
