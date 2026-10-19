@@ -22,7 +22,10 @@
         "HERMES_SALES_API_BASE": "http://hermes-sales:8643/v1",
         "HERMES_SALES_ATTESTATION": "/data/sales-audit/inventory.json",
         "HARAVAN_ACCESS_TOKEN": "${HARAVAN_ACCESS_TOKEN:-}",
-        "CATALOG_CACHE_PATH": "/data/hermes-sales/catalog.json"
+        "CATALOG_CACHE_PATH": "/data/hermes-sales/catalog.json",
+        "GEMINI_API_KEY": "${GEMINI_API_KEY:-}",
+        "GOOGLE_API_KEY": "${GOOGLE_API_KEY:-}",
+        "MERLY_GEMINI_MODEL": "${MERLY_GEMINI_MODEL:-}"
       },
       "volumes": [
         "sales-home:/data/hermes-sales",
@@ -75,7 +78,9 @@
         "HERMES_ALLOW_HTTP": "1",
         "HERMES_SALES_ATTESTATION": "/data/sales-audit/inventory.json",
         "HERMES_PILOT_STATE_DB": "/data/pilot-gateway/sessions.sqlite3",
-        "HARAVAN_ACCESS_TOKEN": "${MERLY_GATEWAY_HARAVAN_EMPTY:-}"
+        "HARAVAN_ACCESS_TOKEN": "${MERLY_GATEWAY_HARAVAN_EMPTY:-}",
+        "GEMINI_API_KEY": "${MERLY_GATEWAY_PROVIDER_EMPTY:-}",
+        "GOOGLE_API_KEY": "${MERLY_GATEWAY_PROVIDER_EMPTY:-}"
       },
       "volumes": [
         "sales-audit:/data/sales-audit:ro",
