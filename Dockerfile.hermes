@@ -7,6 +7,7 @@ RUN pip install --no-cache-dir uv==0.13.1 && python fetch_hermes.py && uv pip in
 COPY merly_tools.py mcp_server.py tool-schema.json catalog-enrichment.json ./
 COPY sales_gateway.py hermes_client.py state.py safety.py audit_instance.py run_sales.py SYSTEM-PROMPT.md hermes-config.template.json ./
 COPY vendor/ ./vendor/
+COPY pilot-web/ ./pilot-web/
 RUN mkdir -p /home/merly /data/hermes-sales /data/sales-audit /data/pilot-gateway && chown -R 10001:10001 /home/merly /data
 USER 10001:10001
 EXPOSE 8643

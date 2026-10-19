@@ -40,3 +40,10 @@ def save(sid,cid):
     try:
         with db:db.execute('UPDATE sessions SET cid=?,seen=? WHERE sid=?',(cid,time.time(),sid))
     finally:db.close()
+
+
+def clear(sid):
+    db=database()
+    try:
+        with db:db.execute('DELETE FROM sessions WHERE sid=?',(sid,))
+    finally:db.close()
