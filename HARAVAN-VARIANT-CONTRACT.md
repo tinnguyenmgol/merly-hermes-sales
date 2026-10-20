@@ -1,3 +1,5 @@
+> Historical design/API notes. For the integrated v2 release and deployment, see RELEASE-INTEGRATED.md; its behavior supersedes pending-work notes below.
+
 # Haravan documented variant reader — review/staging only
 
 Official docs read directly (User-Agent retry after initial403):

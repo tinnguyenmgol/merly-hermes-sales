@@ -116,8 +116,14 @@ def test_ambiguous_option_positions_not_assigned():
 def test_unknown_size_is_partial_not_no_matching_variant(source):
     source['products'][0]['options']=[{'name':'Màu','position':1}]
     r=lookup()
-    assert not r['complete'] and r['coverage']['unverified_products']==1
+    assert not r['complete'] and r['coverage']['unclassified_variants']==20
 
 def test_missing_or_nonarray_option_metadata_not_crash():
     for value in (None,{},'Size'):
         assert t.variant_size({'options':value},{'option1':'38'}) is None
+
+@pytest.mark.parametrize('size_name,color_name',[('Kích Cỡ','Màu giày'),('Size Giày','Màu sắc giày')])
+def test_explicit_vietnamese_option_names(size_name,color_name):
+    p={'options':[{'name':size_name,'position':1},{'name':color_name,'position':2}]}
+    row={'option1':'38','option2':'Chì'}
+    assert t.variant_size(p,row)=='38' and t.variant_color(p,row)=='Chì'

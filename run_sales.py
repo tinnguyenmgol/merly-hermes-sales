@@ -72,7 +72,7 @@ def ensure_openrouter_model(home):
     if not key:raise RuntimeError('openrouter_runtime_key_missing')
     if re.search(r'\s',key):raise RuntimeError('openrouter_key_whitespace')
     if not 20<=len(key)<=512:raise RuntimeError('invalid_openrouter_key_length')
-    model=os.getenv('MERLY_OPENROUTER_MODEL','openai/gpt-4.1-mini')
+    model=os.getenv('MERLY_OPENROUTER_MODEL','openai/gpt-oss-20b')
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,99}/[A-Za-z0-9][A-Za-z0-9._:-]{0,149}',model):raise RuntimeError('invalid_openrouter_model_id')
     path=Path(home)/'config.yaml'
     if path.is_symlink():raise RuntimeError('sales_config_symlink_not_supported')
@@ -89,6 +89,24 @@ def ensure_openrouter_model(home):
     if configured==previous:return False
     config['model']=configured
     save_sales_config(path,before,config,'openrouter')
+    return True
+
+def ensure_sales_auxiliary(home):
+    """No paid title-generation calls in isolated sales; preserve other settings."""
+    import hermes_yaml,copy
+    path=Path(home)/'config.yaml'
+    if path.is_symlink():raise RuntimeError('sales_config_symlink_not_supported')
+    before=path.read_bytes();config=hermes_yaml.safe_load(before.decode())
+    from audit_instance import check_config
+    check_config(config)
+    auxiliary=config.get('auxiliary',{})
+    if not isinstance(auxiliary,dict):raise RuntimeError('invalid_sales_auxiliary_config')
+    title=auxiliary.get('title_generation',{})
+    if not isinstance(title,dict):raise RuntimeError('invalid_sales_title_config')
+    if title.get('enabled') is False:return False
+    changed=copy.deepcopy(auxiliary);changed['title_generation']={**title,'enabled':False}
+    config['auxiliary']=changed
+    save_sales_config(path,before,config,'sales-auxiliary')
     return True
 
 def ensure_sales_model(home):
@@ -120,10 +138,13 @@ def main():
     if not (home/'SOUL.md').exists():shutil.copy2(ROOT/'SYSTEM-PROMPT.md',home/'SOUL.md')
     ensure_merly_child_env(home)
     ensure_sales_model(home)
+    ensure_sales_auxiliary(home)
     os.environ.setdefault('MERLY_MCP_PYTHON',sys.executable)
     def audit():
         return subprocess.run([sys.executable,str(ROOT/'audit_instance.py')],cwd=home).returncode==0
     if not audit():raise RuntimeError('startup_audit_failed')
+    from stock_probe import start as start_stock_probe
+    stock_probe_server=start_stock_probe()
     def refresh():
         while True:
             time.sleep(12*3600)

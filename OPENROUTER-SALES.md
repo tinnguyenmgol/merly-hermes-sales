@@ -12,7 +12,7 @@ A reviewed merge triggers the existing Coolify auto-deployment.
    stock options against Haravan. OpenRouter account/key needs sufficient credit.
 
 Defaults: provider=openrouter, base=https://openrouter.ai/api/v1,
-api_mode=chat_completions, model=openai/gpt-4.1-mini. Public OpenRouter model catalog
+api_mode=chat_completions, model=openai/gpt-oss-20b. Public OpenRouter model catalog
 was checked for this exact ID and tools/tool_choice support. Not a free-tier model;
 no automatic random/free-model routing. Optional MERLY_OPENROUTER_MODEL changes
 it to another explicitly selected tool-capable model. MERLY_SALES_PROVIDER should

@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Merly Read-only Sales Tools",
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "servers": [
     {
@@ -80,14 +80,7 @@
                   },
                   "check_stock": {
                     "type": "boolean",
-                    "description": "True for all available colors/options of an exact model_code and selected size. One batch checks ALL matches, not the limit/first12 variants. Requires stock_request_id; do not combine with unverified heel/category/occasion."
-                  },
-                  "stock_request_id": {
-                    "type": "string",
-                    "pattern": "^[0-9a-f]{32}$",
-                    "minLength": 32,
-                    "maxLength": 32,
-                    "description": "For check_stock=true copy current turn ID from instructions, never history."
+                    "description": "True: read ALL available options of an exact model_code and confirmed size. Only provide model_code,size, optional color,check_stock. No technical request ID needed. Omit unused fields instead of null. Do not combine heel/category/occasion."
                   }
                 },
                 "required": []

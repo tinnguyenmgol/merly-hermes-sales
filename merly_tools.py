@@ -54,9 +54,13 @@ def variant_price(variant):
 def search_products(data):
     validate(data,{'model_code':(str,1,32),'color':(str,1,40),'size':(int,35,43),'heel_cm':(float,0,15),'category':(str,1,60),'occasion':(str,1,60),'limit':(int,1,6),'check_stock':(bool,0,0),'stock_request_id':(str,32,32)})
     if data.get('check_stock'):
-        if not {'model_code','size','stock_request_id'}<=set(data) or not re.fullmatch(r'[0-9a-f]{32}',data['stock_request_id']):raise Invalid('stock_scope_required')
+        if not {'model_code','size'}<=set(data):raise Invalid('stock_scope_required')
+        if 'stock_request_id' in data and not re.fullmatch(r'[0-9a-f]{32}',data['stock_request_id']):raise Invalid('stock_scope_required')
         if any(k in data for k in ('heel_cm','category','occasion')):raise Invalid('verify_specs_before_stock_scope')
         import stock_options
+        if 'stock_request_id' not in data:
+            import secrets
+            data=dict(data,stock_request_id=secrets.token_hex(16),_stock_schema='merly-stock-options-v2')
         return stock_options.lookup(data,sys.modules[__name__])
     rows=catalog.snapshot()
     if rows is None:return {'status':'catalog_loading','retryable':True,'products':[]}

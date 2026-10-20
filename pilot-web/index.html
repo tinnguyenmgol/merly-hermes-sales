@@ -18,5 +18,9 @@
 <form id="chat-form"><label><input id="test-consent" type="checkbox"> Tôi chỉ dùng dữ liệu giả lập và hiểu lượt hỏi có thể phát sinh phí API.</label>
 <label for="message">Câu hỏi thử nghiệm</label><textarea id="message" maxlength="1000" rows="3" disabled placeholder="Ví dụ: Chân dài 24 cm thì tham khảo size nào?"></textarea>
 <button id="send" type="submit" disabled>Gửi câu hỏi</button></form>
+<details><summary>Kiểm tra trực tiếp Haravan — không gọi AI</summary>
+<form id="stock-probe-form"><label for="probe-model">Mã mẫu</label><input id="probe-model" maxlength="32" required>
+<label for="probe-size">Size</label><select id="probe-size"><option value="35">35</option><option value="36">36</option><option value="37">37</option><option value="38">38</option><option value="39">39</option><option value="40">40</option><option value="41">41</option><option value="42">42</option><option value="43">43</option></select>
+<button id="probe-check" type="submit" disabled>Kiểm tra API Haravan</button></form></details>
 <footer>Không tự gửi lại khi lỗi. Lịch sử API có thể còn được lưu sau khi đóng trang; đây chưa phải kênh chăm sóc khách hàng.</footer>
 </main></body></html>

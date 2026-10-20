@@ -1,7 +1,7 @@
 """Documented GET-only variant pagination and product option interpretation."""
 import re,time
-SIZE_NAMES={'size','kich thuoc','co giay','so giay'}
-COLOR_NAMES={'mau','mau sac','color','colour'}
+SIZE_NAMES={'size','kich thuoc','kich co','size giay','kich thuoc giay','co giay','so giay'}
+COLOR_NAMES={'mau','mau sac','mau giay','mau sac giay','color','colour'}
 
 def option_value(product,variant,names,norm):
     positions=[];seen=set()
@@ -20,7 +20,7 @@ def option_value(product,variant,names,norm):
 def size(product,variant,norm):
     value=option_value(product,variant,SIZE_NAMES,norm)
     if value is None:return None
-    match=re.fullmatch(r'(?:size\s*)?(3[5-9]|4[0-3])',norm(value).strip())
+    match=re.fullmatch(r'(?:size\s*)?([0-9]{1,3})',norm(value).strip())
     return match.group(1) if match else None
 
 def all_variants(h,product_id,deadline=None):

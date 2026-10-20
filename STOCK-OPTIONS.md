@@ -1,3 +1,5 @@
+> Historical design/API notes. For the integrated v2 release and deployment, see RELEASE-INTEGRATED.md; its behavior supersedes pending-work notes below.
+
 # Stock-option sweep: staged fix, not live acceptance
 
 Discovery previously returned up to12 variants/product and4 products by default;

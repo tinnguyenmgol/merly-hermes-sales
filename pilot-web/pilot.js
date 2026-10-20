@@ -16,6 +16,7 @@
   };
   function status(text) { $('status').textContent = text; }
   function controls() {
+    $('probe-check').disabled = !access || !ready || busy;
     $('send').disabled = !access || !ready || busy || !$('test-consent').checked;
     $('message').disabled = !access || !ready || busy;
     for (const id of ['refresh','new-chat','logout','login-button']) $(id).disabled = busy;
@@ -64,11 +65,15 @@
     if (report.mode === 'groups') { for (const group of report.groups) stockTable(group); return; }
     const panel = document.createElement('section'); panel.className = 'stock-report';
     const title = document.createElement('h3');
-    title.textContent = report.mode === 'unverified' ? 'Chưa xác minh đủ tồn' + (report.model_code ? ' · mẫu ' + report.model_code : '') + (report.size ? ' · size ' + report.size : '') : 'Mẫu ' + report.model_code + ' · size ' + report.size + (report.color_filter ? ' · màu ' + report.color_filter : ' · các màu');
+    if (['failed','source_error','catalog_loading','no_match'].includes(report.operation_status)) panel.classList.add('stock-error');
+    title.textContent = ['failed','source_error','catalog_loading','no_match'].includes(report.operation_status) || report.mode === 'unverified' ? 'Tra tồn chưa thành công' + (report.model_code ? ' · mẫu ' + report.model_code : '') + (report.size ? ' · size ' + report.size : '') : 'Mẫu ' + report.model_code + ' · size ' + report.size + (report.color_filter ? ' · màu ' + report.color_filter : ' · các màu');
     panel.append(title);
     const note = document.createElement('p');
-    note.textContent = report.complete === true ? 'Đã tra đủ các biến thể trong phạm vi mẫu/size của danh sách đang đồng bộ. Chưa giữ hàng.' : 'Chưa kiểm tra đầy đủ. Không coi màu/kho chưa xác minh là hết hàng.';
+    note.textContent = report.recheck_failed ? 'Lần kiểm tra lại lỗi. Đây là kết quả đã tra trước đó, không phải xác nhận mới; chưa giữ hàng.' : ['failed','source_error','catalog_loading','no_match'].includes(report.operation_status) ? 'Chưa tra được tồn: công cụ lỗi, dữ liệu nguồn chưa đủ hoặc danh mục đang đồng bộ. Không phải thông báo hết hàng.' : report.complete === true ? 'Đã tra đủ các biến thể trong phạm vi mẫu/size của danh sách đang đồng bộ. Chưa giữ hàng.' : 'Chưa kiểm tra đầy đủ. Không coi màu/kho chưa xác minh là hết hàng.';
     panel.append(note);
+    if (typeof report.checked_at === 'string' && Number.isFinite(Date.parse(report.checked_at))) {
+      const stamp = document.createElement('p'); stamp.textContent = 'Bắt đầu tra lúc: ' + new Date(report.checked_at).toLocaleString('vi-VN'); panel.append(stamp);
+    }
     const rows = Array.isArray(report.variants) ? report.variants : [];
     for (const [value,label] of [[true,'Còn hàng đã xác minh'],[null,'Chưa xác minh đủ tồn'],[false,'Tồn 0 đã xác minh']]) {
       const items = rows.filter(row => row.available === value);
@@ -90,7 +95,7 @@
         panel.append(card);
       }
     }
-    if (report.coverage && (report.coverage.unverified_products || report.coverage.omitted_variants)) {
+    if (report.coverage && (report.coverage.unverified_products || report.coverage.omitted_variants || report.coverage.unclassified_variants)) {
       const warning = document.createElement('p');warning.textContent = 'Còn sản phẩm/biến thể chưa kiểm tra; danh sách này chưa phải toàn bộ lựa chọn.';panel.append(warning);
     }
     $('conversation').append(panel);
@@ -107,6 +112,14 @@
   });
   $('refresh').addEventListener('click', async () => { if (busy) return; busy = true; controls(); await readiness(); busy = false; controls(); });
   $('test-consent').addEventListener('change', controls);
+  $('stock-probe-form').addEventListener('submit', async event => {
+    event.preventDefault(); if (busy || !ready || !access) return;
+    const model_code = $('probe-model').value, size = Number($('probe-size').value);
+    if (!model_code || model_code.length > 32) return;
+    busy = true; controls(); status('Đang đọc Haravan trực tiếp; không gọi model.');
+    try { const data = await api('/api/stock-check','POST',{model_code,size}); turn('assistant',data.reply); stockTable(data.stock_options); status('Đã kiểm tra API Haravan trực tiếp, không gọi AI.'); }
+    catch (error) { status(error.message); } finally { busy=false; controls(); }
+  });
   $('chat-form').addEventListener('submit', async event => {
     event.preventDefault();
     if (busy || !ready || !access || !$('test-consent').checked) return;

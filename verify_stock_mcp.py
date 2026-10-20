@@ -1,5 +1,5 @@
 """Actual MCP + pinned Hermes serialization, explicitly synthetic Haravan fixtures."""
-import asyncio,json,os,sys
+import asyncio,json,os,sys,time
 from pathlib import Path
 from mcp import ClientSession,StdioServerParameters
 from mcp.client.stdio import stdio_client
@@ -41,5 +41,14 @@ runpy.run_path(sys.argv[1]+'/mcp_server.py',run_name='__main__')
             report,requested=extract(items,TOKEN)
             assert requested and report['complete'] and len(report['variants'])==20
             assert {'Kem','Chì Bóng'}<={v['color'] for v in report['variants']}
-            print('PASS_REAL_MCP_HERMES_SERIALIZATION actionable_error_reaches_model=true rejected_then_corrected=true all20=true Kem_and_ChiBong_present=true tools_remain5=true synthetic_source_only=true live_Haravan_calls=0 live_model_calls=0')
+            start=time.time()
+            new_args={'model_code':'1514','size':38,'check_stock':True}
+            v2_result=await session.call_tool('search_products',new_args)
+            assert not v2_result.is_error and v2_result.structured_content['stock_report']['schema']=='merly-stock-options-v2'
+            from gateway.platforms.api_server_openai_routes import OpenAICompatRoutesMixin as NativeAPI
+            messages=[{'role':'assistant','tool_calls':[{'id':'no_nonce','type':'function','function':{'name':'mcp__merly__search_products','arguments':json.dumps(new_args)}}]},{'role':'tool','tool_call_id':'no_nonce','content':_render_call_tool_result(v2_result,'merly')}]
+            native=NativeAPI._extract_output_items({'messages':messages,'final_response':'synthetic final'})
+            v2,requested=extract(native,'gateway-does-not-need-model-copy',turn_started=start)
+            assert requested and v2['complete'] and len(v2['variants'])==20
+            print('PASS_REAL_MCP_HERMES_SERIALIZATION v2_no_model_nonce=true native_Responses_serializer=true actionable_error_reaches_model=true rejected_then_corrected=true all20=true Kem_and_ChiBong_present=true tools_remain5=true synthetic_source_only=true live_Haravan_calls=0 live_model_calls=0')
 if __name__=='__main__':asyncio.run(main())

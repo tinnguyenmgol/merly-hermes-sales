@@ -84,5 +84,10 @@
     "multiplex_profiles": false
   },
   "max_concurrent_sessions": 16,
-  "max_live_sessions": 8
+  "max_live_sessions": 8,
+  "auxiliary": {
+    "title_generation": {
+      "enabled": false
+    }
+  }
 }

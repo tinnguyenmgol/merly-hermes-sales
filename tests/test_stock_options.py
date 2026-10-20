@@ -87,7 +87,7 @@ def test_explicit_color_scope_named_not_all_colors(source):
     report=lookup(color='Chì Bóng');assert len(report['variants'])==1
     assert 'màu Chì Bóng' in stock_report.summary(report)
 
-@pytest.mark.parametrize('data',[{'check_stock':True,'model_code':'1514'}, {'check_stock':True,'model_code':'1514','size':38}, {'check_stock':True,'model_code':'1514','size':38,'stock_request_id':TOKEN,'heel_cm':5}])
+@pytest.mark.parametrize('data',[{'check_stock':True,'model_code':'1514'}, {'check_stock':True,'model_code':'1514','size':True}, {'check_stock':True,'model_code':'1514','size':38,'stock_request_id':TOKEN,'heel_cm':5}])
 def test_incomplete_or_unsupported_scope_rejected(source,data):
     with pytest.raises(t.Invalid):t.dispatch('search_products',data)
 
