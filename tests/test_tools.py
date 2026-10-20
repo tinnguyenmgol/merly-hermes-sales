@@ -50,7 +50,7 @@ def test_size43_owner_source():
     assert tools.dispatch('size_guide',{'length_cm':24.2})['status']=='needs_staff_review'
 
 def test_unapproved_sources_not_invented():
-    assert tools.dispatch('get_policy',{'topic':'shipping'})['status']=='unverified'
+    assert tools.dispatch('get_policy',{'topic':'store_hours'})['status']=='unverified'
     assert tools.dispatch('get_promotions',{})['status']=='publication_not_configured'
 
 @pytest.mark.parametrize('name,data',[

@@ -1,0 +1,21 @@
+{
+  "approved": true,
+  "scope": "customer_only",
+  "source": {
+    "file": "07_MERLY_FAQ.md",
+    "version": "1.1",
+    "updated_date": "2026-09-21"
+  },
+  "policies": {
+    "shipping": "Đơn từ 300.000đ sau giảm được freeship theo điều kiện áp dụng. Cần kiểm tra giá trị sau giảm và điều kiện thực tế trước khi xác nhận; không tự cam kết ngày giao.",
+    "size_exchange": "Cần kiểm tra kênh mua, ngày mua, tình trạng sản phẩm, mức giảm và tồn size/màu mới. Đổi online: phí 20.000đ, voucher 20.000đ; giao đôi mới đồng thời thu hồi đôi cũ (cross-ship), cần ảnh mặt đế. Đổi tại cửa hàng: phí 0đ, vẫn kiểm tra điều kiện. Sale từ 30% trở lên không áp dụng đổi trả, trừ chương trình hoặc ngoại lệ được xác nhận. FAQ chưa nêu thời hạn đổi hay chi tiết sử dụng voucher: cần Merly xác nhận, không tự hứa. Hỗ trợ: https://care.merlyshoes.com",
+    "warranty": "Bảo hành 365 ngày. Cần xác minh đơn hàng, ngày mua và tình trạng sản phẩm để đối chiếu điều kiện. Không mặc định đổi mới, hoàn tiền hoặc bồi thường. Hỗ trợ bảo hành: https://care.merlyshoes.com",
+    "sale_returns": "Hàng sale từ 30% trở lên không áp dụng đổi trả, trừ chương trình hoặc ngoại lệ được xác nhận. Trường hợp bảo hành cần kiểm tra theo hồ sơ và chính sách bảo hành; không tự hứa đổi mới hoặc hoàn tiền.",
+    "new_customer": "Khách mới: giảm 5%, tối đa 30.000đ. Cần xác minh đủ điều kiện khách mới và điều kiện đơn trước khi áp dụng. Không tự tạo mã giảm, áp dụng giảm hoặc mặc định cộng dồn ưu đãi.",
+    "loyalty": "Gold+: từ 3.000.000đ; ưu đãi thường 10%, sinh nhật 30%. Ưu tiên dữ liệu hạng thành viên thực tế. FAQ chưa nêu đầy đủ kỳ tính hạng và điều kiện ưu đãi: cần Merly xác nhận. Không suy hạng từ lời khách, không mặc định cộng dồn.",
+    "business_orders": "Khách công ty từ 100 đôi: chiết khấu 20%. Dưới 100 đôi: tính theo giá trị chính đơn đó, dưới 6.000.000đ là 10%; từ 6.000.000đ đến dưới 12.000.000đ là 15%; từ 12.000.000đ trở lên là 20%. Ví dụ 80 đôi có giá trị đơn trên 12 triệu thuộc mức 20%. Không dùng lịch sử tích lũy cá nhân của người liên hệ. Không mặc định cộng voucher bán lẻ, loyalty hoặc sinh nhật. Merly cần xác nhận cơ sở giá trị đơn, sản phẩm, điều kiện và báo giá; chatbot không tạo hợp đồng hoặc đơn hàng.",
+    "tiktok_exchange": "Đổi size trên TikTok có thể chủ động book ship theo quy trình Merly; không mặc định yêu cầu hoàn tiền trên sàn chỉ vì đổi size. Nếu quy định TikTok hiện hành khác, ưu tiên quy định mới hơn sau khi kiểm tra. Cần xác nhận điều kiện đổi cụ thể.",
+    "product_links": "Gửi đúng link sản phẩm trên https://merlyshoes.com do công cụ sản phẩm trả về. Không chỉ yêu cầu khách tự tìm, không đoán đường dẫn từ tên/ID và không thay bằng trang nội bộ.",
+    "customer_support": "Merly tiếp nhận và kiểm tra vấn đề theo chính sách. Có thể cung cấp mã đơn và mô tả vấn đề; không gửi mật khẩu hay thông tin thanh toán nhạy cảm. Không hứa giảm thêm, bồi thường, đổi mới hoặc hoàn tiền khi chưa xác minh. Đổi size/bảo hành: https://care.merlyshoes.com"
+  }
+}
