@@ -61,6 +61,8 @@ def chat(message,user,previous_response_id=''):
 
     import stock_scope_memory
     payload['instructions']+=stock_scope_memory.instructions(user)
+    import fast_replies
+    payload['instructions']+=fast_replies.instructions(user)
     model=os.getenv('HERMES_SALES_MODEL_ALIAS','')
     if model:payload['model']=model
     if previous_response_id:payload['previous_response_id']=previous_response_id
@@ -100,5 +102,24 @@ def probe_stock(scope,timeout=30):
         report=validate(body['stock_report'],None,scope,turn_started=started)
         classify(report)
         return {'reply':summary(report),'stock_options':report,'engine':'haravan-readonly','model_called':False}
+    except HermesError:raise
+    except Exception:raise HermesError('stock_probe_unavailable') from None
+
+
+def search_catalog(scope):
+    """Fixed authenticated catalog-only endpoint; never an inference call."""
+    if not configured():raise HermesError('sales_not_approved_or_configured')
+    req=urllib.request.Request('http://hermes-sales:8644/catalog-search',data=json.dumps(scope).encode(),headers={'Authorization':'Bearer '+os.environ['HERMES_SALES_API_KEY'],'Content-Type':'application/json'},method='POST')
+    try:
+        with urllib.request.build_opener(NoRedirect).open(req,timeout=8) as r:raw=r.read(262145)
+        if len(raw)>262144:raise ValueError()
+        data=json.loads(raw)
+        if not isinstance(data,dict) or data.get('status') not in ('ok','partial_metadata','catalog_loading') or not isinstance(data.get('products'),list):raise ValueError()
+        rows=data['products'][:4]
+        if rows:reply='Các mẫu có thuộc tính phù hợp ở dưới; có biến thể size này chưa có nghĩa còn hàng. Bạn chọn mã mẫu để Merly kiểm tra tồn mới.'
+        elif data['status']=='catalog_loading':reply='Danh mục đang cập nhật. Bạn gửi mã mẫu để Merly kiểm tra trực tiếp; chưa thể kết luận hết hàng.'
+        elif data['status']=='partial_metadata':reply='Merly chưa đủ dữ liệu đã xác minh về chiều cao gót để chọn đúng mẫu theo yêu cầu này. Bạn gửi mã mẫu hoặc ảnh mẫu muốn tìm nhé; đây không phải kết luận hết hàng.'
+        else:reply='Chưa tìm thấy mẫu khớp trong danh mục đã kiểm tra. Đây không phải kết luận hết hàng; bạn có mã mẫu muốn Merly tra giúp không?'
+        return {'reply':reply,'products':rows,'engine':'catalog-readonly','model_called':False,'stock_checked':False}
     except HermesError:raise
     except Exception:raise HermesError('stock_probe_unavailable') from None

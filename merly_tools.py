@@ -51,6 +51,20 @@ def variant_price(variant):
         return int(value) if value>=0 and value==value.to_integral_value() else None
     except (ValueError,TypeError):return None
 
+def verified_product_specs(product,approved):
+    """Explicit heel measurement from Haravan title, not an LLM or SKU guess."""
+    meta=dict(approved)
+    title=catalog.norm(product.get('title',''))
+    values={float(m.replace(',','.')) for m in re.findall(r'(?<![a-z])(?:chieu cao got|cao got|got)(?:\s+(?:cao|vuong|nhon|tru))?\s*[:(]?\s*([0-9]{1,2}(?:[.,][0-9])?)\s*cm(?![a-z0-9_])',title)}
+    if any(not 0<=v<=15 for v in values):
+        meta.pop('heel_cm',None);return meta
+    if len(values)==1 and 'khong' not in title:
+        value=next(iter(values))
+        if 'heel_cm' not in meta:meta['heel_cm']=value
+        elif meta['heel_cm']!=value:meta.pop('heel_cm',None)
+    elif len(values)>1:meta.pop('heel_cm',None)
+    return meta
+
 def search_products(data):
     validate(data,{'model_code':(str,1,32),'color':(str,1,40),'size':(int,35,43),'heel_cm':(float,0,15),'category':(str,1,60),'occasion':(str,1,60),'limit':(int,1,6),'check_stock':(bool,0,0),'stock_request_id':(str,32,32)})
     if data.get('check_stock'):
@@ -69,7 +83,7 @@ def search_products(data):
         if not catalog.eligible(p):continue
         code=data.get('model_code')
         if code and not (re.search(r'(?<!\w)'+re.escape(catalog.norm(code))+r'(?!\w)',catalog.norm(p.get('title',''))) or any(catalog.norm(v.get('sku',''))==catalog.norm(code) for v in p['variants'])):continue
-        meta=metadata.get(str(p['id']),{})
+        meta=verified_product_specs(p,metadata.get(str(p['id']),{}))
         failed=False
         for field in ('heel_cm','category','occasion'):
             if field not in data:continue

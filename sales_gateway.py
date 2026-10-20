@@ -1,16 +1,16 @@
 """Authenticated pilot. Explicit literal stock scope skips model; free-form uses Hermes."""
-import hmac,json,os,threading,time,secrets,logging,re
+import hmac,json,os,time,secrets,logging,re
 from pathlib import Path
 import hermes_client,state
-import explicit_stock,stock_scope_memory
+import explicit_stock,stock_scope_memory,fast_replies,fast_limits
 import public_chat
 WEB=Path(__file__).resolve().with_name('pilot-web')
 SECURITY=[('X-Content-Type-Options','nosniff'),('Referrer-Policy','no-referrer'),('X-Frame-Options','DENY'),('Permissions-Policy','camera=(), microphone=(), geolocation=()'),('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'")]
 ASSETS={'/operator':('index.html','text/html; charset=utf-8'),'/':('index.html','text/html; charset=utf-8'),'/pilot.js':('pilot.js','application/javascript; charset=utf-8'),'/pilot.css':('pilot.css','text/css; charset=utf-8')}
-LOCKS=[threading.Lock() for _ in range(128)]
 def application(env,start):
     def result(code,data,cookie=None):
         body=json.dumps(data,ensure_ascii=False).encode();headers=[('Content-Type','application/json; charset=utf-8'),('Content-Length',str(len(body))),('Cache-Control','no-store'),('X-Content-Type-Options','nosniff')]
+        if isinstance(data.get('retry_after'),int):headers.append(('Retry-After',str(data['retry_after'])))
         if cookie:headers.append(('Set-Cookie','merly_hermes_pilot='+cookie+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=1800'))
         start(code,headers);return [body]
     public=public_chat.handle(env,start,application)
@@ -36,7 +36,7 @@ def application(env,start):
     if env.get('PATH_INFO')=='/api/logout' and env.get('REQUEST_METHOD')=='POST':
         try:
             if env.get('HTTP_COOKIE'):
-                _,sid=state.identity(env['HTTP_COOKIE']);state.clear(sid);stock_scope_memory.forget(sid)
+                _,sid=state.identity(env['HTTP_COOKIE']);state.clear(sid);stock_scope_memory.forget(sid);fast_replies.forget(sid)
         except Exception:return result('503 Service Unavailable',{'error':'pilot_unavailable'})
         body=json.dumps({'status':'logged_out'}).encode()
         start('200 OK',[('Content-Type','application/json'),('Content-Length',str(len(body))),('Cache-Control','no-store'),('Set-Cookie','merly_hermes_pilot=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0'),*SECURITY])
@@ -59,28 +59,44 @@ def application(env,start):
     turn_started=time.monotonic()
     diagnostic_id=secrets.token_hex(8)
     try:
-        token,sid=state.identity(env.get('HTTP_COOKIE'));lock=LOCKS[int(sid[:8],16)%len(LOCKS)]
-        if not lock.acquire(blocking=False):return result('429 Too Many Requests',{'error':'turn_in_progress'})
-        try:
-            cid=state.reserve(sid)
-            if cid is None:return result('429 Too Many Requests',{'error':'pilot_budget_limit'})
-            if probe:
-                stock_scope_memory.remember(sid,data)
-                return result('200 OK',hermes_client.probe_stock(data),token)
-            scope=explicit_stock.parse(data['message'])
-            if scope is not None:
-                stock_scope_memory.remember(sid,scope)
-                direct=hermes_client.probe_stock(scope)
-                if isinstance(direct.get('stock_options'),dict):direct['stock_options']['resolution_path']='direct_haravan'
-                return result('200 OK',direct,token)
-            try:reply=hermes_client.chat(data['message'],'merly-sales:web:'+sid,cid)
-            except Exception:
-                stock_scope_memory.forget(sid);raise
-            state.save(sid,reply['conversation_id'])
-            body={'reply':reply['reply'],'engine':'hermes'}
-            if 'stock_options' in reply:body['stock_options']=reply['stock_options']
-            return result('200 OK',body,token)
-        finally:lock.release()
+        token,sid=state.identity(env.get('HTTP_COOKIE'))
+        def limited(error,retry=1):
+            return result('429 Too Many Requests',{'error':error,'retry_after':retry,'retry_automatically':False})
+        with fast_limits.session(sid) as acquired:
+            if not acquired:return limited('turn_in_progress')
+            cid=state.touch(sid)
+            if not probe:
+                quick=fast_replies.policy(data['message'])
+                if quick is not None:
+                    fast_replies.remember(sid,{'policy_topic':quick.pop('_topic')})
+                    return result('200 OK',quick,token)
+            scope=data if probe else explicit_stock.parse(data['message'])
+            shopping=None if probe else fast_replies.shopping(data['message'])
+            if scope is not None or shopping is not None:
+                with fast_limits.slot('STOCK') as available:
+                    if not available:return limited('stock_capacity')
+                    rate=state.resource('STOCK')
+                    if not rate['available']:return limited('stock_rate_limit',rate['retry_after'])
+                    if shopping is not None:
+                        answer=hermes_client.search_catalog(shopping)
+                        stock_scope_memory.forget(sid)
+                        fast_replies.remember(sid,{'heel_cm':shopping['heel_cm'],'size':shopping['size']})
+                        return result('200 OK',answer,token)
+                    stock_scope_memory.remember(sid,scope)
+                    direct=hermes_client.probe_stock(scope)
+                    if isinstance(direct.get('stock_options'),dict):direct['stock_options']['resolution_path']='direct_haravan'
+                    return result('200 OK',direct,token)
+            with fast_limits.slot('AI') as available:
+                if not available:return limited('ai_capacity')
+                reservation=state.reserve_checked(sid)
+                if not reservation['available']:return limited(reservation['reason'],reservation['retry_after'])
+                try:reply=hermes_client.chat(data['message'],'merly-sales:web:'+sid,cid)
+                except Exception:
+                    stock_scope_memory.forget(sid);raise
+                state.save(sid,reply['conversation_id'])
+                body={'reply':reply['reply'],'engine':'hermes'}
+                if 'stock_options' in reply:body['stock_options']=reply['stock_options']
+                return result('200 OK',body,token)
     except hermes_client.HermesError as exc:
         code=str(exc)
         allowed={'stock_probe_unavailable','hermes_timeout','hermes_unavailable','turn_not_completed','response_limit','invalid_response','invalid_response_id','missing_final_message','invalid_answer','sales_not_approved_or_configured','responses_not_supported','tool_discovery_unavailable','invalid_tool_inventory','unsafe_enabled_toolset','sales_runtime_attestation_required','invalid_sales_endpoint','https_required'}

@@ -151,6 +151,9 @@ def ensure_customer_policy_prompt(home):
 def main():
     role=os.getenv('PILOT_ROLE','hermes')
     if role=='gateway':
+        import fast_limits
+        for name in fast_limits.DEFAULTS:fast_limits.limit(name)
+        if fast_limits.limit('AI_CONCURRENT')+fast_limits.limit('STOCK_CONCURRENT')>3:raise RuntimeError('fast_worker_reservation_required')
         if os.getenv('HARAVAN_ACCESS_TOKEN'):raise RuntimeError('gateway_must_not_hold_haravan_token')
         if any(os.getenv(k) for k in ('GEMINI_API_KEY','GOOGLE_API_KEY','OPENROUTER_API_KEY')):raise RuntimeError('gateway_must_not_hold_model_key')
         os.execvp(sys.executable,[sys.executable,'-m','gunicorn','--no-control-socket','--bind','0.0.0.0:8080','--workers','1','--threads','4','--timeout','60','sales_gateway:application'])

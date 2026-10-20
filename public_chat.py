@@ -1,5 +1,7 @@
 """Public visitor adapter; existing private gateway remains server-only."""
 import hashlib,hmac,io,json,os,re,secrets
+import state,sqlite3
+from fast_limits import limit
 from http.cookies import SimpleCookie
 from pathlib import Path
 COOKIE='__Host-merly_public_session'
@@ -18,6 +20,7 @@ def handle(env,start,forward):
     if not enabled() or path not in ('/','/public.js','/public.css','/embed.js','/merly-logo.png','/api/public/session','/api/public/chat'):return None
     def result(status,data,cookie=None):
         raw=json.dumps(data,ensure_ascii=False).encode();headers=[('Content-Type','application/json; charset=utf-8'),('Content-Length',str(len(raw))),('Cache-Control','no-store'),('X-Content-Type-Options','nosniff')]
+        if type(data.get('retry_after')) is int:headers.append(('Retry-After',str(data['retry_after'])))
         if cookie:headers.append(('Set-Cookie',COOKIE+'='+cookie+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=1800'))
         start(status,headers);return [raw]
     if path in ('/','/public.js','/public.css','/embed.js','/merly-logo.png'):
@@ -30,7 +33,7 @@ def handle(env,start,forward):
     if path=='/api/public/session':
         if env.get('REQUEST_METHOD')!='GET':return result('405 Method Not Allowed',{'error':'method'})
         token=visitor(env) or secrets.token_urlsafe(32)
-        return result('200 OK',{'csrf':csrf(token)},token)
+        return result('200 OK',{'csrf':csrf(token),'ai_availability':state.availability()},token)
     if env.get('REQUEST_METHOD')!='POST':return result('405 Method Not Allowed',{'error':'method'})
     expected=os.getenv('MERLY_PUBLIC_ORIGIN','https://chat.merlyshoes.com')
     if env.get('HTTP_ORIGIN')!=expected:return result('403 Forbidden',{'error':'origin'})
@@ -47,7 +50,10 @@ def handle(env,start,forward):
         if 'consent' in data and data['consent'] is not True:raise ValueError()
         if not isinstance(data['message'],str) or not 1<=len(data['message'].strip())<=1000:raise ValueError()
     except (ValueError,TypeError,KeyError):return result('400 Bad Request',{'error':'invalid_message'})
-    if not allow_turn(token):return result('429 Too Many Requests',{'error':'busy'})
+    if not allow_turn(token):return result('429 Too Many Requests',{'error':'visitor_rate_limit','retry_after':60})
+    try:rate=state.resource('PUBLIC')
+    except sqlite3.Error:return result('503 Service Unavailable',{'error':'unavailable','retry_automatically':False})
+    if not rate['available']:return result('429 Too Many Requests',{'error':'public_rate_limit','retry_after':rate['retry_after']})
     raw=json.dumps({'message':data['message']}).encode()
     internal=dict(env,PATH_INFO='/api/chat',HTTP_AUTHORIZATION='Bearer '+os.environ['PILOT_ACCESS_KEY'],HTTP_COOKIE='merly_hermes_pilot='+token,CONTENT_LENGTH=str(len(raw)))
     internal['wsgi.input']=io.BytesIO(raw)
@@ -55,9 +61,14 @@ def handle(env,start,forward):
     def capture(status,headers):captured.update(status=status,headers=headers)
     body=b''.join(forward(internal,capture))
     if not captured['status'].startswith('200'):
-        try:trace=json.loads(body).get('diagnostic_id')
-        except Exception:trace=None
-        error={'error':'busy' if captured['status'].startswith('429') else 'unavailable'}
+        try:details=json.loads(body)
+        except Exception:details={}
+        trace=details.get('diagnostic_id')
+        allowed={'turn_in_progress','daily_budget_limit','ai_minute_limit','stock_rate_limit','ai_capacity','stock_capacity'}
+        code=details.get('error')
+        error={'error':code if code in allowed else 'request_limited' if captured['status'].startswith('429') else 'unavailable','retry_automatically':False}
+        retry=details.get('retry_after')
+        if type(retry) is int and 1<=retry<=86400:error['retry_after']=retry
         if isinstance(trace,str) and re.fullmatch(r'[0-9a-f]{16}',trace):error['diagnostic_id']=trace
         return result(captured['status'],error)
     headers=[(k,v.replace('merly_hermes_pilot=',COOKIE+'=',1) if k.lower()=='set-cookie' else v) for k,v in captured['headers']]
@@ -72,7 +83,7 @@ def allow_turn(token):
     with _LOCK:
         bucket=_RATE.setdefault(key,deque());_RATE.move_to_end(key)
         while bucket and now-bucket[0]>=60:bucket.popleft()
-        if len(bucket)>=4:return False
+        if len(bucket)>=limit('VISITOR_PER_MINUTE'):return False
         bucket.append(now)
         while len(_RATE)>256:_RATE.popitem(last=False)
         return True
