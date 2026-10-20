@@ -36,3 +36,7 @@
 
 !explicit_stock.py
 !stock_scope_memory.py
+
+!public_chat.py
+!public-web/
+!public-web/**
