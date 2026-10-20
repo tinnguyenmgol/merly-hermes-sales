@@ -16,5 +16,14 @@
       "reason": "GET-only documented product variant list/count/single routes",
       "reference": "https://docs.haravan.com/docs/omni-apis/product-variants/"
     }
+  },
+  "local_additions": {
+    "knowledge-customer-faq.json": {
+      "sha256": "d6b2486fc5923792f9643cb0a84701c61de16e4c86e06c882a5038391cb72e46",
+      "source": "07_MERLY_FAQ.md",
+      "version": "1.1",
+      "updated_date": "2026-09-21",
+      "scope": "owner-approved customer excerpt; employee material excluded"
+    }
   }
 }

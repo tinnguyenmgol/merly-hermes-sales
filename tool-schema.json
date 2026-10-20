@@ -211,7 +211,7 @@
     "/tools/get_policy": {
       "post": {
         "operationId": "get_policy",
-        "summary": "Retrieve approved Merly policy. Unverified means ask staff, do not invent.",
+        "summary": "Read approved customer policies: shipping, exchange, warranty, sale returns, new-customer/Gold+ benefits, company bulk discounts, TikTok exchange and support. Benefits are references, not eligibility or stacking approval. Unverified/conflicting sources require staff confirmation; never invent terms.",
         "requestBody": {
           "required": true,
           "content": {
@@ -227,7 +227,14 @@
                       "size_exchange",
                       "warranty",
                       "store_hours",
-                      "store_address"
+                      "store_address",
+                      "sale_returns",
+                      "new_customer",
+                      "loyalty",
+                      "business_orders",
+                      "tiktok_exchange",
+                      "product_links",
+                      "customer_support"
                     ]
                   }
                 },

@@ -122,6 +122,32 @@ def ensure_sales_model(home):
         if isinstance(model,dict) and model.get('provider')=='openrouter':return ensure_openrouter_model(home)
     return ensure_gemini_model(home)
 
+def ensure_customer_policy_prompt(home):
+    """Update only FAQ block in dedicated SALES SOUL; preserve other instructions."""
+    begin='<!-- MERLY_CUSTOMER_FAQ_POLICY_BEGIN -->'
+    end='<!-- MERLY_CUSTOMER_FAQ_POLICY_END -->'
+    def span(text):
+        if text.count(begin)!=1 or text.count(end)!=1:raise RuntimeError('invalid_customer_policy_markers')
+        start=text.index(begin);stop=text.index(end)
+        if stop<start:raise RuntimeError('invalid_customer_policy_markers')
+        return start,stop+len(end)
+    source=(ROOT/'SYSTEM-PROMPT.md').read_text();start,stop=span(source);block=source[start:stop]
+    path=Path(home)/'SOUL.md'
+    if path.is_symlink():raise RuntimeError('sales_soul_symlink_not_supported')
+    before=path.read_bytes();text=before.decode()
+    if begin in text or end in text:
+        start,stop=span(text);after=(text[:start]+block+text[stop:]).encode()
+    else:after=before+b'\n\n'+block.encode()+b'\n'
+    if before==after:return False
+    fd,name=tempfile.mkstemp(prefix='.merly-faq-',dir=path.parent)
+    try:
+        with os.fdopen(fd,'wb') as stream:stream.write(after);stream.flush();os.fsync(stream.fileno())
+        if path.read_bytes()!=before:raise RuntimeError('sales_soul_changed_during_migration')
+        os.replace(name,path)
+    finally:Path(name).unlink(missing_ok=True)
+    if path.read_bytes()!=after:raise RuntimeError('sales_soul_readback_failed')
+    return True
+
 def main():
     role=os.getenv('PILOT_ROLE','hermes')
     if role=='gateway':
@@ -136,6 +162,7 @@ def main():
     home.mkdir(parents=True,exist_ok=True)
     if not (home/'config.yaml').exists():shutil.copy2(ROOT/'hermes-config.template.json',home/'config.yaml')
     if not (home/'SOUL.md').exists():shutil.copy2(ROOT/'SYSTEM-PROMPT.md',home/'SOUL.md')
+    ensure_customer_policy_prompt(home)
     ensure_merly_child_env(home)
     ensure_sales_model(home)
     ensure_sales_auxiliary(home)
