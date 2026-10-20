@@ -116,6 +116,11 @@ with tempfile.TemporaryDirectory(prefix='pilot-browser-') as temp:
             expect(page2.locator('#status')).to_contain_text('không gọi AI')
             expect(page2.locator('.stock-option')).to_have_count(40)
             assert len(probe_calls)==1 and len(failure_calls)==1
+            send(page2,'mẫu 1514 38 còn màu gì',4)
+            expect(page2.locator('#status')).to_contain_text('không chờ AI')
+            expect(page2.locator('.stock-option')).to_have_count(60)
+            assert len(probe_calls)==2 and len(failure_calls)==1
+
             page2.close();context.close()
             os.environ['HERMES_MODEL_COST_APPROVED']='0'
             blocked=browser.new_page();login(blocked)
@@ -135,6 +140,6 @@ with tempfile.TemporaryDirectory(prefix='pilot-browser-') as temp:
             unsafe.close()
             assert errors==[],errors
             browser.close()
-        print('PASS_REAL_CHROMIUM mobile_layout=true login_401_then_200=true consent_gate=true two_contexts_isolated=true context_continuity=true xss_literal=true secret_not_persisted=true reset_and_logout=true no_auto_retry=true approval_gate=true insecure_http_blocked=true synthetic_model_only=true failed_model_tool_direct_recovery_UI=true readonly_probe_UI_without_model=true v2_reader_native_client_gateway_UI=true all20_stock_cards=true Kem_and_ChiBong_visible=true partial_scope_warning=true live_Gemini_calls=0')
+        print('PASS_REAL_CHROMIUM mobile_layout=true login_401_then_200=true consent_gate=true two_contexts_isolated=true context_continuity=true xss_literal=true secret_not_persisted=true reset_and_logout=true no_auto_retry=true approval_gate=true insecure_http_blocked=true synthetic_model_only=true exact_screenshot_query_skips_failing_model=true failed_model_tool_direct_recovery_UI=true readonly_probe_UI_without_model=true v2_reader_native_client_gateway_UI=true all20_stock_cards=true Kem_and_ChiBong_visible=true partial_scope_warning=true live_Gemini_calls=0')
     finally:
         server.shutdown();server.server_close()

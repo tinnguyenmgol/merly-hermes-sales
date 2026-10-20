@@ -59,6 +59,8 @@ def chat(message,user,previous_response_id=''):
     stock_request_id=secrets.token_hex(16)
     payload={'input':message,'instructions':Path(__file__).with_name('SYSTEM-PROMPT.md').read_text(),'stream':False,'store':True}
 
+    import stock_scope_memory
+    payload['instructions']+=stock_scope_memory.instructions(user)
     model=os.getenv('HERMES_SALES_MODEL_ALIAS','')
     if model:payload['model']=model
     if previous_response_id:payload['previous_response_id']=previous_response_id
@@ -76,6 +78,7 @@ def chat(message,user,previous_response_id=''):
     if not text.strip() or len(text)>12000:raise HermesError('invalid_answer')
     from stock_report import extract,summary
     report,stock_requested=extract(data.get('output',[]),stock_request_id,turn_started=turn_started)
+    stock_scope_memory.after_model_turn(user,data.get('output',[]))
     if stock_requested:
         from direct_stock import recover
         report=recover(report,data.get('output',[]),probe_stock,turn_started)

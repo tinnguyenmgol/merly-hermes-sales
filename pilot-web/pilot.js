@@ -130,7 +130,7 @@
     try {
       const data = await api('/api/chat', 'POST', {message});
       if (typeof data.reply !== 'string' || !data.reply.trim()) throw new Error('Server không trả về nội dung hợp lệ.');
-      turn('assistant', data.reply); stockTable(data.stock_options); status('Đã nhận phản hồi từ hệ thống.');
+      turn('assistant', data.reply); stockTable(data.stock_options); status(data.model_called === false ? 'Đã đọc Haravan trực tiếp, không chờ AI.' : 'Đã nhận phản hồi từ hệ thống.');
     } catch (error) { status(error.message); }
     finally { busy = false; controls(); }
   });
