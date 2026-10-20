@@ -10,11 +10,11 @@ with tempfile.TemporaryDirectory(prefix='pilot-browser-') as temp:
     os.environ.update({'PILOT_ACCESS_KEY':'P'*40,'PILOT_SESSION_SECRET':'S'*40,'HERMES_PILOT_STATE_DB':temp+'/state.db','HERMES_SALES_API_BASE':'https://offline.invalid/v1','HERMES_SALES_API_KEY':'T'*40,'HERMES_SALES_ISOLATION_APPROVED':'1','HERMES_CUSTOMER_DATA_APPROVED':'1','HERMES_MODEL_COST_APPROVED':'1'})
     sys.path.insert(0,str(Path(__file__).resolve().parent/'tests'))
     import merly_tools as stock_tools,stock_report
-    from test_stock_options import product,TOKEN
+    from test_stock_options import product,TOKEN,api_response
     synthetic_product=product()
     stock_tools.catalog.snapshot=lambda:[copy.deepcopy(synthetic_product)]
     stock_tools.catalog.status=lambda:{'ready':True,'age_seconds':1}
-    stock_tools.h.get=lambda *a:{'product':copy.deepcopy(synthetic_product)}
+    stock_tools.h.get=lambda resource,params:api_response(synthetic_product,resource,params)
     stock_tools.h.inventory=lambda ids,locs:[{'variant_id':int(vid),'loc_id':loc,'qty_available':1 if n==0 else 0} for vid in ids.split(',') for n,loc in enumerate(stock_tools.LOCATIONS)]
     stock_args={'model_code':'1514','size':38,'check_stock':True,'stock_request_id':TOKEN}
     raw=stock_tools.dispatch('search_products',stock_args)['stock_report']

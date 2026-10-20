@@ -5,6 +5,7 @@ from datetime import datetime,timezone
 from urllib.parse import urlsplit
 sys.path.insert(0,str(Path(__file__).parent/'vendor'))
 import catalog,haravan_client as h,promotions
+import haravan_variants
 ROOT=Path(__file__).parent
 LOCATIONS={80371:'876 Trường Sa',80441:'561 Lũy Bán Bích',977854:'Tổng Kho'}
 class Invalid(ValueError):pass
@@ -35,12 +36,11 @@ def enrichment():
     return data.get('products',{}) if data.get('approved') is True else {}
 
 def variant_color(product,variant):
-    values=[]
-    for option in product.get('options',[]):
-        if isinstance(option,dict) and catalog.norm(option.get('name','')) in ('mau','mau sac','color','colour'):
-            value=variant.get('option'+str(option.get('position')))
-            if isinstance(value,str) and value.strip():values.append(value)
-    return ' / '.join(values) if values else None
+    return haravan_variants.option_value(product,variant,haravan_variants.COLOR_NAMES,catalog.norm)
+
+def variant_size(product,variant):
+    return haravan_variants.size(product,variant,catalog.norm)
+
 
 def matches_model(product,code):
     return bool(re.search(r'(?<!\w)'+re.escape(catalog.norm(code))+r'(?!\w)',catalog.norm(product.get('title',''))) or any(catalog.norm(v.get('sku',''))==catalog.norm(code) for v in product['variants']))
@@ -77,7 +77,7 @@ def search_products(data):
         if failed:continue
         variants=[]
         for v in p['variants']:
-            size=catalog.size(v);color=variant_color(p,v)
+            size=variant_size(p,v);color=variant_color(p,v)
             if 'size' in data and str(data['size'])!=size:continue
             if 'color' in data and (color is None or catalog.norm(data['color']) not in catalog.norm(color)):continue
             variants.append({'variant_id':v['id'],'size':size,'color':color})
@@ -105,7 +105,7 @@ def quote_variant(data):
         price=promotions.number(v.get('price'))
         price=int(price) if price==price.to_integral_value() else None
     except ValueError:price=None
-    return {'status':'ok' if complete else 'partial_inventory','product_id':p['id'],'variant_id':v['id'],'title':p.get('title',''),'size':catalog.size(v),'color':variant_color(p,v),'price_vnd':price,'quantity':quantity,'subtotal_vnd':price*quantity if price is not None else None,'available':available,'known_available':total,'inventory_complete':complete,'locations':[{'name':name,'available':counts.get(loc)} for loc,name in LOCATIONS.items()],'checked_at':datetime.now(timezone.utc).isoformat(),'product_url':product_url(p),'image_url':image(p),'reserved':False,'discounts_applied':False}
+    return {'status':'ok' if complete else 'partial_inventory','product_id':p['id'],'variant_id':v['id'],'title':p.get('title',''),'size':variant_size(p,v),'color':variant_color(p,v),'price_vnd':price,'quantity':quantity,'subtotal_vnd':price*quantity if price is not None else None,'available':available,'known_available':total,'inventory_complete':complete,'locations':[{'name':name,'available':counts.get(loc)} for loc,name in LOCATIONS.items()],'checked_at':datetime.now(timezone.utc).isoformat(),'product_url':product_url(p),'image_url':image(p),'reserved':False,'discounts_applied':False}
 
 def size_guide(data):
     validate(data,{'size':(int,35,43),'length_cm':(float,15,35),'girth_cm':(float,10,40)})

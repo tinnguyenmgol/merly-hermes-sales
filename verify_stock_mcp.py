@@ -12,12 +12,12 @@ async def main():
     runner="""import sys,runpy,copy
 sys.path[:0]=[sys.argv[1],sys.argv[1]+'/tests']
 import merly_tools as t
-from test_stock_options import product
+from test_stock_options import product,api_response
 p=product()
 t.catalog.start=lambda:None
 t.catalog.snapshot=lambda:[copy.deepcopy(p)]
 t.catalog.status=lambda:{'ready':True,'age_seconds':1}
-t.h.get=lambda *a:{'product':copy.deepcopy(p)}
+t.h.get=lambda resource,params:api_response(p,resource,params)
 t.h.inventory=lambda ids,locs:[{'variant_id':int(vid),'loc_id':loc,'qty_available':1 if n==0 else 0} for vid in ids.split(',') for n,loc in enumerate(t.LOCATIONS)]
 runpy.run_path(sys.argv[1]+'/mcp_server.py',run_name='__main__')
 """

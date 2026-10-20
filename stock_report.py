@@ -43,7 +43,7 @@ def validate(report,request_id,args):
         seen.add(row['variant_id'])
         if row.get('size')!=str(report['size']):raise InvalidReport('wrong_size')
         color=row.get('color');price=row.get('price_vnd');known=row.get('known_available');complete=row.get('inventory_complete');available=row.get('available')
-        if color is not None and (not isinstance(color,str) or len(color)>128):raise InvalidReport('invalid_color')
+        if color is not None and (not isinstance(color,str) or len(color)>255):raise InvalidReport('invalid_color')
         if price is not None and (type(price) is not int or not 0<=price<=9007199254740991):raise InvalidReport('invalid_price')
         if type(known) is not int or not 0<=known<=9007199254740991 or type(complete) is not bool or (available is not None and type(available) is not bool):raise InvalidReport('invalid_inventory')
         locations=row.get('locations')

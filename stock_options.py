@@ -19,10 +19,14 @@ def lookup(data,tools):
         try:
             product=tools.h.get('products/'+str(candidate['id']),{}).get('product')
             if not isinstance(product,dict) or product.get('id')!=candidate['id'] or not tools.catalog.eligible(product) or not tools.matches_model(product,code):raise tools.h.HaravanError('product_identity_changed')
+            variants=tools.haravan_variants.all_variants(tools.h,product['id'],deadline)
             selected=[];local=set()
-            for variant in product['variants']:
-                if tools.catalog.size(variant)!=str(size):continue
+            for variant in variants:
+                variant_size=tools.variant_size(product,variant)
+                if variant_size is None:raise tools.h.HaravanError('variant_size_metadata_unverified')
+                if variant_size!=str(size):continue
                 color=tools.variant_color(product,variant)
+                if data.get('color') and color is None:raise tools.h.HaravanError('variant_color_metadata_unverified')
                 if data.get('color') and (color is None or tools.catalog.norm(data['color']) not in tools.catalog.norm(color)):continue
                 vid=variant.get('id')
                 if type(vid) is not int or not 1<=vid<10**16 or vid in seen or vid in local:raise tools.h.HaravanError('invalid_variant_identity')
