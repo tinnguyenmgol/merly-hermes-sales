@@ -29,25 +29,25 @@ def test_public_stock_without_pilot_key(public,monkeypatch):
     scopes=[]
     def probe(scope):scopes.append(scope);return {'reply':'synthetic source','stock_options':{},'model_called':False}
     monkeypatch.setattr(c,'probe_stock',probe)
-    cookie,token=session();r=req('/api/public/chat','POST',cookie,token,data={'message':'mẫu 1514 38 còn màu gì','consent':True})
+    cookie,token=session();r=req('/api/public/chat','POST',cookie,token,data={'message':'mẫu 1514 38 còn màu gì'})
     assert r['status'].startswith('200') and scopes==[{'model_code':'1514','size':38}]
     assert 'merly_public_session=' in r['headers']['Set-Cookie']
     assert ('P'*40).encode() not in r['raw']
 
 @pytest.mark.parametrize('origin',['https://evil.invalid','https://chat.merlyshoes.com.evil.invalid',''])
 def test_cross_origin_rejected_before_calls(public,origin):
-    cookie,token=session();r=req('/api/public/chat','POST',cookie,token,origin,{'message':'hello','consent':True})
+    cookie,token=session();r=req('/api/public/chat','POST',cookie,token,origin,{'message':'hello'})
     assert r['status'].startswith('403')
 
-@pytest.mark.parametrize('payload',[{'message':'hello'},{'message':'hello','consent':False},{'message':'hello','consent':True,'previous_response_id':'resp_other'}])
-def test_consent_and_scope_override_guard(public,payload):
+@pytest.mark.parametrize('payload',[{}, {'message':' '}, {'message':'x'*1001}, {'message':'hello','consent':False}, {'message':'hello','previous_response_id':'resp_other'}])
+def test_message_and_scope_override_guard(public,payload):
     cookie,token=session();r=req('/api/public/chat','POST',cookie,token,data=payload)
     assert r['status'].startswith('400')
 
 def test_csrf_bound_to_current_visitor(public):
     cookie1,csrf1=session();cookie2,csrf2=session();assert cookie1!=cookie2
-    assert req('/api/public/chat','POST',cookie2,csrf1,data={'message':'hello','consent':True})['status'].startswith('403')
-    assert req('/api/public/chat','POST',cookie1,'',data={'message':'hello','consent':True})['status'].startswith('403')
+    assert req('/api/public/chat','POST',cookie2,csrf1,data={'message':'hello'})['status'].startswith('403')
+    assert req('/api/public/chat','POST',cookie1,'',data={'message':'hello'})['status'].startswith('403')
 
 def test_private_tools_stay_private(public):
     assert req('/api/stock-check','POST',data={})['status'].startswith('401')
@@ -60,14 +60,14 @@ def test_visitor_rate_and_private_error_sanitization(public,monkeypatch):
     def fail(*a):raise c.HermesError('private-error-fixture')
     monkeypatch.setattr(c,'chat',fail);cookie,token=session()
     for i in range(4):
-        r=req('/api/public/chat','POST',cookie,token,data={'message':'hello','consent':True})
+        r=req('/api/public/chat','POST',cookie,token,data={'message':'hello'})
         assert r['status'].startswith('503') and b'private-error-fixture' not in r['raw']
-    r=req('/api/public/chat','POST',cookie,token,data={'message':'hello','consent':True})
+    r=req('/api/public/chat','POST',cookie,token,data={'message':'hello'})
     assert r['status'].startswith('429')
 
 def test_assets_cannot_accept_public_chat_posts(public):
     cookie,token=session()
-    assert req('/public.js','POST',cookie,token,data={'message':'hello','consent':True})['status'].startswith('405')
+    assert req('/public.js','POST',cookie,token,data={'message':'hello'})['status'].startswith('405')
 
 def test_host_cookie_is_secure_http_only(public):
     r=req('/api/public/session');cookie=r['headers']['Set-Cookie']
@@ -76,7 +76,22 @@ def test_host_cookie_is_secure_http_only(public):
 
 def test_legacy_embed_script_public_without_key(public):
     r=req('/embed.js')
-    assert r['status'].startswith('200') and r['headers']['Content-Type']=='application/javascript'
+    assert r['status'].startswith('200') and r['headers']['Content-Type']=='application/javascript; charset=utf-8'
     assert b'merly-chat-widget' in r['raw'] and ('P'*40).encode() not in r['raw']
     assert b'https://chat.merlyshoes.com/' in r['raw']
     assert b'innerHTML' not in r['raw']
+
+
+def test_notice_instead_of_checkbox(public):
+    html=req('/')['raw'].decode()
+    assert 'type="checkbox"' not in html and 'Tôi đồng ý' not in html
+    assert 'có thể lưu lịch sử' in html and 'dữ liệu nhạy cảm' in html
+    assert html.index('id="privacy-notice"')>html.index('id="send"')
+    js=req('/public.js')['raw'].decode()
+    assert 'JSON.stringify({message})' in js and 'consent:true' not in js
+
+def test_old_already_checked_tabs_still_work(public,monkeypatch):
+    monkeypatch.setattr(c,'probe_stock',lambda scope:{'reply':'fixture','model_called':False})
+    cookie,token=session()
+    r=req('/api/public/chat','POST',cookie,token,data={'message':'mẫu 1514 38 còn màu gì','consent':True})
+    assert r['status'].startswith('200')
