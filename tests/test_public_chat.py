@@ -95,3 +95,13 @@ def test_old_already_checked_tabs_still_work(public,monkeypatch):
     cookie,token=session()
     r=req('/api/public/chat','POST',cookie,token,data={'message':'mẫu 1514 38 còn màu gì','consent':True})
     assert r['status'].startswith('200')
+
+def test_official_logo_is_public_png_and_csp_allows_only_own_images(public):
+    r=req('/merly-logo.png')
+    assert r['status'].startswith('200') and r['headers']['Content-Type']=='image/png'
+    assert r['raw'].startswith(b'\x89PNG\r\n\x1a\n')
+    html=req('/')
+    assert "img-src 'self';" in html['headers']['Content-Security-Policy']
+    assert b'/merly-logo.png' in html['raw']
+    js=req('/embed.js')['raw']
+    assert b'/merly-logo.png' in js and b'.tip{' not in js
