@@ -27,6 +27,12 @@ runpy.run_path(sys.argv[1]+'/mcp_server.py',run_name='__main__')
         async with ClientSession(read,write,read_timeout_seconds=20) as session:
             await session.initialize();tools=await session.list_tools();assert len(tools.tools)==5
             args={'model_code':'1514','size':38,'check_stock':True,'stock_request_id':TOKEN}
+            wrong=dict(args);wrong['size']='38'
+            rejected=await session.call_tool('search_products',wrong)
+            assert rejected.is_error and rejected.structured_content['reason']=='invalid_size'
+            from tools.mcp_tool_handlers import _render_call_tool_result
+            rejection_for_model=json.dumps(_render_call_tool_result(rejected,'merly'))
+            assert 'invalid_size' in rejection_for_model and 'input_schema' in rejection_for_model
             result=await session.call_tool('search_products',args)
             assert not result.is_error
             from tools.mcp_tool_handlers import _render_call_tool_result
@@ -35,5 +41,5 @@ runpy.run_path(sys.argv[1]+'/mcp_server.py',run_name='__main__')
             report,requested=extract(items,TOKEN)
             assert requested and report['complete'] and len(report['variants'])==20
             assert {'Kem','Chì Bóng'}<={v['color'] for v in report['variants']}
-            print('PASS_REAL_MCP_HERMES_SERIALIZATION all20=true Kem_and_ChiBong_present=true tools_remain5=true synthetic_source_only=true live_Haravan_calls=0 live_model_calls=0')
+            print('PASS_REAL_MCP_HERMES_SERIALIZATION actionable_error_reaches_model=true rejected_then_corrected=true all20=true Kem_and_ChiBong_present=true tools_remain5=true synthetic_source_only=true live_Haravan_calls=0 live_model_calls=0')
 if __name__=='__main__':asyncio.run(main())
