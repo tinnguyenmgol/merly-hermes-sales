@@ -18,7 +18,7 @@ def test_key_only_switches_existing_gemini_and_is_idempotent(config,monkeypatch)
     p=config/'config.yaml';before=Y.safe_load(p.read_text());monkeypatch.setenv('OPENROUTER_API_KEY',KEY)
     monkeypatch.setenv('MERLY_GEMINI_MODEL','gemini-stale-setting');monkeypatch.setenv('GEMINI_API_KEY','synthetic-stale-google-key')
     assert run_sales.ensure_sales_model(config)
-    c=Y.safe_load(p.read_text());assert c.pop('model')=={'provider':'openrouter','default':'openai/gpt-4.1-mini','base_url':'https://openrouter.ai/api/v1','api_mode':'chat_completions'}
+    c=Y.safe_load(p.read_text());assert c.pop('model')=={'provider':'openrouter','default':'openai/gpt-oss-20b','base_url':'https://openrouter.ai/api/v1','api_mode':'chat_completions'}
     before.pop('model');assert c==before
     assert p.stat().st_mode&0o777==0o600
     backups=list(config.glob('config.before-openrouter-*'));assert len(backups)==1
@@ -71,7 +71,7 @@ def test_real_compose_coolify_envfile_isolation(config):
     for k in [*values,'MERLY_GATEWAY_PROVIDER_EMPTY','MERLY_OPENROUTER_MODEL']:env.pop(k,None)
     out=subprocess.run([binary,'--project-name','openrouter-offline','--env-file',str(envfile),'-f',str(p),'config','--format','json'],cwd=config,env=env,text=True,capture_output=True,check=True,timeout=20)
     services=json.loads(out.stdout)['services'];backend=services['hermes-sales']['environment'];gateway=services['sales-gateway']['environment']
-    assert backend['OPENROUTER_API_KEY']==KEY and backend['MERLY_OPENROUTER_MODEL']=='openai/gpt-4.1-mini'
+    assert backend['OPENROUTER_API_KEY']==KEY and backend['MERLY_OPENROUTER_MODEL']=='openai/gpt-oss-20b'
     assert all(gateway[k]=='' for k in ('OPENROUTER_API_KEY','GOOGLE_API_KEY','GEMINI_API_KEY'))
 
 def test_explicit_gemini_choice_not_overridden(config,monkeypatch):

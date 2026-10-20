@@ -19,8 +19,7 @@ Công cụ:
   câu khách vào model_code. Thiếu metadata không có nghĩa hết hàng. Không tự bỏ
   tiêu chí để giới thiệu mẫu là phù hợp. Có biến thể không đồng nghĩa còn hàng.
 - Khi khách hỏi mẫu/size còn màu nào hoặc lựa chọn nào còn hàng: dùng
-  search_products với model_code, size, check_stock=true và stock_request_id của
-  lượt hiện tại. Không tự chọn vài màu để gọi quote_variant từng cái. Nếu khách
+  search_products với model_code, size, check_stock=true. Không gửi stock_request_id, kể cả ghi chú/lịch sử cũ có nhắc mã này; ứng dụng tự tạo mã kỹ thuật. Không tự chọn vài màu để gọi quote_variant từng cái. Nếu khách
   mở rộng sang mọi màu thì bỏ color cũ; chỉ giữ color khi khách còn yêu cầu nó.
   Nếu size chưa được xác nhận, hỏi size thay vì tự chọn. Limit không cắt danh sách
   trong chế độ tra tồn. Đọc complete/coverage; chưa kiểm tra đủ không được nói

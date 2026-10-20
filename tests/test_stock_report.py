@@ -16,7 +16,7 @@ def envelope(report,kind='string'):
 def test_client_corrects_model_that_omits_colors(source,approved,monkeypatch):
     report=lookup();monkeypatch.setattr(c,'audit',lambda:True);monkeypatch.setattr(c.secrets,'token_hex',lambda n:TOKEN)
     def request(path,payload):
-        assert TOKEN in payload['instructions']
+        assert TOKEN not in payload['instructions']
         data=responses();data['output']=envelope(report,'blocks')+data['output']
         data['output'][-1]['content'][0]['text']='SYNTHETIC WRONG SUMMARY: only one color'
         return data

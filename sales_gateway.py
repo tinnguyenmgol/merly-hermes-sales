@@ -37,14 +37,19 @@ def application(env,start):
         body=json.dumps({'status':'logged_out'}).encode()
         start('200 OK',[('Content-Type','application/json'),('Content-Length',str(len(body))),('Cache-Control','no-store'),('Set-Cookie','merly_hermes_pilot=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0'),*SECURITY])
         return [body]
-    if env.get('PATH_INFO')!='/api/chat':return result('404 Not Found',{'error':'not_found'})
+    if env.get('PATH_INFO') not in ('/api/chat','/api/stock-check'):return result('404 Not Found',{'error':'not_found'})
     if env.get('REQUEST_METHOD')!='POST':return result('405 Method Not Allowed',{'error':'post_required'})
     if env.get('CONTENT_TYPE','').split(';')[0]!='application/json':return result('415 Unsupported Media Type',{'error':'json_required'})
     try:
         n=int(env.get('CONTENT_LENGTH','0'))
         if not 0<n<=8192:return result('413 Content Too Large',{'error':'body_limit'})
         data=json.loads(env['wsgi.input'].read(n))
-        if not isinstance(data,dict) or set(data)!={'message'} or not isinstance(data['message'],str) or not 0<len(data['message'].strip())<=1000:raise ValueError()
+        probe=env.get('PATH_INFO')=='/api/stock-check'
+        if probe:
+            if not isinstance(data,dict) or set(data)-{'model_code','size','color'} or not {'model_code','size'}<=set(data):raise ValueError()
+            if not isinstance(data['model_code'],str) or not 1<=len(data['model_code'])<=32 or type(data['size']) is not int or not 35<=data['size']<=43:raise ValueError()
+            if 'color' in data and (not isinstance(data['color'],str) or not 1<=len(data['color'])<=40):raise ValueError()
+        elif not isinstance(data,dict) or set(data)!={'message'} or not isinstance(data['message'],str) or not 0<len(data['message'].strip())<=1000:raise ValueError()
     except (ValueError,TypeError):return result('400 Bad Request',{'error':'invalid_message'})
     if not hermes_client.configured():return result('503 Service Unavailable',{'error':'hermes_not_approved_or_configured'})
     turn_started=time.monotonic()
@@ -55,6 +60,7 @@ def application(env,start):
         try:
             cid=state.reserve(sid)
             if cid is None:return result('429 Too Many Requests',{'error':'pilot_budget_limit'})
+            if probe:return result('200 OK',hermes_client.probe_stock(data),token)
             reply=hermes_client.chat(data['message'],'merly-sales:web:'+sid,cid)
             state.save(sid,reply['conversation_id'])
             body={'reply':reply['reply'],'engine':'hermes'}
@@ -63,7 +69,7 @@ def application(env,start):
         finally:lock.release()
     except hermes_client.HermesError as exc:
         code=str(exc)
-        allowed={'hermes_timeout','hermes_unavailable','turn_not_completed','response_limit','invalid_response','invalid_response_id','missing_final_message','invalid_answer','sales_not_approved_or_configured','responses_not_supported','tool_discovery_unavailable','invalid_tool_inventory','unsafe_enabled_toolset','sales_runtime_attestation_required','invalid_sales_endpoint','https_required'}
+        allowed={'stock_probe_unavailable','hermes_timeout','hermes_unavailable','turn_not_completed','response_limit','invalid_response','invalid_response_id','missing_final_message','invalid_answer','sales_not_approved_or_configured','responses_not_supported','tool_discovery_unavailable','invalid_tool_inventory','unsafe_enabled_toolset','sales_runtime_attestation_required','invalid_sales_endpoint','https_required'}
         if code not in allowed and not re.fullmatch(r'hermes_http_[1-5][0-9]{2}',code):code='unclassified_hermes_error'
         status=getattr(exc,'response_status','not_available')
         if status not in ('failed','cancelled','in_progress','incomplete','queued','unrecognized'):status='not_available'

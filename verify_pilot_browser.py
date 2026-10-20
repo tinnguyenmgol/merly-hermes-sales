@@ -1,5 +1,5 @@
 """Real Chromium + actual WSGI gateway + explicitly synthetic model fixture."""
-import os,tempfile,threading,sys,copy
+import os,tempfile,threading,sys,copy,json,time
 from pathlib import Path
 from wsgiref.simple_server import make_server,WSGIRequestHandler
 from playwright.sync_api import sync_playwright,expect
@@ -10,24 +10,35 @@ with tempfile.TemporaryDirectory(prefix='pilot-browser-') as temp:
     os.environ.update({'PILOT_ACCESS_KEY':'P'*40,'PILOT_SESSION_SECRET':'S'*40,'HERMES_PILOT_STATE_DB':temp+'/state.db','HERMES_SALES_API_BASE':'https://offline.invalid/v1','HERMES_SALES_API_KEY':'T'*40,'HERMES_SALES_ISOLATION_APPROVED':'1','HERMES_CUSTOMER_DATA_APPROVED':'1','HERMES_MODEL_COST_APPROVED':'1'})
     sys.path.insert(0,str(Path(__file__).resolve().parent/'tests'))
     import merly_tools as stock_tools,stock_report
-    from test_stock_options import product,TOKEN
+    from test_stock_options import product,TOKEN,api_response
     synthetic_product=product()
     stock_tools.catalog.snapshot=lambda:[copy.deepcopy(synthetic_product)]
     stock_tools.catalog.status=lambda:{'ready':True,'age_seconds':1}
-    stock_tools.h.get=lambda *a:{'product':copy.deepcopy(synthetic_product)}
+    stock_tools.h.get=lambda resource,params:api_response(synthetic_product,resource,params)
     stock_tools.h.inventory=lambda ids,locs:[{'variant_id':int(vid),'loc_id':loc,'qty_available':1 if n==0 else 0} for vid in ids.split(',') for n,loc in enumerate(stock_tools.LOCATIONS)]
-    stock_args={'model_code':'1514','size':38,'check_stock':True,'stock_request_id':TOKEN}
-    raw=stock_tools.dispatch('search_products',stock_args)['stock_report']
-    full_stock=stock_report.validate(raw,TOKEN,stock_args)
-    partial_stock=copy.deepcopy(full_stock);partial_stock['complete']=False
-    partial_stock['coverage']['candidate_products']+=1;partial_stock['coverage']['unverified_products']+=1
+    from gateway.platforms.api_server_openai_routes import OpenAICompatRoutesMixin as NativeAPI
+    from tools.mcp_tool_handlers import _render_call_tool_result
+    import mcp.types as mt
+    original_chat=hermes_client.chat
+    def synthetic_responses(path,payload):
+        assert path=='/responses'
+        args={'model_code':'1514','size':38,'check_stock':True}
+        raw=stock_tools.dispatch('search_products',args)['stock_report']
+        assert raw['schema']=='merly-stock-options-v2'
+        if payload['input']=='SYNTHETIC PARTIAL STOCK':
+            raw['complete']=False;raw['coverage']['candidate_products']+=1;raw['coverage']['unverified_products']+=1
+        body={'stock_report':raw}
+        tool=mt.CallToolResult(content=[mt.TextContent(text=json.dumps(body))],structuredContent=body)
+        messages=[{'role':'assistant','tool_calls':[{'id':'browser_call','type':'function','function':{'name':'mcp__merly__search_products','arguments':json.dumps(args)}}]},{'role':'tool','tool_call_id':'browser_call','content':_render_call_tool_result(tool,'merly')}]
+        output=NativeAPI._extract_output_items({'messages':messages,'final_response':'synthetic model summary omitting options'})
+        return {'status':'completed','id':'resp_fixture_'+str(len(calls)),'output':output}
+    hermes_client.request=synthetic_responses
     calls=[]
     hermes_client.audit=lambda:True
     def synthetic(message,user,previous):
         calls.append((message,user,previous))
         if message in ('SYNTHETIC STOCK SWEEP','SYNTHETIC PARTIAL STOCK'):
-            report=full_stock if message=='SYNTHETIC STOCK SWEEP' else partial_stock
-            return {'reply':stock_report.summary(report),'stock_options':report,'conversation_id':'resp_fixture_'+str(len(calls))}
+            return original_chat(message,user,previous)
         return {'reply':'OFFLINE FIXTURE — NOT GEMINI <img src=x onerror=alert(1)>','conversation_id':'resp_fixture_'+str(len(calls))}
     hermes_client.chat=synthetic
     server=make_server('127.0.0.1',0,gateway.application,handler_class=Quiet)
@@ -82,6 +93,20 @@ with tempfile.TemporaryDirectory(prefix='pilot-browser-') as temp:
             page2.locator('#message').fill('Lượt lỗi giả lập');page2.locator('#send').click()
             expect(page2.locator('#status')).to_contain_text('Không tự gửi lại')
             page2.wait_for_timeout(1000);assert len(failure_calls)==1
+            # Separate temporary rate-budget DB for independent probe UI phase.
+            os.environ['HERMES_PILOT_STATE_DB']=temp+'/probe-only.db'
+            probe_calls=[]
+            def readonly_fixture(scope):
+                probe_calls.append(scope);started=time.time()
+                assert scope=={'model_code':'1514','size':38}
+                data=stock_tools.dispatch('search_products',{**scope,'check_stock':True})['stock_report']
+                report=stock_report.validate(data,None,scope,turn_started=started)
+                return {'reply':stock_report.summary(report),'stock_options':report,'model_called':False,'engine':'haravan-readonly'}
+            hermes_client.probe_stock=readonly_fixture
+            page2.locator('summary').click();page2.locator('#probe-model').fill('1514');page2.locator('#probe-size').select_option('38');page2.locator('#probe-check').click()
+            expect(page2.locator('#status')).to_contain_text('không gọi AI')
+            expect(page2.locator('.stock-option')).to_have_count(40)
+            assert len(probe_calls)==1 and len(failure_calls)==1
             page2.close();context.close()
             os.environ['HERMES_MODEL_COST_APPROVED']='0'
             blocked=browser.new_page();login(blocked)
@@ -101,6 +126,6 @@ with tempfile.TemporaryDirectory(prefix='pilot-browser-') as temp:
             unsafe.close()
             assert errors==[],errors
             browser.close()
-        print('PASS_REAL_CHROMIUM mobile_layout=true login_401_then_200=true consent_gate=true two_contexts_isolated=true context_continuity=true xss_literal=true secret_not_persisted=true reset_and_logout=true no_auto_retry=true approval_gate=true insecure_http_blocked=true synthetic_model_only=true all20_stock_cards=true Kem_and_ChiBong_visible=true partial_scope_warning=true live_Gemini_calls=0')
+        print('PASS_REAL_CHROMIUM mobile_layout=true login_401_then_200=true consent_gate=true two_contexts_isolated=true context_continuity=true xss_literal=true secret_not_persisted=true reset_and_logout=true no_auto_retry=true approval_gate=true insecure_http_blocked=true synthetic_model_only=true readonly_probe_UI_without_model=true v2_reader_native_client_gateway_UI=true all20_stock_cards=true Kem_and_ChiBong_visible=true partial_scope_warning=true live_Gemini_calls=0')
     finally:
         server.shutdown();server.server_close()

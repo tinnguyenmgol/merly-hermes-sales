@@ -9,15 +9,22 @@ def product(pid=100,count=20):
     variants=[]
     for i in range(count):
         color='Kem' if i==13 else 'Chì Bóng' if i==14 else 'Màu fixture '+str(i)
-        variants.append({'id':pid*1000+i+1,'sku':'fixture-'+str(i),'option1':color,'option2':'38','title':color+' / 38','price':'310000'})
+        variants.append({'id':pid*1000+i+1,'product_id':pid,'sku':'fixture-'+str(i),'option1':color,'option2':'38','title':color+' / 38','price':'310000'})
     return {'id':pid,'title':'Giày fixture 1514','handle':'fixture-source-handle','published_at':'fixture','options':[{'name':'Màu','position':1},{'name':'Size','position':2}],'variants':variants}
+
+def api_response(product,resource,params):
+    if resource.endswith('/variants/count'):return {'count':len(product['variants'])}
+    if resource.endswith('/variants'):
+        start=(params.get('page',1)-1)*params.get('limit',50)
+        return {'variants':copy.deepcopy(product['variants'][start:start+params.get('limit',50)])}
+    return {'product':copy.deepcopy(product)}
 
 @pytest.fixture
 def source(monkeypatch):
     state={'products':[product()],'calls':[]}
     monkeypatch.setattr(t.catalog,'snapshot',lambda:copy.deepcopy(state['products']))
     monkeypatch.setattr(t.catalog,'status',lambda:{'ready':True,'age_seconds':1})
-    monkeypatch.setattr(t.h,'get',lambda resource,params:{'product':copy.deepcopy(next(p for p in state['products'] if p['id']==int(resource.split('/')[1])))})
+    monkeypatch.setattr(t.h,'get',lambda resource,params:api_response(next(p for p in state['products'] if p['id']==int(resource.split('/')[1])),resource,params))
     def inventory(ids,locations):
         parsed=list(map(int,ids.split(',')));assert len(parsed)<=10;state['calls'].append(parsed)
         return [{'variant_id':vid,'loc_id':loc,'qty_available':1 if n==0 else 0} for vid in parsed for n,loc in enumerate(t.LOCATIONS)]
@@ -53,7 +60,7 @@ def test_true_zero_requires_all_locations(source,monkeypatch):
     report=lookup();assert report['complete'] and all(v['available'] is False for v in report['variants'])
 
 def test_large_scope_marks_omission(source):
-    source['products']=[product(count=105)];report=lookup()
+    source['products']=[product(100,60),product(101,45)];report=lookup()
     assert len(report['variants'])==100 and report['coverage']['omitted_variants']==5 and not report['complete']
 
 def test_stale_index_not_global_complete(source,monkeypatch):
@@ -73,14 +80,14 @@ def test_one_batch_failure_preserves_unknown(source,monkeypatch):
 
 def test_fresh_product_instead_of_truncated_snapshot(source,monkeypatch):
     fresh=copy.deepcopy(source['products'][0]);source['products'][0]['variants']=fresh['variants'][:12]
-    monkeypatch.setattr(t.h,'get',lambda *a:{'product':copy.deepcopy(fresh)})
+    monkeypatch.setattr(t.h,'get',lambda resource,params:api_response(fresh,resource,params))
     assert len(lookup()['variants'])==20
 
 def test_explicit_color_scope_named_not_all_colors(source):
     report=lookup(color='Chì Bóng');assert len(report['variants'])==1
     assert 'màu Chì Bóng' in stock_report.summary(report)
 
-@pytest.mark.parametrize('data',[{'check_stock':True,'model_code':'1514'}, {'check_stock':True,'model_code':'1514','size':38}, {'check_stock':True,'model_code':'1514','size':38,'stock_request_id':TOKEN,'heel_cm':5}])
+@pytest.mark.parametrize('data',[{'check_stock':True,'model_code':'1514'}, {'check_stock':True,'model_code':'1514','size':True}, {'check_stock':True,'model_code':'1514','size':38,'stock_request_id':TOKEN,'heel_cm':5}])
 def test_incomplete_or_unsupported_scope_rejected(source,data):
     with pytest.raises(t.Invalid):t.dispatch('search_products',data)
 
