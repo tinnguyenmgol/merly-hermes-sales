@@ -14,6 +14,11 @@ with tempfile.TemporaryDirectory(prefix='public-browser-') as tmp:
         rows=[{'color':color,'size':'38','price_vnd':310000,'available':True,'locations':[{'name':'Kho fixture','available':1}],'product_url':'https://merlyshoes.com/products/fixture-only'} for color in ('Trắng Kem','chì bạc')]
         return {'reply':'SYNTHETIC source <img src=x onerror=alert(1)>','stock_options':{'mode':'all_options','model_code':'1514','size':38,'complete':True,'variants':rows},'model_called':False}
     c.probe_stock=probe
+    searches=[]
+    def search(scope):
+        searches.append(scope)
+        return {'reply':'SYNTHETIC catalog; inventory not checked','products':[{'title':'Fixture <img src=x onerror=alert(1)>','product_url':'https://merlyshoes.com/products/fixture-only'}],'model_called':False}
+    c.search_catalog=search
     c.chat=lambda *a:(_ for _ in ()).throw(AssertionError('must not call model'))
     server=make_server('127.0.0.1',0,g.application,handler_class=Quiet)
     threading.Thread(target=server.serve_forever,daemon=True).start()
@@ -49,6 +54,12 @@ with tempfile.TemporaryDirectory(prefix='public-browser-') as tmp:
             assert page.locator('.turn img').count()==0 and '<img src=x' in page.locator('.turn').last.inner_text()
             assert page.evaluate('localStorage.length===0 && sessionStorage.length===0')
             assert calls==[{'model_code':'1514','size':38}]
+            page.locator('#message').fill('bảo hành bao lâu?');page.locator('#send').click()
+            expect(page.locator('.assistant').last).to_contain_text('365')
+            page.locator('#message').fill('cần mẫu 5cm size 41');page.locator('#send').click()
+            expect(page.locator('.stock strong').last).to_contain_text('Fixture <img')
+            assert page.locator('.stock img').count()==0
+            assert searches==[{'heel_cm':5.0,'size':41,'limit':4}]
             context.route('https://merlyshoes.com/**',lambda route:route.fulfill(status=200,body='<script src="https://chat.merlyshoes.com/embed.js" defer></script><script src="https://chat.merlyshoes.com/embed.js" defer></script>',content_type='text/html'))
             framed=context.new_page();framed.goto('https://merlyshoes.com/')
             expect(framed.locator('#merly-chat-widget')).to_have_count(1)
@@ -94,5 +105,5 @@ with tempfile.TemporaryDirectory(prefix='public-browser-') as tmp:
             mb.tap();expect(mb).to_have_attribute('aria-expanded','false')
             touch.close()
             browser.close()
-        print('PASS_PUBLIC_CHROMIUM no_login_key=true csrf_cookie=true source_query=true model_calls0=true xss_literal=true Haravan_main_iframe=true legacy_embed_tag=true singleton_lazy_widget=true official_merly_logo=true branded_104x64_mobile_desktop=true no_floating_tooltip=true no_consent_checkbox=true no_fabricated_consent_field=true synthetic_only=true')
+        print('PASS_PUBLIC_CHROMIUM no_login_key=true csrf_cookie=true source_query=true model_calls0=true xss_literal=true Haravan_main_iframe=true legacy_embed_tag=true singleton_lazy_widget=true official_merly_logo=true branded_104x64_mobile_desktop=true no_floating_tooltip=true no_consent_checkbox=true no_fabricated_consent_field=true fast_policy_catalog=true synthetic_only=true')
     finally:server.shutdown();server.server_close()

@@ -21,9 +21,25 @@
     }
     $('conversation').append(panel);
   }
+  function failure(d) {
+    const messages={daily_budget_limit:'Phần tư vấn AI đã đạt hạn mức hiện tại. Bạn vẫn có thể hỏi chính sách hoặc tra mẫu và tồn kho trực tiếp.',ai_minute_limit:'Phần tư vấn AI đang giới hạn lượt. Bạn vẫn có thể hỏi chính sách hoặc tra mẫu/size.',ai_capacity:'Các lượt tư vấn AI đang được xử lý. Bạn vẫn có thể tra mẫu hoặc hỏi chính sách.',turn_in_progress:'Câu hỏi trước vẫn đang xử lý. Vui lòng chờ, không gửi lại.',stock_capacity:'Đang có lượt tra cứu hàng. Vui lòng chờ một chút rồi thử lại.',stock_rate_limit:'Tra cứu hàng đang tạm giới hạn lượt. Vui lòng thử lại sau.',visitor_rate_limit:'Bạn gửi tin nhắn hơi nhanh. Vui lòng chờ trước khi gửi tiếp.',public_rate_limit:'Có nhiều lượt gửi cùng lúc. Vui lòng thử lại sau.'};
+    let text=messages[d.error]||'Chưa xử lý được. Vui lòng không gửi lại liên tục.';
+    if(Number.isInteger(d.retry_after)&&d.retry_after>1&&d.retry_after<=60)text+=' Có thể thử sau khoảng '+d.retry_after+' giây.';
+    return text;
+  }
+  function products(rows) {
+    if(!Array.isArray(rows))return;
+    for(const row of rows.slice(0,4)){
+      const card=document.createElement('section');card.className='stock';
+      const title=document.createElement('strong');title.textContent=row.title||'Mẫu cần xác minh';card.append(title);
+      const note=document.createElement('p');note.textContent='Thuộc tính phù hợp trong danh mục; chưa kiểm tra tồn.';card.append(note);
+      if(typeof row.product_url==='string'&&/^https:\/\/merlyshoes\.com\/products\/[A-Za-z0-9_-]+$/.test(row.product_url)){const a=document.createElement('a');a.textContent='Xem sản phẩm';a.href=row.product_url;a.target='_blank';a.rel='noopener noreferrer';card.append(a);}
+      $('conversation').append(card);
+    }
+  }
   async function session() {
     if (!window.isSecureContext) { $('status').textContent='Cần kết nối HTTPS để sử dụng chat.';return; }
-    try { const r=await fetch('/api/public/session',{credentials:'same-origin',cache:'no-store'});const d=await r.json();if(!r.ok||typeof d.csrf!=='string')throw new Error();csrf=d.csrf;$('status').textContent='Merly sẵn sàng tư vấn.'; }
+    try { const r=await fetch('/api/public/session',{credentials:'same-origin',cache:'no-store'});const d=await r.json();if(!r.ok||typeof d.csrf!=='string')throw new Error();csrf=d.csrf;$('status').textContent=d.ai_availability?.available===false?'Merly sẵn sàng tra cứu nhanh; phần tư vấn AI đang tạm giới hạn lượt.':'Merly sẵn sàng tư vấn.'; }
     catch { $('status').textContent='Chưa kết nối được. Vui lòng tải lại trang sau.'; }
     controls();
   }
@@ -33,7 +49,7 @@
     const message=$('message').value;if(!message.trim()||message.length>1000)return;
     turn('user',message);$('message').value='';busy=true;controls();$('status').textContent='Đang kiểm tra, vui lòng không gửi lại.';
     const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),70000);
-    try {const r=await fetch('/api/public/chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Merly-CSRF':csrf},body:JSON.stringify({message}),signal:abort.signal});const d=await r.json();if(!r.ok)throw new Error(d.error==='busy'?'Hệ thống đang bận. Vui lòng thử lại sau.':'Chưa xử lý được. Vui lòng không gửi lại liên tục.');if(typeof d.reply!=='string')throw new Error('Phản hồi chưa hợp lệ.');turn('assistant',d.reply);stock(d.stock_options);$('status').textContent='Đã nhận phản hồi từ Merly.';}
+    try {const r=await fetch('/api/public/chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Merly-CSRF':csrf},body:JSON.stringify({message}),signal:abort.signal});const d=await r.json();if(!r.ok)throw new Error(failure(d));if(typeof d.reply!=='string')throw new Error('Phản hồi chưa hợp lệ.');turn('assistant',d.reply);stock(d.stock_options);products(d.products);$('status').textContent='Đã nhận phản hồi từ Merly.';}
     catch(err){$('status').textContent=err.name==='AbortError'?'Hết thời gian chờ. Tác vụ có thể vẫn đang chạy; vui lòng không gửi lại liên tục.':err.message;}
     finally{clearTimeout(timer);busy=false;controls();}
   });

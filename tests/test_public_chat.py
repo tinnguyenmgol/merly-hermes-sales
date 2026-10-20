@@ -7,6 +7,7 @@ ORIGIN='https://chat.merlyshoes.com'
 @pytest.fixture
 def public(configured,monkeypatch):
     monkeypatch.setenv('MERLY_PUBLIC_CHAT_ENABLED','1');monkeypatch.setenv('MERLY_PUBLIC_ORIGIN',ORIGIN)
+    monkeypatch.setenv('MERLY_VISITOR_PER_MINUTE','4')
     p._RATE.clear()
 
 def req(path,method='GET',cookie='',csrf='',origin=ORIGIN,data=None):

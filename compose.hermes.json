@@ -86,7 +86,14 @@
         "GOOGLE_API_KEY": "${MERLY_GATEWAY_PROVIDER_EMPTY:-}",
         "OPENROUTER_API_KEY": "${MERLY_GATEWAY_PROVIDER_EMPTY:-}",
         "MERLY_PUBLIC_CHAT_ENABLED": "${MERLY_PUBLIC_CHAT_ENABLED:-0}",
-        "MERLY_PUBLIC_ORIGIN": "${MERLY_PUBLIC_ORIGIN:-https://chat.merlyshoes.com}"
+        "MERLY_PUBLIC_ORIGIN": "${MERLY_PUBLIC_ORIGIN:-https://chat.merlyshoes.com}",
+        "MERLY_AI_PER_MINUTE": "${MERLY_AI_PER_MINUTE:-6}",
+        "MERLY_AI_PER_DAY": "${MERLY_AI_PER_DAY:-100}",
+        "MERLY_PUBLIC_PER_MINUTE": "${MERLY_PUBLIC_PER_MINUTE:-120}",
+        "MERLY_VISITOR_PER_MINUTE": "${MERLY_VISITOR_PER_MINUTE:-12}",
+        "MERLY_STOCK_PER_MINUTE": "${MERLY_STOCK_PER_MINUTE:-30}",
+        "MERLY_AI_CONCURRENT": "${MERLY_AI_CONCURRENT:-2}",
+        "MERLY_STOCK_CONCURRENT": "${MERLY_STOCK_CONCURRENT:-1}"
       },
       "volumes": [
         "sales-audit:/data/sales-audit:ro",

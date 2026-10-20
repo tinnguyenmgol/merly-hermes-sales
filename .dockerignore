@@ -40,3 +40,6 @@
 !public_chat.py
 !public-web/
 !public-web/**
+
+!fast_limits.py
+!fast_replies.py
