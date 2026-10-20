@@ -1,5 +1,6 @@
 """Real Chromium+WSGI public UI/iframe; synthetic source data, no model calls."""
 import os,threading,tempfile,urllib.request,urllib.error
+from pathlib import Path
 from wsgiref.simple_server import make_server,WSGIRequestHandler
 from playwright.sync_api import sync_playwright,expect
 import sales_gateway as g,hermes_client as c
@@ -35,7 +36,13 @@ with tempfile.TemporaryDirectory(prefix='public-browser-') as tmp:
             context.route('https://chat.merlyshoes.com/**',proxy)
             page=context.new_page();page.on('pageerror',lambda e:errors.append(str(e)));page.goto('https://chat.merlyshoes.com/')
             expect(page.locator('#status')).to_contain_text('sẵn sàng')
+            preview=os.getenv('MERLY_DESIGN_PREVIEW_DIR')
+            if preview:
+                Path(preview).mkdir(parents=True,exist_ok=True)
+                page.screenshot(path=str(Path(preview)/'merly-assistant-mobile.png'),full_page=True)
             assert page.locator('input[type=password]').count()==0
+            expect(page.locator('header img')).to_have_attribute('src','/merly-logo.png')
+            assert page.locator('header img').evaluate('(i)=>i.complete && i.naturalWidth===626')
             assert page.locator('#send').is_disabled();assert page.locator('input[type=checkbox]').count()==0
             page.locator('#message').fill('mẫu 1514 38 còn màu gì');page.locator('#send').click()
             expect(page.locator('.option')).to_have_count(2)
@@ -47,22 +54,26 @@ with tempfile.TemporaryDirectory(prefix='public-browser-') as tmp:
             expect(framed.locator('#merly-chat-widget')).to_have_count(1)
             expect(framed.locator('#merly-chat-widget iframe')).to_have_count(0)
             button=framed.locator('#merly-chat-widget button')
-            expect(button).to_have_attribute('aria-label','Chat với Merly')
+            expect(button).to_have_attribute('aria-label','Mở trợ lý Merly')
             for width,height in [(320,568),(390,844),(1440,900)]:
                 framed.set_viewport_size({'width':width,'height':height})
                 b=button.bounding_box()
-                assert b and b['width']==48 and b['height']==48 and b['x']>=0 and b['y']>=0
+                assert b and b['width']==104 and b['height']==64 and b['x']>=0 and b['y']>=0
                 assert b['x']+b['width']<=width and b['y']+b['height']<=height
-                assert button.evaluate('(e)=>getComputedStyle(e).backgroundColor')=='rgb(23, 23, 23)'
-                assert button.locator('svg').count()==1 and not button.inner_text()
+                assert button.evaluate('(e)=>getComputedStyle(e).backgroundColor')=='rgb(255, 253, 251)'
+                assert button.locator('svg').count()==0 and button.locator('img').count()==1
+                expect(button.locator('.caption')).to_have_text('Trợ lý AI')
+                assert button.locator('img').evaluate('(i)=>i.complete && i.naturalWidth===626')
             framed.set_viewport_size({'width':390,'height':844})
             button.click()
-            expect(button).to_have_attribute('aria-label','Đóng chat')
+            expect(button).to_have_attribute('aria-label','Đóng trợ lý Merly')
             panel=framed.locator('#merly-chat-widget section').bounding_box()
             assert panel and panel['x']>=0 and panel['y']>=0 and panel['x']+panel['width']<=390
 
             chat=framed.frame_locator('#merly-chat-widget iframe')
             expect(chat.locator('h1')).to_contain_text('Merly')
+            expect(chat.locator('#status')).to_contain_text('sẵn sàng')
+            if preview:framed.locator('#merly-chat-widget').screenshot(path=str(Path(preview)/'merly-assistant-widget.png'))
             assert chat.locator('input[type=checkbox]').count()==0;chat.locator('#message').fill('mẫu 1514 38 còn màu gì');chat.locator('#send').click()
             expect(chat.locator('.option')).to_have_count(2)
             assert len(calls)==2
@@ -75,13 +86,13 @@ with tempfile.TemporaryDirectory(prefix='public-browser-') as tmp:
             touch.route('https://chat.merlyshoes.com/**',proxy)
             touch.route('https://merlyshoes.com/**',lambda route:route.fulfill(status=200,body='<meta name="viewport" content="width=device-width,initial-scale=1"><script src="https://chat.merlyshoes.com/embed.js" defer></script>',content_type='text/html'))
             mobile=touch.new_page();mobile.goto('https://merlyshoes.com/')
-            mb=mobile.locator('#merly-chat-widget button');expect(mb).to_have_attribute('aria-label','Chat với Merly')
-            assert mb.bounding_box()['width']==48
-            tip=mobile.locator('#merly-chat-widget .tip');expect(tip).to_be_hidden()
+            mb=mobile.locator('#merly-chat-widget button');expect(mb).to_have_attribute('aria-label','Mở trợ lý Merly')
+            assert mb.bounding_box()['width']==104
+            assert mobile.locator('#merly-chat-widget .tip').count()==0
             mb.tap();expect(mb).to_have_attribute('aria-expanded','true')
             expect(mobile.frame_locator('#merly-chat-widget iframe').locator('h1')).to_contain_text('Merly')
-            expect(tip).to_be_hidden();mb.tap();expect(mb).to_have_attribute('aria-expanded','false')
+            mb.tap();expect(mb).to_have_attribute('aria-expanded','false')
             touch.close()
             browser.close()
-        print('PASS_PUBLIC_CHROMIUM no_login_key=true csrf_cookie=true source_query=true model_calls0=true xss_literal=true Haravan_main_iframe=true legacy_embed_tag=true singleton_lazy_widget=true compact_48px_mobile_desktop=true touch_no_sticky_tooltip=true no_consent_checkbox=true no_fabricated_consent_field=true synthetic_only=true')
+        print('PASS_PUBLIC_CHROMIUM no_login_key=true csrf_cookie=true source_query=true model_calls0=true xss_literal=true Haravan_main_iframe=true legacy_embed_tag=true singleton_lazy_widget=true official_merly_logo=true branded_104x64_mobile_desktop=true no_floating_tooltip=true no_consent_checkbox=true no_fabricated_consent_field=true synthetic_only=true')
     finally:server.shutdown();server.server_close()
