@@ -22,7 +22,7 @@ def handle(env,start,forward):
         start(status,headers);return [raw]
     if path in ('/','/public.js','/public.css','/embed.js'):
         if env.get('REQUEST_METHOD')!='GET':return result('405 Method Not Allowed',{'error':'method'})
-        name,mime={'/':('index.html','text/html; charset=utf-8'),'/public.js':('public.js','application/javascript'),'/public.css':('public.css','text/css'),'/embed.js':('embed.js','application/javascript')}[path]
+        name,mime={'/':('index.html','text/html; charset=utf-8'),'/public.js':('public.js','application/javascript'),'/public.css':('public.css','text/css'),'/embed.js':('embed.js','application/javascript; charset=utf-8')}[path]
         body=(ROOT/name).read_bytes()
         csp="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors https://merlyshoes.com https://www.merlyshoes.com"
         start('200 OK',[('Content-Type',mime),('Content-Length',str(len(body))),('Cache-Control','no-store'),('Content-Security-Policy',csp),('X-Content-Type-Options','nosniff'),('Referrer-Policy','no-referrer')]);return [body]
@@ -41,9 +41,12 @@ def handle(env,start,forward):
         size=int(env.get('CONTENT_LENGTH','0'))
         if not 0<size<=8192:raise ValueError()
         data=json.loads(env['wsgi.input'].read(size))
-        if not isinstance(data,dict) or set(data)!={'message','consent'} or data['consent'] is not True:raise ValueError()
+        if not isinstance(data,dict) or 'message' not in data or set(data)-{'message','consent'}:raise ValueError()
+        # Older open tabs can still send their genuinely checked legacy field.
+        # New UI sends message only; never manufacture a consent claim.
+        if 'consent' in data and data['consent'] is not True:raise ValueError()
         if not isinstance(data['message'],str) or not 1<=len(data['message'].strip())<=1000:raise ValueError()
-    except (ValueError,TypeError,KeyError):return result('400 Bad Request',{'error':'invalid_message_or_consent'})
+    except (ValueError,TypeError,KeyError):return result('400 Bad Request',{'error':'invalid_message'})
     if not allow_turn(token):return result('429 Too Many Requests',{'error':'busy'})
     raw=json.dumps({'message':data['message']}).encode()
     internal=dict(env,PATH_INFO='/api/chat',HTTP_AUTHORIZATION='Bearer '+os.environ['PILOT_ACCESS_KEY'],HTTP_COOKIE='merly_hermes_pilot='+token,CONTENT_LENGTH=str(len(raw)))

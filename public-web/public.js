@@ -2,7 +2,7 @@
 (() => {
   const $ = id => document.getElementById(id);
   let csrf = '', busy = false;
-  function controls() { $('send').disabled = busy || !csrf || !$('consent').checked; }
+  function controls() { $('send').disabled = busy || !csrf || !$('message').value.trim(); }
   function turn(kind,text) { const node=document.createElement('div');node.className='turn '+kind;node.textContent=text;$('conversation').append(node); }
   function stock(report) {
     if (!report || typeof report!=='object') return;
@@ -27,13 +27,13 @@
     catch { $('status').textContent='Chưa kết nối được. Vui lòng tải lại trang sau.'; }
     controls();
   }
-  $('consent').addEventListener('change',controls);
+  $('message').addEventListener('input',controls);
   $('chat').addEventListener('submit',async e=>{
-    e.preventDefault();if(busy||!csrf||!$('consent').checked)return;
+    e.preventDefault();if(busy||!csrf||!$('message').value.trim())return;
     const message=$('message').value;if(!message.trim()||message.length>1000)return;
     turn('user',message);$('message').value='';busy=true;controls();$('status').textContent='Đang kiểm tra, vui lòng không gửi lại.';
     const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),70000);
-    try {const r=await fetch('/api/public/chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Merly-CSRF':csrf},body:JSON.stringify({message,consent:true}),signal:abort.signal});const d=await r.json();if(!r.ok)throw new Error(d.error==='busy'?'Hệ thống đang bận. Vui lòng thử lại sau.':'Chưa xử lý được. Vui lòng không gửi lại liên tục.');if(typeof d.reply!=='string')throw new Error('Phản hồi chưa hợp lệ.');turn('assistant',d.reply);stock(d.stock_options);$('status').textContent='Đã nhận phản hồi từ Merly.';}
+    try {const r=await fetch('/api/public/chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Merly-CSRF':csrf},body:JSON.stringify({message}),signal:abort.signal});const d=await r.json();if(!r.ok)throw new Error(d.error==='busy'?'Hệ thống đang bận. Vui lòng thử lại sau.':'Chưa xử lý được. Vui lòng không gửi lại liên tục.');if(typeof d.reply!=='string')throw new Error('Phản hồi chưa hợp lệ.');turn('assistant',d.reply);stock(d.stock_options);$('status').textContent='Đã nhận phản hồi từ Merly.';}
     catch(err){$('status').textContent=err.name==='AbortError'?'Hết thời gian chờ. Tác vụ có thể vẫn đang chạy; vui lòng không gửi lại liên tục.':err.message;}
     finally{clearTimeout(timer);busy=false;controls();}
   });
