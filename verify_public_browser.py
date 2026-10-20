@@ -38,10 +38,19 @@ with tempfile.TemporaryDirectory(prefix='public-browser-') as tmp:
             assert page.locator('.turn img').count()==0 and '<img src=x' in page.locator('.turn').last.inner_text()
             assert page.evaluate('localStorage.length===0 && sessionStorage.length===0')
             assert calls==[{'model_code':'1514','size':38}]
-            context.route('https://merlyshoes.com/**',lambda route:route.fulfill(status=200,body='<iframe src="https://chat.merlyshoes.com/"></iframe>',content_type='text/html'))
+            context.route('https://merlyshoes.com/**',lambda route:route.fulfill(status=200,body='<script src="https://chat.merlyshoes.com/embed.js" defer></script><script src="https://chat.merlyshoes.com/embed.js" defer></script>',content_type='text/html'))
             framed=context.new_page();framed.goto('https://merlyshoes.com/')
-            expect(framed.frame_locator('iframe').locator('h1')).to_contain_text('Merly')
+            expect(framed.locator('#merly-chat-widget')).to_have_count(1)
+            expect(framed.locator('#merly-chat-widget iframe')).to_have_count(0)
+            button=framed.locator('#merly-chat-widget button');button.click()
+            chat=framed.frame_locator('#merly-chat-widget iframe')
+            expect(chat.locator('h1')).to_contain_text('Merly')
+            chat.locator('#consent').check();chat.locator('#message').fill('mẫu 1514 38 còn màu gì');chat.locator('#send').click()
+            expect(chat.locator('.option')).to_have_count(2)
+            assert len(calls)==2
+            button.click();expect(button).to_have_attribute('aria-expanded','false')
+            button.click();expect(framed.locator('#merly-chat-widget iframe')).to_have_count(1)
             assert not errors,errors
             browser.close()
-        print('PASS_PUBLIC_CHROMIUM no_login_key=true csrf_cookie=true source_query=true model_calls0=true xss_literal=true Haravan_main_iframe=true synthetic_only=true')
+        print('PASS_PUBLIC_CHROMIUM no_login_key=true csrf_cookie=true source_query=true model_calls0=true xss_literal=true Haravan_main_iframe=true legacy_embed_tag=true singleton_lazy_widget=true synthetic_only=true')
     finally:server.shutdown();server.server_close()

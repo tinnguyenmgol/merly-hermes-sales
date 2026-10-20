@@ -73,3 +73,10 @@ def test_host_cookie_is_secure_http_only(public):
     r=req('/api/public/session');cookie=r['headers']['Set-Cookie']
     assert cookie.startswith('__Host-') and 'Domain=' not in cookie
     assert 'Secure' in cookie and 'HttpOnly' in cookie and 'SameSite=Strict' in cookie
+
+def test_legacy_embed_script_public_without_key(public):
+    r=req('/embed.js')
+    assert r['status'].startswith('200') and r['headers']['Content-Type']=='application/javascript'
+    assert b'merly-chat-widget' in r['raw'] and ('P'*40).encode() not in r['raw']
+    assert b'https://chat.merlyshoes.com/' in r['raw']
+    assert b'innerHTML' not in r['raw']
