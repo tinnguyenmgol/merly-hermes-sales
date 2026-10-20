@@ -84,7 +84,9 @@
         "HARAVAN_ACCESS_TOKEN": "${MERLY_GATEWAY_HARAVAN_EMPTY:-}",
         "GEMINI_API_KEY": "${MERLY_GATEWAY_PROVIDER_EMPTY:-}",
         "GOOGLE_API_KEY": "${MERLY_GATEWAY_PROVIDER_EMPTY:-}",
-        "OPENROUTER_API_KEY": "${MERLY_GATEWAY_PROVIDER_EMPTY:-}"
+        "OPENROUTER_API_KEY": "${MERLY_GATEWAY_PROVIDER_EMPTY:-}",
+        "MERLY_PUBLIC_CHAT_ENABLED": "${MERLY_PUBLIC_CHAT_ENABLED:-0}",
+        "MERLY_PUBLIC_ORIGIN": "${MERLY_PUBLIC_ORIGIN:-https://chat.merlyshoes.com}"
       },
       "volumes": [
         "sales-audit:/data/sales-audit:ro",

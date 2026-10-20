@@ -3,15 +3,18 @@ import hmac,json,os,threading,time,secrets,logging,re
 from pathlib import Path
 import hermes_client,state
 import explicit_stock,stock_scope_memory
+import public_chat
 WEB=Path(__file__).resolve().with_name('pilot-web')
 SECURITY=[('X-Content-Type-Options','nosniff'),('Referrer-Policy','no-referrer'),('X-Frame-Options','DENY'),('Permissions-Policy','camera=(), microphone=(), geolocation=()'),('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'")]
-ASSETS={'/':('index.html','text/html; charset=utf-8'),'/pilot.js':('pilot.js','application/javascript; charset=utf-8'),'/pilot.css':('pilot.css','text/css; charset=utf-8')}
+ASSETS={'/operator':('index.html','text/html; charset=utf-8'),'/':('index.html','text/html; charset=utf-8'),'/pilot.js':('pilot.js','application/javascript; charset=utf-8'),'/pilot.css':('pilot.css','text/css; charset=utf-8')}
 LOCKS=[threading.Lock() for _ in range(128)]
 def application(env,start):
     def result(code,data,cookie=None):
         body=json.dumps(data,ensure_ascii=False).encode();headers=[('Content-Type','application/json; charset=utf-8'),('Content-Length',str(len(body))),('Cache-Control','no-store'),('X-Content-Type-Options','nosniff')]
         if cookie:headers.append(('Set-Cookie','merly_hermes_pilot='+cookie+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=1800'))
         start(code,headers);return [body]
+    public=public_chat.handle(env,start,application)
+    if public is not None:return public
     asset=ASSETS.get(env.get('PATH_INFO'))
     if asset and env.get('REQUEST_METHOD')=='GET':
         body=(WEB/asset[0]).read_bytes()
