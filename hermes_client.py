@@ -31,7 +31,10 @@ def request(path,payload=None):
         if not isinstance(value,dict):raise HermesError('invalid_response')
         return value
     except urllib.error.HTTPError as e:raise HermesError('hermes_http_'+str(e.code)) from None
-    except (urllib.error.URLError,OSError,TimeoutError):raise HermesError('hermes_unavailable') from None
+    except TimeoutError:raise HermesError('hermes_timeout') from None
+    except urllib.error.URLError as e:
+        raise HermesError('hermes_timeout' if isinstance(e.reason,TimeoutError) else 'hermes_unavailable') from None
+    except OSError:raise HermesError('hermes_unavailable') from None
     except (ValueError,TypeError):raise HermesError('invalid_response') from None
 
 def audit():
@@ -60,7 +63,10 @@ def chat(message,user,previous_response_id=''):
     if previous_response_id:payload['previous_response_id']=previous_response_id
     payload['_session_scope']=user
     data=request('/responses',payload)
-    if data.get('status')!='completed':raise HermesError('turn_not_completed')
+    if data.get('status')!='completed':
+        exc=HermesError('turn_not_completed')
+        exc.response_status=data.get('status') if data.get('status') in ('failed','cancelled','in_progress','incomplete','queued') else 'unrecognized'
+        raise exc
     rid=data.get('id')
     if not isinstance(rid,str) or not re.fullmatch(r'resp_[A-Za-z0-9_-]{1,120}',rid):raise HermesError('invalid_response_id')
     final=[item for item in data.get('output',[]) if isinstance(item,dict) and item.get('type')=='message' and item.get('role','assistant')=='assistant' and item.get('phase')!='commentary']
