@@ -1,5 +1,5 @@
 """Authenticated pilot gateway. All accepted messages use Hermes, not regex."""
-import hmac,json,os,threading
+import hmac,json,os,threading,time,secrets,logging,re
 from pathlib import Path
 import hermes_client,state
 WEB=Path(__file__).resolve().with_name('pilot-web')
@@ -47,6 +47,8 @@ def application(env,start):
         if not isinstance(data,dict) or set(data)!={'message'} or not isinstance(data['message'],str) or not 0<len(data['message'].strip())<=1000:raise ValueError()
     except (ValueError,TypeError):return result('400 Bad Request',{'error':'invalid_message'})
     if not hermes_client.configured():return result('503 Service Unavailable',{'error':'hermes_not_approved_or_configured'})
+    turn_started=time.monotonic()
+    diagnostic_id=secrets.token_hex(8)
     try:
         token,sid=state.identity(env.get('HTTP_COOKIE'));lock=LOCKS[int(sid[:8],16)%len(LOCKS)]
         if not lock.acquire(blocking=False):return result('429 Too Many Requests',{'error':'turn_in_progress'})
@@ -59,5 +61,14 @@ def application(env,start):
             if 'stock_options' in reply:body['stock_options']=reply['stock_options']
             return result('200 OK',body,token)
         finally:lock.release()
-    except hermes_client.HermesError:return result('503 Service Unavailable',{'error':'hermes_unavailable','retry_automatically':False})
-    except Exception:return result('503 Service Unavailable',{'error':'pilot_unavailable'})
+    except hermes_client.HermesError as exc:
+        code=str(exc)
+        allowed={'hermes_timeout','hermes_unavailable','turn_not_completed','response_limit','invalid_response','invalid_response_id','missing_final_message','invalid_answer','sales_not_approved_or_configured','responses_not_supported','tool_discovery_unavailable','invalid_tool_inventory','unsafe_enabled_toolset','sales_runtime_attestation_required','invalid_sales_endpoint','https_required'}
+        if code not in allowed and not re.fullmatch(r'hermes_http_[1-5][0-9]{2}',code):code='unclassified_hermes_error'
+        status=getattr(exc,'response_status','not_available')
+        if status not in ('failed','cancelled','in_progress','incomplete','queued','unrecognized'):status='not_available'
+        logging.getLogger('merly.gateway').error('MERLY_CHAT_FAILED %s',json.dumps({'diagnostic_id':diagnostic_id,'reason_code':code,'response_status':status,'elapsed_ms':round((time.monotonic()-turn_started)*1000)}))
+        return result('503 Service Unavailable',{'error':'hermes_unavailable','reason_code':code,'diagnostic_id':diagnostic_id,'retry_automatically':False})
+    except Exception:
+        logging.getLogger('merly.gateway').error('MERLY_CHAT_FAILED %s',json.dumps({'diagnostic_id':diagnostic_id,'reason_code':'pilot_unavailable','elapsed_ms':round((time.monotonic()-turn_started)*1000)}))
+        return result('503 Service Unavailable',{'error':'pilot_unavailable','diagnostic_id':diagnostic_id,'retry_automatically':False})

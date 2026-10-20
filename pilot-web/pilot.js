@@ -32,6 +32,7 @@
       if (!response.ok) {
         const error = new Error(messages[data.error] || 'Yêu cầu chưa hoàn tất (HTTP ' + response.status + ').');
         error.code = data.error;
+        if (typeof data.diagnostic_id === 'string' && /^[0-9a-f]{16}$/.test(data.diagnostic_id)) error.message += ' Mã tra lỗi: ' + data.diagnostic_id + (['hermes_timeout','turn_not_completed','response_limit','missing_final_message','invalid_answer'].includes(data.reason_code) ? ' (' + data.reason_code + ')' : '');
         if (Array.isArray(data.missing_approvals) && data.missing_approvals.length) error.message += ' Cờ còn tắt: ' + data.missing_approvals.join(', ');
         throw error;
       }
