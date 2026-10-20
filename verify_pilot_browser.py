@@ -20,6 +20,13 @@ with tempfile.TemporaryDirectory(prefix='pilot-browser-') as temp:
     from tools.mcp_tool_handlers import _render_call_tool_result
     import mcp.types as mt
     original_chat=hermes_client.chat
+    recovered_scopes=[]
+    def direct_source_fixture(scope,timeout=30):
+        recovered_scopes.append(scope);started=time.time()
+        raw=stock_tools.dispatch('search_products',{**scope,'check_stock':True})['stock_report']
+        report=stock_report.classify(stock_report.validate(raw,None,scope,turn_started=started))
+        return {'stock_options':report,'reply':stock_report.summary(report),'model_called':False}
+    hermes_client.probe_stock=direct_source_fixture
     def synthetic_responses(path,payload):
         assert path=='/responses'
         args={'model_code':'1514','size':38,'check_stock':True}
@@ -31,6 +38,7 @@ with tempfile.TemporaryDirectory(prefix='pilot-browser-') as temp:
         tool=mt.CallToolResult(content=[mt.TextContent(text=json.dumps(body))],structuredContent=body)
         messages=[{'role':'assistant','tool_calls':[{'id':'browser_call','type':'function','function':{'name':'mcp__merly__search_products','arguments':json.dumps(args)}}]},{'role':'tool','tool_call_id':'browser_call','content':_render_call_tool_result(tool,'merly')}]
         output=NativeAPI._extract_output_items({'messages':messages,'final_response':'synthetic model summary omitting options'})
+        if payload['input']=='SYNTHETIC STOCK SWEEP':output[1]['output']='{\"error\":\"{\\\"status\\\":\\\"invalid_arguments\\\"}\"}'
         return {'status':'completed','id':'resp_fixture_'+str(len(calls)),'output':output}
     hermes_client.request=synthetic_responses
     calls=[]
@@ -75,6 +83,7 @@ with tempfile.TemporaryDirectory(prefix='pilot-browser-') as temp:
             page.locator('#new-chat').click();expect(page.locator('.turn')).to_have_count(0)
             send(page,'SYNTHETIC STOCK SWEEP',1);assert calls[3][2]==''
             expect(page.locator('.stock-option')).to_have_count(20)
+            assert recovered_scopes==[{'model_code':'1514','size':38}]
             expect(page.locator('.stock-option p').first).to_have_text('310.000đ')
             names=page.locator('.stock-option strong').all_text_contents()
             assert any('Kem' in n for n in names) and any('Chì Bóng' in n for n in names)
@@ -126,6 +135,6 @@ with tempfile.TemporaryDirectory(prefix='pilot-browser-') as temp:
             unsafe.close()
             assert errors==[],errors
             browser.close()
-        print('PASS_REAL_CHROMIUM mobile_layout=true login_401_then_200=true consent_gate=true two_contexts_isolated=true context_continuity=true xss_literal=true secret_not_persisted=true reset_and_logout=true no_auto_retry=true approval_gate=true insecure_http_blocked=true synthetic_model_only=true readonly_probe_UI_without_model=true v2_reader_native_client_gateway_UI=true all20_stock_cards=true Kem_and_ChiBong_visible=true partial_scope_warning=true live_Gemini_calls=0')
+        print('PASS_REAL_CHROMIUM mobile_layout=true login_401_then_200=true consent_gate=true two_contexts_isolated=true context_continuity=true xss_literal=true secret_not_persisted=true reset_and_logout=true no_auto_retry=true approval_gate=true insecure_http_blocked=true synthetic_model_only=true failed_model_tool_direct_recovery_UI=true readonly_probe_UI_without_model=true v2_reader_native_client_gateway_UI=true all20_stock_cards=true Kem_and_ChiBong_visible=true partial_scope_warning=true live_Gemini_calls=0')
     finally:
         server.shutdown();server.server_close()

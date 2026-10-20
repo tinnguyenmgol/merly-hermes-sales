@@ -70,6 +70,7 @@
     panel.append(title);
     const note = document.createElement('p');
     note.textContent = report.recheck_failed ? 'Lần kiểm tra lại lỗi. Đây là kết quả đã tra trước đó, không phải xác nhận mới; chưa giữ hàng.' : ['failed','source_error','catalog_loading','no_match'].includes(report.operation_status) ? 'Chưa tra được tồn: công cụ lỗi, dữ liệu nguồn chưa đủ hoặc danh mục đang đồng bộ. Không phải thông báo hết hàng.' : report.complete === true ? 'Đã tra đủ các biến thể trong phạm vi mẫu/size của danh sách đang đồng bộ. Chưa giữ hàng.' : 'Chưa kiểm tra đầy đủ. Không coi màu/kho chưa xác minh là hết hàng.';
+    if (report.resolution_path === 'direct_haravan') note.textContent = 'Kết quả đọc trực tiếp từ Haravan. ' + note.textContent;
     panel.append(note);
     if (typeof report.checked_at === 'string' && Number.isFinite(Date.parse(report.checked_at))) {
       const stamp = document.createElement('p'); stamp.textContent = 'Bắt đầu tra lúc: ' + new Date(report.checked_at).toLocaleString('vi-VN'); panel.append(stamp);

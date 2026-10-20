@@ -76,18 +76,21 @@ def chat(message,user,previous_response_id=''):
     if not text.strip() or len(text)>12000:raise HermesError('invalid_answer')
     from stock_report import extract,summary
     report,stock_requested=extract(data.get('output',[]),stock_request_id,turn_started=turn_started)
-    if stock_requested:text=summary(report)
+    if stock_requested:
+        from direct_stock import recover
+        report=recover(report,data.get('output',[]),probe_stock,turn_started)
+        text=summary(report)
     result={'reply':text,'conversation_id':rid}
     if report is not None:result['stock_options']=report
     return result
 
-def probe_stock(scope):
+def probe_stock(scope,timeout=30):
     """Compose-only private endpoint, authenticated; no inference request."""
     if not configured():raise HermesError('sales_not_approved_or_configured')
     started=time.time()
     req=urllib.request.Request('http://hermes-sales:8644/stock',data=json.dumps(scope).encode(),headers={'Authorization':'Bearer '+os.environ['HERMES_SALES_API_KEY'],'Content-Type':'application/json'},method='POST')
     try:
-        with urllib.request.build_opener(NoRedirect).open(req,timeout=30) as r:raw=r.read(262145)
+        with urllib.request.build_opener(NoRedirect).open(req,timeout=timeout) as r:raw=r.read(262145)
         if len(raw)>262144:raise HermesError('response_limit')
         body=json.loads(raw)
         from stock_report import validate,summary,classify
