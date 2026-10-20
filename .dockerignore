@@ -31,3 +31,8 @@
 !haravan_variants.py
 
 !stock_probe.py
+
+!direct_stock.py
+
+!explicit_stock.py
+!stock_scope_memory.py
