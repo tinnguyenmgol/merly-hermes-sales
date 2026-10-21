@@ -80,17 +80,37 @@ def chat(message,user,previous_response_id=''):
     if not final:raise HermesError('missing_final_message')
     text=''.join(part.get('text','') for part in final[-1].get('content',[]) if isinstance(part,dict) and part.get('type')=='output_text' and isinstance(part.get('text'),str))
     if not text.strip() or len(text)>12000:raise HermesError('invalid_answer')
-    clarification=conversation.observe(user,data.get('output',[]))
-    if clarification is not None:return {'reply':clarification,'conversation_id':rid,'needs_clarification':True}
+    import request_resolution
+    items=data.get('output',[])
+    clarification=conversation.observe(user,items)
+    if clarification is not None:
+        recovered=request_resolution.recover(user,items,discover_products,turn_started)
+        if recovered is not None:
+            return {**recovered,'conversation_id':rid,'model_called':True}
+        context=conversation.get(user.split('merly-sales:web:',1)[-1])
+        genuine=context.get('pending') or context.get('needs_clarification')
+        if genuine:return {'reply':clarification,'conversation_id':rid,'needs_clarification':True}
+        return {'reply':request_resolution.failure_reply(user),'conversation_id':rid,'lookup_incomplete':True}
+
     from stock_report import extract,summary
     report,stock_requested=extract(data.get('output',[]),stock_request_id,turn_started=turn_started)
     stock_scope_memory.after_model_turn(user,data.get('output',[]))
+    if not stock_requested and request_resolution.resolve(user,items) is not None:
+        recovered=request_resolution.recover(user,items,discover_products,turn_started)
+        if recovered is not None:return {**recovered,'conversation_id':rid,'model_called':True}
+        text=request_resolution.failure_reply(user)
+    if stock_requested and report.get('mode')=='unverified' and report.get('reason_code') in ('tool_invalid_arguments','missing_tool_output','not_a_report','invalid_tool_output','invalid_stock_contract'):
+        recovered=request_resolution.recover(user,items,discover_products,turn_started)
+        if recovered is not None:return {**recovered,'conversation_id':rid,'model_called':True}
     if stock_requested:
         from direct_stock import recover
         report=recover(report,data.get('output',[]),probe_stock,turn_started)
-        text=summary(report)
-    result={'reply':text,'conversation_id':rid}
-    if report is not None:result['stock_options']=report
+        text=request_resolution.failure_reply(user) if report.get('mode')=='unverified' else summary(report)
+    from source_links import collect
+    result={'reply':text,'conversation_id':rid,'source_links':collect(data.get('output',[]))}
+    if report is not None:
+        result['stock_options']=report
+        if report.get('mode')=='unverified':result['lookup_incomplete']=True
     return result
 
 def probe_stock(scope,timeout=30):

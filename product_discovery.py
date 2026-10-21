@@ -141,7 +141,12 @@ def summary(report):
         n=len({r['product_id'] for r in report['variants'] if r['available'] is True})
         return 'Đã kiểm tra theo tiêu chí bạn hỏi: có '+str(n)+' mẫu còn hàng đã xác minh ở bên dưới. '+('Phạm vi tra chưa đầy đủ; không kết luận các mẫu khác hết hàng. ' if not report['complete'] else '')+'Chưa giữ hàng.'
     if state=='catalog_loading':return 'Danh mục đang đồng bộ. Chưa có kết quả tìm mẫu và tồn; không phải thông báo hết hàng.'
-    if state=='metadata_missing':return 'Chưa đủ dữ liệu thuộc tính đã xác minh để chọn đúng yêu cầu. Mình không tự bỏ điều kiện hoặc kết luận hết hàng; nếu có mẫu chưa xác minh sẽ được ghi rõ bên dưới.'
+    if state=='metadata_missing':
+        labels={'heel_cm':'chiều cao gót','category':'kiểu giày','occasion':'dịp sử dụng'}
+        missing={k for p in report['products'] if p['status']=='metadata_unverified' for k in labels if k in report['criteria'] and k not in p['verified_specs']}
+        if report['coverage']['unknown_spec_products']:missing.update(k for k in labels if k in report['criteria'])
+        subject=', '.join(labels[k] for k in labels if k in missing) or 'size/màu của biến thể'
+        return 'Merly chưa đủ dữ liệu đã xác minh về '+subject+' để chọn đúng yêu cầu. Các điều kiện bạn đã nói vẫn được giữ, mình chưa kết luận hết hàng. Bạn muốn [nhắn nhân viên Merly](https://oa.zalo.me/2969822963244380594) để được kiểm tra tiếp không?'
     if state=='source_error':return 'Đã tìm được ứng viên trong danh mục nhưng chưa kiểm tra xong dữ liệu hoặc tồn. Các mẫu chưa xác minh được ghi rõ bên dưới; không phải kết luận hết hàng.'
     if state=='verified_zero':return 'Các biến thể khớp yêu cầu đã kiểm tra có tồn 0 tại các kho trả đủ dữ liệu. Không kết luận toàn bộ website hoặc các mẫu chưa kiểm tra đều hết hàng.'
     if state=='partial':return 'Đã tìm được biến thể phù hợp nhưng tồn chưa được xác minh đầy đủ. Xem trạng thái từng mẫu bên dưới; chưa thể kết luận hết hàng.'

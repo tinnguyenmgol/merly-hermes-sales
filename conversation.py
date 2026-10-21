@@ -26,7 +26,13 @@ def valid(field,value):
 def explicit(text):
     """Unambiguous literals only; model handles synonyms not covered here."""
     values={};n=norm(text)
-    codes=[m.group(1) for m in re.finditer(r'(?:mẫu|mau|sku|mã mẫu|ma mau)\s*[:#]?\s*([A-Za-z0-9][A-Za-z0-9._-]{0,31})(?![\w.-])',text,re.I) if any(c.isdigit() for c in m.group(1))]
+    codes=[]
+    for m in re.finditer(r'(?:mẫu|mau|sku|mã mẫu|ma mau)\s*[:#]?\s*([A-Za-z0-9][A-Za-z0-9._-]{0,31})(?![\w.-])',text,re.I):
+        code=m.group(1);strong=m.group(0).casefold().startswith(('sku','mã mẫu','ma mau'))
+        if not any(c.isdigit() for c in code):continue
+        if not strong and re.fullmatch(r'[0-9]{1,2}(?:[.,][0-9]+)?cm',code,re.I):continue
+        codes.append(code)
+
     if len(set(codes))==1:values['model_code']=codes[0]
     sizes=re.findall(r'(?<!\w)(?:size|cỡ|mang|đi)\s*[:#]?\s*(3[5-9]|4[0-3])(?!\w|[.,]\d)',text,re.I)
     if len(set(sizes))==1:values['size']=int(sizes[0])
@@ -34,7 +40,12 @@ def explicit(text):
     if len(set(heels))==1 and not re.search(r'\b(?:tam|khoang|gan)\b',n):
         heel=float(heels[0].replace(',','.'))
         if valid('heel_cm',heel):values['heel_cm']=heel
-    colors=re.findall(r'\bmau\s+(trang kem|do ruou|chi bac|chi bong|den|kem|trang|nau|hong|vang|be|xanh|bac)\b',n)
+    color_text=n
+    for code in codes:color_text=color_text.replace(norm(code),' ')
+    colors=re.findall(r'(?<![\w-])(trang kem|do ruou|chi bac|chi bong|den|kem|trang|nau|hong|vang|be|xanh|bac)(?![\w-])',color_text)
+    accents={'den':'đen','trang':'trắng','trang kem':'trắng kem','kem':'kem','nau':'nâu','chi bac':'chì bạc','chi bong':'chì bóng','bac':'bạc','do ruou':'đỏ rượu','hong':'hồng','vang':'vàng','be':'be','xanh':'xanh'}
+    # Preserve Vietnamese distinctions: đến != đen, vâng != vàng, bé != be.
+    colors=[c for c in colors if re.search(r'(?<![\w-])(?:'+re.escape(c)+'|'+re.escape(accents[c])+r')(?![\w-])',text.casefold())]
     if len(set(colors))==1:values['color']=colors[0]
     return values
 
@@ -72,7 +83,7 @@ def prepare(sid,message):
         if exact and 0<=float(exact[1].replace(',','.'))<=15:
             slots['heel_cm']=float(exact[1].replace(',','.'));confirmed.add('heel_cm');state['confirmed']=list(confirmed);state['allow_fast']=True
             return _route(sid,state)
-    if re.search(r'\b(?:khong phai|khong lay|dung lay|bo mau den)\b',n):
+    if re.search(r'\b(?:khong phai|khong lay|khong thich|dung lay|tru mau|bo mau den)\b',n):
         # Never silently turn a negation into an all-colors query.
         state.update(allow_fast=False,needs_clarification=True)
         if 'model_code' in found:
