@@ -1,0 +1,12 @@
+{
+  "requests": 100,
+  "http200": 100,
+  "local_only": true,
+  "inference_calls": 0,
+  "ai_budget_already_full": true,
+  "policy_p50_ms": 779.9,
+  "policy_p95_ms": 1394.3,
+  "policy_max_ms": 1445.4,
+  "stock_with_full_ai_budget": 200,
+  "general_ai_blocked": 429
+}

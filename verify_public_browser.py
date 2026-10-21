@@ -11,8 +11,8 @@ with tempfile.TemporaryDirectory(prefix='public-browser-') as tmp:
     calls=[]
     def probe(scope):
         calls.append(scope)
-        rows=[{'color':color,'size':'38','price_vnd':310000,'available':True,'locations':[{'name':'Kho fixture','available':1}],'product_url':'https://merlyshoes.com/products/fixture-only'} for color in ('Trắng Kem','chì bạc')]
-        return {'reply':'SYNTHETIC source <img src=x onerror=alert(1)>','stock_options':{'mode':'all_options','model_code':'1514','size':38,'complete':True,'variants':rows},'model_called':False}
+        rows=[{'color':color,'size':str(scope['size']),'price_vnd':310000,'available':True,'locations':[{'name':'Kho fixture','available':1}],'product_url':'https://merlyshoes.com/products/fixture-only'} for color in ([scope['color']] if scope.get('color') else ('Trắng Kem','chì bạc'))]
+        return {'reply':'SYNTHETIC source <img src=x onerror=alert(1)>','stock_options':{'mode':'all_options','model_code':'1514','size':scope['size'],'complete':True,'variants':rows},'model_called':False}
     c.probe_stock=probe
     searches=[]
     def search(scope):
@@ -88,6 +88,14 @@ with tempfile.TemporaryDirectory(prefix='public-browser-') as tmp:
             assert chat.locator('input[type=checkbox]').count()==0;chat.locator('#message').fill('mẫu 1514 38 còn màu gì');chat.locator('#send').click()
             expect(chat.locator('.option')).to_have_count(2)
             assert len(calls)==2
+            chat.locator('#message').fill('màu đen thì sao');chat.locator('#send').click()
+            expect(chat.locator('.stock strong').last).to_contain_text('đen')
+            chat.locator('#message').fill('còn 42');chat.locator('#send').click()
+            expect(chat.locator('.stock > strong').last).to_contain_text('size 42')
+            assert calls[-1]=={'model_code':'1514','size':42,'color':'đen'}
+            chat.locator('#message').fill('còn màu nào');chat.locator('#send').click()
+            expect(chat.locator('.option')).to_have_count(6)
+            assert calls[-1]=={'model_code':'1514','size':42}
             button.click();expect(button).to_have_attribute('aria-expanded','false')
             button.click();expect(framed.locator('#merly-chat-widget iframe')).to_have_count(1)
             button.focus();button.press('Escape');expect(button).to_have_attribute('aria-expanded','false')
@@ -105,5 +113,5 @@ with tempfile.TemporaryDirectory(prefix='public-browser-') as tmp:
             mb.tap();expect(mb).to_have_attribute('aria-expanded','false')
             touch.close()
             browser.close()
-        print('PASS_PUBLIC_CHROMIUM no_login_key=true csrf_cookie=true source_query=true model_calls0=true xss_literal=true Haravan_main_iframe=true legacy_embed_tag=true singleton_lazy_widget=true official_merly_logo=true branded_104x64_mobile_desktop=true no_floating_tooltip=true no_consent_checkbox=true no_fabricated_consent_field=true fast_policy_catalog=true synthetic_only=true')
+        print('PASS_PUBLIC_CHROMIUM no_login_key=true csrf_cookie=true source_query=true model_calls0=true xss_literal=true Haravan_main_iframe=true legacy_embed_tag=true singleton_lazy_widget=true official_merly_logo=true branded_104x64_mobile_desktop=true no_floating_tooltip=true no_consent_checkbox=true no_fabricated_consent_field=true fast_policy_catalog=true contextual_followups=true synthetic_only=true')
     finally:server.shutdown();server.server_close()
