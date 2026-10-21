@@ -92,7 +92,7 @@ def test_gateway_multi_turn_uses_new_stock_each_time_and_no_ai(configured,monkey
     import state
     db=state.database();assert db.execute('SELECT count(*) FROM calls').fetchone()[0]==0;db.close()
 
-def test_client_semantic_contract_one_model_turn_and_no_unsafe_report(monkeypatch):
+def test_client_semantic_contract_one_model_turn_and_no_unsafe_report(configured,monkeypatch):
     from test_client import responses
     user='merly-sales:web:'+'a'*64
     ctx.prepare('a'*64,'tìm giày gót5cm size41 màu đen')
@@ -100,8 +100,10 @@ def test_client_semantic_contract_one_model_turn_and_no_unsafe_report(monkeypatc
     def request(path,payload):
         seen.append((path,payload));r=responses();r['output']=plan(size=41,heel_cm=5)+r['output'];return r
     monkeypatch.setattr(client,'request',request)
+    monkeypatch.setattr(client,'discover_products',lambda *a:(_ for _ in ()).throw(client.HermesError('synthetic offline')))
     r=client.chat('tìm giày gót5cm size41 màu đen',user,'resp_prior')
-    assert r['needs_clarification'] and 'stock_options' not in r
+    assert r['lookup_incomplete'] and 'stock_options' not in r
+    assert 'không cần nhập lại' in r['reply']
     assert len(seen)==1 and seen[0][1]['previous_response_id']=='resp_prior'
     assert 'LATEST_STRUCTURED_CUSTOMER_CONTEXT' in seen[0][1]['instructions']
     assert 'last_plan' in seen[0][1]['instructions'] or 'hợp đồng yêu cầu' in seen[0][1]['instructions']

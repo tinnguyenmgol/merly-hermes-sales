@@ -17,15 +17,15 @@ def visitor(env):
 
 def handle(env,start,forward):
     path=env.get('PATH_INFO','')
-    if not enabled() or path not in ('/','/public.js','/public.css','/embed.js','/merly-logo.png','/api/public/session','/api/public/chat'):return None
+    if not enabled() or path not in ('/','/public.js','/safe-links.js','/public.css','/embed.js','/merly-logo.png','/api/public/session','/api/public/chat'):return None
     def result(status,data,cookie=None):
         raw=json.dumps(data,ensure_ascii=False).encode();headers=[('Content-Type','application/json; charset=utf-8'),('Content-Length',str(len(raw))),('Cache-Control','no-store'),('X-Content-Type-Options','nosniff')]
         if type(data.get('retry_after')) is int:headers.append(('Retry-After',str(data['retry_after'])))
         if cookie:headers.append(('Set-Cookie',COOKIE+'='+cookie+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=1800'))
         start(status,headers);return [raw]
-    if path in ('/','/public.js','/public.css','/embed.js','/merly-logo.png'):
+    if path in ('/','/public.js','/safe-links.js','/public.css','/embed.js','/merly-logo.png'):
         if env.get('REQUEST_METHOD')!='GET':return result('405 Method Not Allowed',{'error':'method'})
-        name,mime={'/':('index.html','text/html; charset=utf-8'),'/public.js':('public.js','application/javascript'),'/public.css':('public.css','text/css'),'/embed.js':('embed.js','application/javascript; charset=utf-8'),'/merly-logo.png':('merly-logo.png','image/png')}[path]
+        name,mime={'/':('index.html','text/html; charset=utf-8'),'/public.js':('public.js','application/javascript; charset=utf-8'),'/safe-links.js':('safe-links.js','application/javascript; charset=utf-8'),'/public.css':('public.css','text/css'),'/embed.js':('embed.js','application/javascript; charset=utf-8'),'/merly-logo.png':('merly-logo.png','image/png')}[path]
         body=(ROOT/name).read_bytes()
         csp="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors https://merlyshoes.com https://www.merlyshoes.com"
         start('200 OK',[('Content-Type',mime),('Content-Length',str(len(body))),('Cache-Control','no-store'),('Content-Security-Policy',csp),('X-Content-Type-Options','nosniff'),('Referrer-Policy','no-referrer')]);return [body]

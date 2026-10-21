@@ -69,9 +69,9 @@ with tempfile.TemporaryDirectory(prefix='public-browser-') as tmp:
             for width,height in [(320,568),(390,844),(1440,900)]:
                 framed.set_viewport_size({'width':width,'height':height})
                 b=button.bounding_box()
-                assert b and b['width']==104 and b['height']==64 and b['x']>=0 and b['y']>=0
+                assert b and b['width']==116 and b['height']==72 and b['x']>=0 and b['y']>=0
                 assert b['x']+b['width']<=width and b['y']+b['height']<=height
-                assert button.evaluate('(e)=>getComputedStyle(e).backgroundColor')=='rgb(255, 253, 251)'
+                assert button.evaluate('(e)=>getComputedStyle(e).backgroundColor')=='rgb(66, 46, 36)'
                 assert button.locator('svg').count()==0 and button.locator('img').count()==1
                 expect(button.locator('.caption')).to_have_text('Trợ lý AI')
                 assert button.locator('img').evaluate('(i)=>i.complete && i.naturalWidth===626')
@@ -106,12 +106,12 @@ with tempfile.TemporaryDirectory(prefix='public-browser-') as tmp:
             touch.route('https://merlyshoes.com/**',lambda route:route.fulfill(status=200,body='<meta name="viewport" content="width=device-width,initial-scale=1"><script src="https://chat.merlyshoes.com/embed.js" defer></script>',content_type='text/html'))
             mobile=touch.new_page();mobile.goto('https://merlyshoes.com/')
             mb=mobile.locator('#merly-chat-widget button');expect(mb).to_have_attribute('aria-label','Mở trợ lý Merly')
-            assert mb.bounding_box()['width']==104
+            assert mb.bounding_box()['width']==116
             assert mobile.locator('#merly-chat-widget .tip').count()==0
             mb.tap();expect(mb).to_have_attribute('aria-expanded','true')
             expect(mobile.frame_locator('#merly-chat-widget iframe').locator('h1')).to_contain_text('Merly')
             mb.tap();expect(mb).to_have_attribute('aria-expanded','false')
             touch.close()
             browser.close()
-        print('PASS_PUBLIC_CHROMIUM no_login_key=true csrf_cookie=true source_query=true model_calls0=true xss_literal=true Haravan_main_iframe=true legacy_embed_tag=true singleton_lazy_widget=true official_merly_logo=true branded_104x64_mobile_desktop=true no_floating_tooltip=true no_consent_checkbox=true no_fabricated_consent_field=true fast_policy_catalog=true contextual_followups=true synthetic_only=true')
+        print('PASS_PUBLIC_CHROMIUM no_login_key=true csrf_cookie=true source_query=true model_calls0=true xss_literal=true Haravan_main_iframe=true legacy_embed_tag=true singleton_lazy_widget=true official_merly_logo=true prominent_116x72_mobile_desktop=true no_floating_tooltip=true no_consent_checkbox=true no_fabricated_consent_field=true fast_policy_catalog=true contextual_followups=true synthetic_only=true')
     finally:server.shutdown();server.server_close()

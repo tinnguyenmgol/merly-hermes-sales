@@ -69,7 +69,7 @@ def application(env,start):
             decision=None if probe else conversation.prepare(sid,data['message'])
             if not had_context and cid and decision and decision.get('reason')=='missing_selection':decision={'route':'model'}
             if decision and decision['route']=='clarify':
-                return result('200 OK',{'reply':decision['reply'],'engine':'clarification','model_called':False},token)
+                return result('200 OK',{'reply':decision['reply'],'engine':'clarification','model_called':False,'needs_clarification':True},token)
             if decision and conversation.get(sid).get('reset'):
                 stock_scope_memory.forget(sid);fast_replies.forget(sid)
             if not probe:
@@ -103,7 +103,7 @@ def application(env,start):
                 except Exception:
                     stock_scope_memory.forget(sid);raise
                 state.save(sid,reply['conversation_id'])
-                body={'reply':reply['reply'],'engine':'hermes'}
+                body={'reply':reply['reply'],'engine':'hermes','source_links':reply.get('source_links',[]),'needs_clarification':reply.get('needs_clarification') is True,'lookup_incomplete':reply.get('lookup_incomplete') is True}
                 if 'stock_options' in reply:body['stock_options']=reply['stock_options']
                 return result('200 OK',body,token)
     except hermes_client.HermesError as exc:

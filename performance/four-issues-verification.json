@@ -1,0 +1,14 @@
+{
+  "baseline_deployed_commit": "c21dd43f8db8b8154867979db251771347d1c997",
+  "baseline_checked_via": "read-only fixed-resource Coolify tool",
+  "unit_integration": {
+    "tests": 399,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "browser": "Chromium + local WSGI",
+  "caption_contrast_measured": 12.11,
+  "live_haravan_or_model_verified": false,
+  "production_modified": false
+}

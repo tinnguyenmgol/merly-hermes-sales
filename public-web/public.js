@@ -1,9 +1,9 @@
 'use strict';
 (() => {
   const $ = id => document.getElementById(id);
-  let csrf = '', busy = false;
+  let csrf = '', busy = false, composing = false;
   function controls() { $('send').disabled = busy || !csrf || !$('message').value.trim(); }
-  function turn(kind,text) { const node=document.createElement('div');node.className='turn '+kind;node.textContent=text;$('conversation').append(node); }
+  function turn(kind,text,links=[]) { const node=document.createElement('div');node.className='turn '+kind;if(kind==='assistant'&&window.MerlyLinks)window.MerlyLinks.append(node,text,links);else node.textContent=text;$('conversation').append(node); }
   function stock(report) {
     if (!report || typeof report!=='object') return;
     if (report.mode==='groups') { for(const group of report.groups)stock(group);return; }
@@ -53,12 +53,19 @@
     controls();
   }
   $('message').addEventListener('input',controls);
+  $('message').addEventListener('compositionstart',()=>{composing=true;});
+  $('message').addEventListener('compositionend',()=>{composing=false;controls();});
+  $('message').addEventListener('keydown',event=>{
+    if(event.key!=='Enter'||event.shiftKey||event.ctrlKey||event.altKey||event.metaKey||event.isComposing||composing||event.keyCode===229)return;
+    event.preventDefault();
+    if(!event.repeat&&!busy&&csrf&&$('message').value.trim())$('chat').requestSubmit();
+  });
   $('chat').addEventListener('submit',async e=>{
-    e.preventDefault();if(busy||!csrf||!$('message').value.trim())return;
+    e.preventDefault();if(busy||composing||!csrf||!$('message').value.trim())return;
     const message=$('message').value;if(!message.trim()||message.length>1000)return;
     turn('user',message);$('message').value='';busy=true;controls();$('status').textContent='Đang kiểm tra, vui lòng không gửi lại.';
     const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),70000);
-    try {const r=await fetch('/api/public/chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Merly-CSRF':csrf},body:JSON.stringify({message}),signal:abort.signal});const d=await r.json();if(!r.ok)throw new Error(failure(d));if(typeof d.reply!=='string')throw new Error('Phản hồi chưa hợp lệ.');turn('assistant',d.reply);stock(d.stock_options);products(d.products);$('status').textContent='Đã nhận phản hồi từ Merly.';}
+    try {const r=await fetch('/api/public/chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Merly-CSRF':csrf},body:JSON.stringify({message}),signal:abort.signal});const d=await r.json();if(!r.ok)throw new Error(failure(d));if(typeof d.reply!=='string')throw new Error('Phản hồi chưa hợp lệ.');turn('assistant',d.reply,window.MerlyLinks?window.MerlyLinks.sources(d):[]);stock(d.stock_options);products(d.products);$('status').textContent=d.needs_clarification?'Merly đang chờ bạn xác nhận hoặc bổ sung thông tin.':d.lookup_incomplete?'Lượt tra chưa hoàn tất; bạn không cần nhập lại yêu cầu.':'Đã nhận phản hồi từ Merly.';}
     catch(err){$('status').textContent=err.name==='AbortError'?'Hết thời gian chờ. Tác vụ có thể vẫn đang chạy; vui lòng không gửi lại liên tục.':err.message;}
     finally{clearTimeout(timer);busy=false;controls();}
   });
