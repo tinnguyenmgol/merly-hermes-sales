@@ -11,7 +11,7 @@ def products(monkeypatch):
     monkeypatch.setattr(tools,'enrichment',lambda:{})
 
 def test_search_not_stock(products):
-    r=tools.dispatch('search_products',{'size':42,'color':'Hồng'})
+    r=tools.dispatch('search_products',{'size':42,'color':'Hồng Pearl'})
     p=r['products'][0]
     assert p['variants'][0]['variant_id']==101
     assert p['availability']=='not_checked' and 'price' not in p

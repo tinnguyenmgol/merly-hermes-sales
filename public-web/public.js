@@ -7,19 +7,28 @@
   function stock(report) {
     if (!report || typeof report!=='object') return;
     if (report.mode==='groups') { for(const group of report.groups)stock(group);return; }
-    if (!Array.isArray(report.variants) || !report.variants.length) return;
+    const discovery=report.mode==='discovery';
+    if (!Array.isArray(report.variants) || (!report.variants.length&&!discovery)) return;
     const panel=document.createElement('section');panel.className='stock';
-    const title=document.createElement('strong');title.textContent='Mẫu '+report.model_code+' · size '+report.size;panel.append(title);
+    const title=document.createElement('strong');title.textContent=discovery?'Kết quả theo yêu cầu · size '+report.criteria.size+ (report.criteria.heel_cm!==undefined?' · gót '+report.criteria.heel_cm+'cm':'')+(report.criteria.color?' · '+report.criteria.color:''):'Mẫu '+report.model_code+' · size '+report.size;panel.append(title);
     const notice=document.createElement('p');notice.textContent=report.complete ? 'Đã tra đủ trong phạm vi này; chưa giữ hàng.' : 'Dữ liệu chưa đầy đủ; chưa kiểm tra được không có nghĩa là hết hàng.';panel.append(notice);
     for (const row of report.variants) {
       const card=document.createElement('div');card.className='option';
+      if(discovery&&typeof row.title==='string'){const product=document.createElement('p');product.textContent=row.title;card.append(product);}
       const name=document.createElement('strong');name.textContent=(row.color||'Màu cần xác minh')+' · size '+row.size;card.append(name);
       const info=document.createElement('p');info.textContent=(Number.isSafeInteger(row.price_vnd)?row.price_vnd.toLocaleString('vi-VN')+'đ':'Giá cần xác minh')+' · '+(row.available===true?'Còn hàng đã xác minh':row.available===false?'Tồn khả dụng đã tra: 0':'Chưa xác minh tồn');card.append(info);
       for(const loc of row.locations||[])if(loc.available>0){const p=document.createElement('p');p.textContent=loc.name+': '+loc.available+' đôi';card.append(p);}
       if(typeof row.product_url==='string' && /^https:\/\/merlyshoes\.com\/products\/[A-Za-z0-9_-]+$/.test(row.product_url)){const link=document.createElement('a');link.textContent='Xem sản phẩm';link.href=row.product_url;link.target='_blank';link.rel='noopener noreferrer';card.append(link);}
       panel.append(card);
     }
-    $('conversation').append(panel);
+    if(discovery)for(const p of report.products||[]){
+      if(report.variants.some(r=>r.product_id===p.product_id)||!['source_unavailable','unchecked','metadata_unverified'].includes(p.status))continue;
+      const card=document.createElement('div');card.className='option';const title=document.createElement('strong');title.textContent=p.title;card.append(title);
+      const note=document.createElement('p');note.textContent='Ứng viên trong danh mục; chưa xác minh xong thuộc tính/tồn, chưa xác nhận còn hàng.';card.append(note);
+      if(typeof p.product_url==='string'&&/^https:\/\/merlyshoes\.com\/products\/[A-Za-z0-9_-]+$/.test(p.product_url)){const a=document.createElement('a');a.textContent='Xem sản phẩm';a.href=p.product_url;a.target='_blank';a.rel='noopener noreferrer';card.append(a);}
+      panel.append(card);
+    }
+    if(panel.querySelector('.option'))$('conversation').append(panel);
   }
   function failure(d) {
     const messages={daily_budget_limit:'Phần tư vấn AI đã đạt hạn mức hiện tại. Bạn vẫn có thể hỏi chính sách hoặc tra mẫu và tồn kho trực tiếp.',ai_minute_limit:'Phần tư vấn AI đang giới hạn lượt. Bạn vẫn có thể hỏi chính sách hoặc tra mẫu/size.',ai_capacity:'Các lượt tư vấn AI đang được xử lý. Bạn vẫn có thể tra mẫu hoặc hỏi chính sách.',turn_in_progress:'Câu hỏi trước vẫn đang xử lý. Vui lòng chờ, không gửi lại.',stock_capacity:'Đang có lượt tra cứu hàng. Vui lòng chờ một chút rồi thử lại.',stock_rate_limit:'Tra cứu hàng đang tạm giới hạn lượt. Vui lòng thử lại sau.',visitor_rate_limit:'Bạn gửi tin nhắn hơi nhanh. Vui lòng chờ trước khi gửi tiếp.',public_rate_limit:'Có nhiều lượt gửi cùng lúc. Vui lòng thử lại sau.'};

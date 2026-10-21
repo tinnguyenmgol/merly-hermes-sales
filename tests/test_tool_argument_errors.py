@@ -15,7 +15,7 @@ def test_wrong_size_type_has_repair_details(capsys):
 def test_missing_stock_scope_is_explicit():
     r,e=server.invoke('search_products',{'model_code':'1514','check_stock':True})
     assert e and r['reason']=='stock_scope_required'
-    assert set(r['stock_requirements']['required'])=={'model_code','size'}
+    assert set(r['stock_requirements']['required'])=={'size'}
 
 def test_unknown_fields_values_and_names_not_echoed(capsys):
     r,e=server.invoke('search_products',{'private-customer-name':'sensitive-fixture-text'})
@@ -23,6 +23,9 @@ def test_unknown_fields_values_and_names_not_echoed(capsys):
     output=json.dumps(r)+capsys.readouterr().err
     assert 'sensitive-fixture-text' not in output and 'private-customer-name' not in output
 
-def test_scope_constraints_not_silently_dropped():
+def test_scope_constraints_not_silently_dropped(monkeypatch):
+    import product_discovery
+    seen=[]
+    monkeypatch.setattr(product_discovery,'lookup',lambda data,tools:seen.append(data) or {'status':'synthetic'})
     r,e=server.invoke('search_products',{'model_code':'1514','size':38,'check_stock':True,'stock_request_id':'a'*32,'heel_cm':5.0})
-    assert e and r['reason']=='verify_specs_before_stock_scope'
+    assert not e and seen[0]['heel_cm']==5 and seen[0]['model_code']=='1514'

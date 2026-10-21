@@ -36,7 +36,7 @@ def lookup(data,tools):
                 color=tools.variant_color(product,variant)
                 if data.get('color') and color is None:
                     coverage['unclassified_variants']+=1;metadata_issue=True;continue
-                if data.get('color') and (color is None or tools.catalog.norm(data['color']) not in tools.catalog.norm(color)):continue
+                if data.get('color') and (color is None or tools.catalog.norm(data['color'])!=tools.catalog.norm(color)):continue
                 vid=variant.get('id')
                 if type(vid) is not int or not 1<=vid<10**16 or vid in seen or vid in local:raise tools.h.HaravanError('invalid_variant_identity')
                 local.add(vid)

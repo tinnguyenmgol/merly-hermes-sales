@@ -24,7 +24,7 @@ def test_policy_and_stock_survive_exhausted_ai(configured,monkeypatch):
 def test_exact_shopping_query_bypasses_paid_ai(configured,monkeypatch):
     exhausted();seen=[]
     monkeypatch.setattr(client,'chat',lambda *a:pytest.fail('no inference'))
-    monkeypatch.setattr(client,'search_catalog',lambda scope:seen.append(scope) or {'reply':'missing verified metadata, not no stock','model_called':False})
+    monkeypatch.setattr(client,'discover_products',lambda scope:seen.append(scope) or {'reply':'missing verified metadata, not no stock','model_called':False})
     r=call('cần mẫu 5cm size 41')
     assert r['status'].startswith('200') and seen==[{'heel_cm':5.0,'size':41,'limit':4}] and count_ai()==100
 

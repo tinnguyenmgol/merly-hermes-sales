@@ -25,7 +25,33 @@ def safe_url(value):
     if u.scheme!='https' or u.netloc!='merlyshoes.com' or not re.fullmatch(r'/products/[A-Za-z0-9_-]+',u.path) or u.query or u.fragment:raise InvalidReport('invalid_product_link')
     return value
 
+def clean_variant(row,size):
+    if not isinstance(row,dict):raise InvalidReport('invalid_variant')
+    for k in ('product_id','variant_id'):
+        if type(row.get(k)) is not int or not 1<=row[k]<10**16:raise InvalidReport('invalid_identity')
+    if row.get('size')!=str(size):raise InvalidReport('wrong_size')
+    color=row.get('color');price=row.get('price_vnd');known=row.get('known_available');complete=row.get('inventory_complete');available=row.get('available')
+    if color is not None and (not isinstance(color,str) or len(color)>255):raise InvalidReport('invalid_color')
+    if price is not None and (type(price) is not int or not 0<=price<=9007199254740991):raise InvalidReport('invalid_price')
+    if type(known) is not int or not 0<=known<=9007199254740991 or type(complete) is not bool or (available is not None and type(available) is not bool):raise InvalidReport('invalid_inventory')
+    locations=row.get('locations')
+    if not isinstance(locations,list) or len(locations)!=3:raise InvalidReport('invalid_locations')
+    names=set();quantities=[]
+    for loc in locations:
+        if not isinstance(loc,dict) or not isinstance(loc.get('name'),str) or len(loc['name'])>120 or loc['name'] in names:raise InvalidReport('invalid_location')
+        names.add(loc['name']);qty=loc.get('available')
+        if qty is not None and (type(qty) is not int or not 0<=qty<=9007199254740991):raise InvalidReport('invalid_quantity')
+        quantities.append(qty)
+    if sum(q for q in quantities if q is not None)!=known or complete!=all(q is not None for q in quantities):raise InvalidReport('inconsistent_inventory')
+    if available!=(True if known>0 else False if complete else None):raise InvalidReport('inconsistent_available')
+    result={k:row.get(k) for k in ('product_id','variant_id','color','size','price_vnd','available','known_available','inventory_complete','locations')}
+    result['product_url']=safe_url(row.get('product_url'))
+    return result
+
 def validate(report,request_id,args,turn_started=None):
+    if isinstance(report,dict) and report.get('schema')=='merly-product-discovery-v1':
+        import product_discovery
+        return product_discovery.validate(report,args,turn_started)
     if not isinstance(report,dict):raise InvalidReport('invalid_shape')
     version=report.get('schema')
     if version=='merly-stock-options-v2' or (version=='merly-stock-options-v1' and turn_started is not None):
@@ -52,29 +78,9 @@ def validate(report,request_id,args,turn_started=None):
     if report['complete'] and coverage.get('unclassified_variants',0):raise InvalidReport('false_complete')
     cleaned=[];seen=set();checked=0
     for row in rows:
-        if not isinstance(row,dict):raise InvalidReport('invalid_variant')
-        for k in ['product_id','variant_id']:
-            if type(row.get(k)) is not int or not 1<=row[k]<10**16:raise InvalidReport('invalid_identity')
-        if row['variant_id'] in seen:raise InvalidReport('duplicate_variant')
-        seen.add(row['variant_id'])
-        if row.get('size')!=str(report['size']):raise InvalidReport('wrong_size')
-        color=row.get('color');price=row.get('price_vnd');known=row.get('known_available');complete=row.get('inventory_complete');available=row.get('available')
-        if color is not None and (not isinstance(color,str) or len(color)>255):raise InvalidReport('invalid_color')
-        if price is not None and (type(price) is not int or not 0<=price<=9007199254740991):raise InvalidReport('invalid_price')
-        if type(known) is not int or not 0<=known<=9007199254740991 or type(complete) is not bool or (available is not None and type(available) is not bool):raise InvalidReport('invalid_inventory')
-        locations=row.get('locations')
-        if not isinstance(locations,list) or len(locations)!=3:raise InvalidReport('invalid_locations')
-        names=set();quantities=[]
-        for loc in locations:
-            if not isinstance(loc,dict) or not isinstance(loc.get('name'),str) or len(loc['name'])>120 or loc['name'] in names:raise InvalidReport('invalid_location')
-            names.add(loc['name']);qty=loc.get('available')
-            if qty is not None and (type(qty) is not int or not 0<=qty<=9007199254740991):raise InvalidReport('invalid_quantity')
-            quantities.append(qty)
-        if sum(q for q in quantities if q is not None)!=known or complete!=all(q is not None for q in quantities):raise InvalidReport('inconsistent_inventory')
-        if available!=(True if known>0 else False if complete else None):raise InvalidReport('inconsistent_available')
-        checked+=int(complete)
-        cleaned.append({k:row.get(k) for k in ['product_id','variant_id','color','size','price_vnd','available','known_available','inventory_complete','locations']})
-        cleaned[-1]['product_url']=safe_url(row.get('product_url'))
+        item=clean_variant(row,report['size'])
+        if item['variant_id'] in seen:raise InvalidReport('duplicate_variant')
+        seen.add(item['variant_id']);checked+=int(item['inventory_complete']);cleaned.append(item)
     if coverage['variants_checked']!=checked or coverage['variants_found']!=len(rows)+coverage['omitted_variants'] or coverage['candidate_products']!=coverage['products_checked']+coverage['unverified_products']:raise InvalidReport('inconsistent_coverage')
     age=report.get('catalog_age_seconds')
     if report['complete'] and (not coverage['candidate_products'] or coverage['unverified_products'] or coverage['omitted_variants'] or checked!=len(rows) or type(age) not in (int,float) or not 0<=age<=300):raise InvalidReport('false_complete')
@@ -95,6 +101,9 @@ def unverified(args):
     return result
 
 def classify(report):
+    if report.get('mode')=='discovery':
+        import product_discovery
+        return product_discovery.classify(report)
     status='complete' if report['complete'] else 'partial'
     if report.get('source_status')=='catalog_loading':status='catalog_loading'
     elif report.get('issues') and not any(v['available'] is True or v['inventory_complete'] for v in report['variants']):status='source_error'
@@ -146,7 +155,10 @@ def extract(items,request_id,turn_started=None):
     for cid,args in calls.items():
         good=reports.get(cid) if cid not in duplicates else None
         failed=unverified(args)
-        key=(failed.get('model_code'),failed.get('size'),failed.get('color_filter'))
+        if good and good.get('mode')=='discovery' or 'model_code' not in args or any(k in args for k in ('heel_cm','category','occasion')):
+            import product_discovery
+            key=('discovery',json.dumps(product_discovery.criteria(args),sort_keys=True))
+        else:key=(failed.get('model_code'),failed.get('size'),failed.get('color_filter'))
         if good:
             classify(good)
             grouped[key]=good
@@ -155,14 +167,18 @@ def extract(items,request_id,turn_started=None):
             allowed={'tool_invalid_arguments','tool_source_unavailable','tool_tool_unavailable','wrong_turn','stale_evidence','missing_turn_boundary','invalid_operation_id','invalid_checked_at','invalid_tool_output','tool_not_completed','missing_tool_output','duplicate_call_id','not_a_report','inconsistent_coverage','invalid_product_link','wrong_scope','wrong_size','wrong_color_scope','inconsistent_inventory','false_complete'}
             code=code if code in allowed else 'invalid_stock_contract'
             logging.getLogger('merly.stock').warning('MERLY_STOCK_REJECTED reason=%s',code)
-            if key in grouped and grouped[key].get('mode')=='all_options':
+            if key in grouped and grouped[key].get('mode') in ('all_options','discovery'):
                 grouped[key].update(complete=False,recheck_failed=True,operation_status='partial',reason_code=code)
+                if grouped[key]['mode']=='discovery':classify(grouped[key])
             else:
                 failed.update(operation_status='failed',reason_code=code);grouped[key]=failed
     values=list(grouped.values())
     return (values[0] if len(values)==1 else {'mode':'groups','groups':values}),True
 
 def summary(report):
+    if report.get('mode')=='discovery':
+        import product_discovery
+        return product_discovery.summary(report)
     if report['mode']=='groups':return 'Có '+str(len(report['groups']))+' phạm vi mẫu/size trong lượt tra này. Xem từng bảng bên dưới; bảng kiểm tra chưa đủ không phải kết luận hết hàng.'
     if report.get('operation_status')=='no_match':return 'Chưa tìm thấy mẫu phù hợp trong danh mục đã đồng bộ. Cần kiểm tra lại mã mẫu; đây không phải kết luận hết hàng.'
     if report.get('operation_status')=='catalog_loading':return 'Danh mục sản phẩm đang đồng bộ từ Haravan; lượt này chưa có kết quả tra tồn. Không phải thông báo hết hàng.'

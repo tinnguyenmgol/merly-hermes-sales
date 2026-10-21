@@ -67,13 +67,14 @@
     const title = document.createElement('h3');
     if (['failed','source_error','catalog_loading','no_match'].includes(report.operation_status)) panel.classList.add('stock-error');
     title.textContent = ['failed','source_error','catalog_loading','no_match'].includes(report.operation_status) || report.mode === 'unverified' ? 'Tra tồn chưa thành công' + (report.model_code ? ' · mẫu ' + report.model_code : '') + (report.size ? ' · size ' + report.size : '') : 'Mẫu ' + report.model_code + ' · size ' + report.size + (report.color_filter ? ' · màu ' + report.color_filter : ' · các màu');
+    if(report.mode==='discovery')title.textContent='Tìm theo tiêu chí · size '+report.criteria.size+(report.criteria.heel_cm!==undefined?' · gót '+report.criteria.heel_cm+'cm':'')+(report.criteria.color?' · '+report.criteria.color:'');
     panel.append(title);
     const note = document.createElement('p');
     note.textContent = report.recheck_failed ? 'Lần kiểm tra lại lỗi. Đây là kết quả đã tra trước đó, không phải xác nhận mới; chưa giữ hàng.' : ['failed','source_error','catalog_loading','no_match'].includes(report.operation_status) ? 'Chưa tra được tồn: công cụ lỗi, dữ liệu nguồn chưa đủ hoặc danh mục đang đồng bộ. Không phải thông báo hết hàng.' : report.complete === true ? 'Đã tra đủ các biến thể trong phạm vi mẫu/size của danh sách đang đồng bộ. Chưa giữ hàng.' : 'Chưa kiểm tra đầy đủ. Không coi màu/kho chưa xác minh là hết hàng.';
     if (report.resolution_path === 'direct_haravan') note.textContent = 'Kết quả đọc trực tiếp từ Haravan. ' + note.textContent;
     panel.append(note);
     if (typeof report.checked_at === 'string' && Number.isFinite(Date.parse(report.checked_at))) {
-      const stamp = document.createElement('p'); stamp.textContent = 'Bắt đầu tra lúc: ' + new Date(report.checked_at).toLocaleString('vi-VN'); panel.append(stamp);
+      const stamp = document.createElement('p'); stamp.textContent = (report.mode==='discovery'?'Cập nhật kết quả lúc: ':'Bắt đầu tra lúc: ') + new Date(report.checked_at).toLocaleString('vi-VN'); panel.append(stamp);
     }
     const rows = Array.isArray(report.variants) ? report.variants : [];
     for (const [value,label] of [[true,'Còn hàng đã xác minh'],[null,'Chưa xác minh đủ tồn'],[false,'Tồn 0 đã xác minh']]) {
@@ -82,6 +83,7 @@
       const heading = document.createElement('h4'); heading.textContent = label + ' (' + items.length + ')'; panel.append(heading);
       for (const item of items) {
         const card = document.createElement('div'); card.className = 'stock-option';
+        if(report.mode==='discovery'&&typeof item.title==='string'){const product=document.createElement('p');product.textContent=item.title;card.append(product);}
         const name = document.createElement('strong'); name.textContent = (item.color || 'Tên màu chưa xác minh') + ' · size ' + item.size; card.append(name);
         const price = document.createElement('p'); price.textContent = item.price_vnd === null ? 'Giá cần xác minh' : item.price_vnd.toLocaleString('vi-VN') + 'đ'; card.append(price);
         const stock = document.createElement('p');
@@ -96,7 +98,7 @@
         panel.append(card);
       }
     }
-    if (report.coverage && (report.coverage.unverified_products || report.coverage.omitted_variants || report.coverage.unclassified_variants)) {
+    if (report.coverage && (report.coverage.unverified_products || report.coverage.omitted_products || report.coverage.unknown_spec_products || report.coverage.omitted_variants || report.coverage.unclassified_variants)) {
       const warning = document.createElement('p');warning.textContent = 'Còn sản phẩm/biến thể chưa kiểm tra; danh sách này chưa phải toàn bộ lựa chọn.';panel.append(warning);
     }
     $('conversation').append(panel);
