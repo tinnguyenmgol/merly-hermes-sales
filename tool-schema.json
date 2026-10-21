@@ -27,7 +27,7 @@
     "/tools/search_products": {
       "post": {
         "operationId": "search_products",
-        "summary": "Search catalog; for model+size stock/available colors use check_stock=true to batch-check all options and return stock_report. Default discovery does not confirm stock.",
+        "summary": "Search verified product criteria; check_stock=true performs criteria search then fresh variant inventory, even without model_code. Requires confirmed size. Retains all requested filters; partial metadata/inventory is not no stock.",
         "requestBody": {
           "required": true,
           "content": {
@@ -80,7 +80,7 @@
                   },
                   "check_stock": {
                     "type": "boolean",
-                    "description": "True: read ALL available options of an exact model_code and confirmed size. Only provide model_code,size, optional color,check_stock. No technical request ID needed. Omit unused fields instead of null. Do not combine heel/category/occasion."
+                    "description": "With size: find candidates matching all supplied criteria, then fetch fresh variants and inventory. model_code is optional; never invent one."
                   }
                 },
                 "required": []

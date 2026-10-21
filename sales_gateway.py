@@ -87,7 +87,7 @@ def application(env,start):
                     rate=state.resource('STOCK')
                     if not rate['available']:return limited('stock_rate_limit',rate['retry_after'])
                     if shopping is not None:
-                        answer=hermes_client.search_catalog(shopping)
+                        answer=hermes_client.discover_products(shopping)
                         stock_scope_memory.forget(sid)
                         fast_replies.remember(sid,{'heel_cm':shopping['heel_cm'],'size':shopping['size']})
                         return result('200 OK',answer,token)

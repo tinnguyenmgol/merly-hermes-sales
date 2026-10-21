@@ -68,9 +68,11 @@ def verified_product_specs(product,approved):
 def search_products(data):
     validate(data,{'model_code':(str,1,32),'color':(str,1,40),'size':(int,35,43),'heel_cm':(float,0,15),'category':(str,1,60),'occasion':(str,1,60),'limit':(int,1,6),'check_stock':(bool,0,0),'stock_request_id':(str,32,32)})
     if data.get('check_stock'):
-        if not {'model_code','size'}<=set(data):raise Invalid('stock_scope_required')
+        if 'size' not in data:raise Invalid('stock_scope_required')
         if 'stock_request_id' in data and not re.fullmatch(r'[0-9a-f]{32}',data['stock_request_id']):raise Invalid('stock_scope_required')
-        if any(k in data for k in ('heel_cm','category','occasion')):raise Invalid('verify_specs_before_stock_scope')
+        if 'model_code' not in data or any(k in data for k in ('heel_cm','category','occasion')):
+            import product_discovery
+            return product_discovery.lookup(data,sys.modules[__name__])
         import stock_options
         if 'stock_request_id' not in data:
             import secrets
@@ -97,7 +99,7 @@ def search_products(data):
         for v in p['variants']:
             size=variant_size(p,v);color=variant_color(p,v)
             if 'size' in data and str(data['size'])!=size:continue
-            if 'color' in data and (color is None or catalog.norm(data['color']) not in catalog.norm(color)):continue
+            if 'color' in data and (color is None or catalog.norm(data['color'])!=catalog.norm(color)):continue
             variants.append({'variant_id':v['id'],'size':size,'color':color})
         if variants:
             results.append({'product_id':p['id'],'title':p.get('title',''),'image_url':image(p),'product_url':product_url(p),'variants':variants[:12],'variants_total':len(variants),'variants_truncated':len(variants)>12,'verified_specs':{k:meta[k] for k in ('heel_cm','category','occasion') if k in meta},'availability':'not_checked'})

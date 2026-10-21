@@ -49,7 +49,7 @@ def _route(sid,state):
     slots=state.get('slots',{});confirmed=set(state.get('confirmed',[]))
     if state.get('allow_fast') and state.get('intent')=='check_stock' and {'model_code','size'}<=confirmed and set(slots)<={'model_code','size','color'}:
         put(sid,state);return {'route':'stock','scope':dict(slots)}
-    if state.get('allow_fast') and state.get('intent')=='find_products' and {'heel_cm','size'}<=confirmed and set(slots)=={'heel_cm','size'}:
+    if state.get('allow_fast') and state.get('intent')=='find_products' and 'size' in confirmed and set(slots)<=confirmed and set(slots)<=FIELDS:
         put(sid,state);return {'route':'catalog','scope':dict(slots,limit=4)}
     put(sid,state);return {'route':'model'}
 
@@ -63,6 +63,8 @@ def prepare(sid,message):
     slots=state.setdefault('slots',{});confirmed=set(state.get('confirmed',[]))
     state['binding']=list(set(found)|(confirmed if previous_intent=='check_stock' and n.startswith(('con ','mau nay','mau do','doi nay','doi do')) else set()))
     pending=state.pop('pending',None)
+    if n in ('dung','dung roi','dung vay','ok','vang','yes') and pending and pending.get('kind')=='confirm_size':
+        seed(sid,pending['scope'],'find_products');return _route(sid,get(sid))
     if n in ('dung','dung roi','dung vay','ok','vang','yes') and pending and pending.get('kind')=='confirm_stock':
         scope=pending['scope'];seed(sid,scope);return _route(sid,get(sid))
     if pending and pending.get('kind')=='exact_heel_required':
@@ -120,6 +122,7 @@ def prepare(sid,message):
         if color is not None:
             slots['color']=color;confirmed.add('color');state['binding']=list(set(state.get('binding',[]))|{'color'})
         state['confirmed']=list(confirmed)
+        if state.get('intent') in ('check_stock','find_products'):state['binding']=list(confirmed)
         if state.get('allow_fast') and state.get('intent') in ('check_stock','find_products'):return _route(sid,state)
         if state.get('intent')=='find_products':put(sid,state);return {'route':'model'}
         state.update(intent='check_stock',allow_fast=False)
@@ -176,6 +179,11 @@ def observe(user,items):
             if {'model_code','size'}<=set(scope) and all(valid(k,v) for k,v in scope.items()):
                 state['pending']={'kind':'confirm_stock','scope':scope};state['allow_fast']=False;put(sid,state)
                 return 'Bạn muốn mình kiểm tra mẫu '+str(scope['model_code'])+' size '+str(scope['size'])+' phải không? Size theo số đo chỉ là tham khảo; mình chưa chốt size thay bạn.'
+            if valid('size',args.get('size')):
+                proposal={k:slots[k] for k in confirmed if k in slots and k!='model_code'}
+                proposal['size']=args['size']
+                state['pending']={'kind':'confirm_size','scope':proposal};state['allow_fast']=False;put(sid,state)
+                return 'Bạn muốn mình tìm và kiểm tra tồn size '+str(args['size'])+' phải không? Size từ số đo chỉ là tham khảo, mình chưa tự chốt size thay bạn.'
         proposal={k:v for k,v in args.items() if k in FIELDS and valid(k,v)}
         if state.get('intent')=='conversation':state['intent']='check_stock' if args.get('check_stock') is True else 'find_products'
         state['last_plan']={'intent':'check_stock' if args.get('check_stock') is True else 'find_products','slots':proposal,'customer_confirmed':False}

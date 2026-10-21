@@ -127,3 +127,19 @@ def search_catalog(scope):
         return {'reply':reply,'products':rows,'engine':'catalog-readonly','model_called':False,'stock_checked':False}
     except HermesError:raise
     except Exception:raise HermesError('stock_probe_unavailable') from None
+
+
+def discover_products(scope):
+    """Execute structured product criteria -> live inventory; no model call."""
+    if not configured():raise HermesError('sales_not_approved_or_configured')
+    started=time.time()
+    req=urllib.request.Request('http://hermes-sales:8644/discover',data=json.dumps(scope).encode(),headers={'Authorization':'Bearer '+os.environ['HERMES_SALES_API_KEY'],'Content-Type':'application/json'},method='POST')
+    try:
+        with urllib.request.build_opener(NoRedirect).open(req,timeout=30) as r:raw=r.read(262145)
+        if len(raw)>262144:raise ValueError()
+        from stock_report import summary
+        import product_discovery
+        report=product_discovery.validate(json.loads(raw)['stock_report'],scope,started)
+        return {'reply':summary(report),'stock_options':report,'engine':'criteria-live-inventory','model_called':False}
+    except HermesError:raise
+    except Exception:raise HermesError('stock_probe_unavailable') from None

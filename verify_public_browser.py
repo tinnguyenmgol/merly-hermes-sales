@@ -17,8 +17,8 @@ with tempfile.TemporaryDirectory(prefix='public-browser-') as tmp:
     searches=[]
     def search(scope):
         searches.append(scope)
-        return {'reply':'SYNTHETIC catalog; inventory not checked','products':[{'title':'Fixture <img src=x onerror=alert(1)>','product_url':'https://merlyshoes.com/products/fixture-only'}],'model_called':False}
-    c.search_catalog=search
+        return {'reply':'SYNTHETIC discovery','stock_options':{'mode':'discovery','criteria':scope,'complete':True,'products':[],'variants':[{'product_id':100,'title':'Fixture <img src=x onerror=alert(1)>','color':'Đen','size':str(scope['size']),'available':True,'price_vnd':310000,'locations':[{'name':'Kho fixture','available':1}],'product_url':'https://merlyshoes.com/products/fixture-only'}]},'model_called':False}
+    c.discover_products=search
     c.chat=lambda *a:(_ for _ in ()).throw(AssertionError('must not call model'))
     server=make_server('127.0.0.1',0,g.application,handler_class=Quiet)
     threading.Thread(target=server.serve_forever,daemon=True).start()
@@ -57,7 +57,7 @@ with tempfile.TemporaryDirectory(prefix='public-browser-') as tmp:
             page.locator('#message').fill('bảo hành bao lâu?');page.locator('#send').click()
             expect(page.locator('.assistant').last).to_contain_text('365')
             page.locator('#message').fill('cần mẫu 5cm size 41');page.locator('#send').click()
-            expect(page.locator('.stock strong').last).to_contain_text('Fixture <img')
+            expect(page.locator('.stock').last).to_contain_text('Fixture <img')
             assert page.locator('.stock img').count()==0
             assert searches==[{'heel_cm':5.0,'size':41,'limit':4}]
             context.route('https://merlyshoes.com/**',lambda route:route.fulfill(status=200,body='<script src="https://chat.merlyshoes.com/embed.js" defer></script><script src="https://chat.merlyshoes.com/embed.js" defer></script>',content_type='text/html'))
