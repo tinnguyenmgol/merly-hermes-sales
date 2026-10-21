@@ -2,7 +2,7 @@
 import hmac,json,os,time,secrets,logging,re
 from pathlib import Path
 import hermes_client,state
-import explicit_stock,stock_scope_memory,fast_replies,fast_limits
+import explicit_stock,stock_scope_memory,fast_replies,fast_limits,conversation
 import public_chat
 WEB=Path(__file__).resolve().with_name('pilot-web')
 SECURITY=[('X-Content-Type-Options','nosniff'),('Referrer-Policy','no-referrer'),('X-Frame-Options','DENY'),('Permissions-Policy','camera=(), microphone=(), geolocation=()'),('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'")]
@@ -36,7 +36,7 @@ def application(env,start):
     if env.get('PATH_INFO')=='/api/logout' and env.get('REQUEST_METHOD')=='POST':
         try:
             if env.get('HTTP_COOKIE'):
-                _,sid=state.identity(env['HTTP_COOKIE']);state.clear(sid);stock_scope_memory.forget(sid);fast_replies.forget(sid)
+                _,sid=state.identity(env['HTTP_COOKIE']);state.clear(sid);stock_scope_memory.forget(sid);fast_replies.forget(sid);conversation.forget(sid)
         except Exception:return result('503 Service Unavailable',{'error':'pilot_unavailable'})
         body=json.dumps({'status':'logged_out'}).encode()
         start('200 OK',[('Content-Type','application/json'),('Content-Length',str(len(body))),('Cache-Control','no-store'),('Set-Cookie','merly_hermes_pilot=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0'),*SECURITY])
@@ -65,13 +65,22 @@ def application(env,start):
         with fast_limits.session(sid) as acquired:
             if not acquired:return limited('turn_in_progress')
             cid=state.touch(sid)
+            had_context=bool(conversation.get(sid))
+            decision=None if probe else conversation.prepare(sid,data['message'])
+            if not had_context and cid and decision and decision.get('reason')=='missing_selection':decision={'route':'model'}
+            if decision and decision['route']=='clarify':
+                return result('200 OK',{'reply':decision['reply'],'engine':'clarification','model_called':False},token)
+            if decision and conversation.get(sid).get('reset'):
+                stock_scope_memory.forget(sid);fast_replies.forget(sid)
             if not probe:
                 quick=fast_replies.policy(data['message'])
                 if quick is not None:
-                    fast_replies.remember(sid,{'policy_topic':quick.pop('_topic')})
+                    topic=quick.pop('_topic')
+                    fast_replies.remember(sid,{'policy_topic':topic});conversation.policy_turn(sid,topic)
                     return result('200 OK',quick,token)
-            scope=data if probe else explicit_stock.parse(data['message'])
-            shopping=None if probe else fast_replies.shopping(data['message'])
+            scope=data if probe else decision.get('scope') if decision['route']=='stock' else None
+            shopping=decision.get('scope') if decision and decision['route']=='catalog' else None
+            if probe:conversation.seed(sid,data)
             if scope is not None or shopping is not None:
                 with fast_limits.slot('STOCK') as available:
                     if not available:return limited('stock_capacity')

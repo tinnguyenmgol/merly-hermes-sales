@@ -59,10 +59,12 @@ def chat(message,user,previous_response_id=''):
     stock_request_id=secrets.token_hex(16)
     payload={'input':message,'instructions':Path(__file__).with_name('SYSTEM-PROMPT.md').read_text(),'stream':False,'store':True}
 
-    import stock_scope_memory
-    payload['instructions']+=stock_scope_memory.instructions(user)
-    import fast_replies
-    payload['instructions']+=fast_replies.instructions(user)
+    import stock_scope_memory,fast_replies,conversation
+    structured=conversation.instructions(user)
+    if structured:payload['instructions']+=structured
+    else:
+        payload['instructions']+=stock_scope_memory.instructions(user)
+        payload['instructions']+=fast_replies.instructions(user)
     model=os.getenv('HERMES_SALES_MODEL_ALIAS','')
     if model:payload['model']=model
     if previous_response_id:payload['previous_response_id']=previous_response_id
@@ -78,6 +80,8 @@ def chat(message,user,previous_response_id=''):
     if not final:raise HermesError('missing_final_message')
     text=''.join(part.get('text','') for part in final[-1].get('content',[]) if isinstance(part,dict) and part.get('type')=='output_text' and isinstance(part.get('text'),str))
     if not text.strip() or len(text)>12000:raise HermesError('invalid_answer')
+    clarification=conversation.observe(user,data.get('output',[]))
+    if clarification is not None:return {'reply':clarification,'conversation_id':rid,'needs_clarification':True}
     from stock_report import extract,summary
     report,stock_requested=extract(data.get('output',[]),stock_request_id,turn_started=turn_started)
     stock_scope_memory.after_model_turn(user,data.get('output',[]))

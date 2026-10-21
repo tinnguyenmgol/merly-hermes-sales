@@ -19,8 +19,9 @@ def test_context_isolation_raw_input(configured,monkeypatch):
         calls.append((message,user,rid));return {'reply':'SYNTHETIC CONTRACT RESPONSE','conversation_id':'resp_'+str(len(calls))}
     monkeypatch.setattr(client,'chat',fake)
     a=call('size 39 chân dài bao nhiêu');cookie=a['headers']['Set-Cookie'].split(';')[0]
-    b=call('có mẫu nào cao 5cm ko',cookie=cookie);c=call('size 39')
-    assert all(x['status'].startswith('200') for x in (a,b,c))
+    b=call('có mẫu nào cao 5cm ko',cookie=cookie);c=call('size 39');d=call('tư vấn cho người mới')
+    assert all(x['status'].startswith('200') for x in (a,b,c,d))
+    assert c['body']['engine']=='clarification'
     assert calls[1][0]=='có mẫu nào cao 5cm ko' and calls[1][2]=='resp_1'
     assert calls[0][1]==calls[1][1]!=calls[2][1]
     assert calls[2][2]==''
