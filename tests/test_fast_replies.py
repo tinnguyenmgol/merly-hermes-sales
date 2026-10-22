@@ -21,12 +21,13 @@ def test_policy_and_stock_survive_exhausted_ai(configured,monkeypatch):
     c=call('tư vấn giúp tôi chọn giày đi tiệc');assert c['status'].startswith('429')
     assert c['body']['error']=='daily_budget_limit' and count_ai()==100
 
-def test_exact_shopping_query_bypasses_paid_ai(configured,monkeypatch):
+def test_general_criteria_use_native_agent_budget_not_regex_catalog_route(configured,monkeypatch):
     exhausted();seen=[]
     monkeypatch.setattr(client,'chat',lambda *a:pytest.fail('no inference'))
     monkeypatch.setattr(client,'discover_products',lambda scope:seen.append(scope) or {'reply':'missing verified metadata, not no stock','model_called':False})
     r=call('cần mẫu 5cm size 41')
-    assert r['status'].startswith('200') and seen==[{'heel_cm':5.0,'size':41,'limit':4}] and count_ai()==100
+    assert r['status'].startswith('429') and r['body']['error']=='daily_budget_limit'
+    assert seen==[] and count_ai()==100
 
 @pytest.mark.parametrize('text',['cần mẫu 5cm size 41 màu đen','không muốn mẫu 5cm size41','size 041 gót 5cm','cần mẫu 5cm size 44','cần mẫu 15.5cm size41','cần mẫu 5cm size41 hoặc 42'])
 def test_no_ignored_criteria(text):assert fast.shopping(text) is None

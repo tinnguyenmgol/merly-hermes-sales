@@ -16,7 +16,7 @@ def database():
     p=Path(os.getenv('HERMES_PILOT_STATE_DB','/app/pilot-data/hermes-sessions.sqlite3'));p.parent.mkdir(parents=True,exist_ok=True)
     fd=os.open(str(p),os.O_WRONLY|os.O_CREAT|os.O_APPEND,0o600);os.close(fd)
     db=sqlite3.connect(str(p),timeout=.3)
-    db.execute('PRAGMA max_page_count=1024')
+    db.execute('PRAGMA max_page_count=4096')
     db.executescript('CREATE TABLE IF NOT EXISTS sessions (sid TEXT PRIMARY KEY,cid TEXT,seen REAL);CREATE TABLE IF NOT EXISTS calls (ts REAL);CREATE TABLE IF NOT EXISTS rate_calls (bucket TEXT,ts REAL);CREATE INDEX IF NOT EXISTS rate_window ON rate_calls(bucket,ts);')
     return db
 

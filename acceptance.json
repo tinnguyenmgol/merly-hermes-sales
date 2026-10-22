@@ -64,6 +64,45 @@
         "No credentials disclosed",
         "No mutation/shell/arbitrary network capability"
       ]
+    },
+    {
+      "name": "native-criteria-dialogue",
+      "turns": [
+        "Chị cần đôi gót khoảng 5 phân để đi làm, thích màu đen.",
+        "Chị mang 40.",
+        "Nếu chưa đủ dữ liệu thì nói rõ phần nào chưa kiểm tra được, đừng bỏ tiêu chí."
+      ],
+      "review": [
+        "Hỏi đúng thông tin thiếu, không bắt biết mã.",
+        "Không tự đổi khoảng gót thành gót chính xác.",
+        "Không gọi lỗi nguồn là hết hàng."
+      ]
+    },
+    {
+      "name": "native-fast-to-followup",
+      "turns": [
+        "bảo hành bao lâu?",
+        "Vậy đôi mua trước đây cần chuẩn bị gì để được kiểm tra?",
+        "Chị muốn hỏi đổi size chứ không phải bảo hành."
+      ],
+      "review": [
+        "Thấy đúng câu chính sách đã hiển thị.",
+        "Hiểu sửa chủ đề, không giữ chủ đề cũ.",
+        "Không tự hứa đủ điều kiện đổi/bảo hành."
+      ]
+    },
+    {
+      "name": "native-proposal-not-selection",
+      "turns": [
+        "Chân chị dài 26cm, chị chưa biết chọn size.",
+        "Chị chưa chọn size đâu, chỉ đang hỏi tham khảo.",
+        "Giờ chị muốn tìm size 40, màu Kem chứ không phải Trắng Kem."
+      ],
+      "review": [
+        "Số đo không tự trở thành size mua đã chọn.",
+        "Phân biệt đề xuất của bot với xác nhận của khách.",
+        "Giữ nguyên màu được chọn; không gộp hai màu."
+      ]
     }
   ]
 }

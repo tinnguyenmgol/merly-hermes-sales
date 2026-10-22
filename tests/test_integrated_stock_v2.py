@@ -54,7 +54,7 @@ def test_duplicate_call_id_cannot_replace_scope(source):
     start=time.time();r,_=s.extract(wire(fresh())+wire(fresh()),'unused',turn_started=start)
     assert r['operation_status']=='failed'
 
-def test_completed_client_independent_of_model_color_summary(source,approved,monkeypatch):
+def test_completed_client_keeps_native_language_and_independent_source_cards(source,approved,monkeypatch):
     monkeypatch.setattr(c,'audit',lambda:True)
     def request(path,payload):
         assert 'Mã lượt tra tồn hiện tại:' not in payload['instructions']
@@ -62,7 +62,7 @@ def test_completed_client_independent_of_model_color_summary(source,approved,mon
         return {'status':'completed','id':'resp_native_case','output':wire(fresh())}
     monkeypatch.setattr(c,'request',request)
     r=c.chat('synthetic availability request','synthetic-scope')
-    assert 'omitted colors' not in r['reply']
+    assert 'omitted colors' in r['reply']
     assert {'Kem','Chì Bóng'}<={v['color'] for v in r['stock_options']['variants']}
 
 def test_source_error_is_not_empty_success(source,monkeypatch,caplog):

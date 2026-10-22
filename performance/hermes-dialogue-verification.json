@@ -1,0 +1,30 @@
+{
+  "branch_base": "f562291b051cf21fe8bc5d8d21771b4baebfc4d2",
+  "unit_integration": {
+    "tests": 433,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "browser": {
+    "four_issues_ui": "PASS",
+    "public_iframe": "PASS",
+    "native_decisions": "SCRIPTED_FIXTURES_NOT_REAL_MODEL"
+  },
+  "native_protocol": "Pinned Hermes Responses parser and admissions exercised",
+  "paid_model_calls": 0,
+  "live_haravan_calls": 0,
+  "live_semantic_evaluation": {
+    "status": "NOT_RUN",
+    "reason": "No approved test endpoint/key or model-cost approval in Workspace"
+  },
+  "production_modified": false,
+  "new_framework_dependencies": [],
+  "history_caps": {
+    "sessions": 64,
+    "turn_pairs": 8,
+    "utf8_bytes": 64000,
+    "logical_ttl_seconds": 1800
+  },
+  "local_load_report": "performance/hermes-dialogue-local-load.json"
+}

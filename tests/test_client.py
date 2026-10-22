@@ -7,6 +7,7 @@ import safety,audit_instance
 @pytest.fixture
 def approved(tmp_path,monkeypatch):
     for k,v in {'HERMES_SALES_API_BASE':'https://sales.example.invalid/v1','HERMES_SALES_API_KEY':'K'*40,'HERMES_SALES_ISOLATION_APPROVED':'1','HERMES_CUSTOMER_DATA_APPROVED':'1','HERMES_MODEL_COST_APPROVED':'1'}.items():monkeypatch.setenv(k,v)
+    monkeypatch.setenv('HERMES_PILOT_STATE_DB',str(tmp_path/'client-sessions.db'))
     p=tmp_path/'audit.json'
     record={'created_at':time.time(),'api_base':c.endpoint(),'tools':sorted(c.EXPECTED),'memory_enabled':False,'user_profile_enabled':False}
     p.write_text(json.dumps({'record':record,'signature':safety.digest(record,'K'*40)}));monkeypatch.setenv('HERMES_SALES_ATTESTATION',str(p))
@@ -26,8 +27,8 @@ def test_response_contract_and_no_reasoning_leak(approved,monkeypatch):
     out=c.chat('có mẫu nào cao 5cm ko','merly-sales:web:opaque','resp_previous')
     assert out['reply']=='FINAL'
     payload=calls[-1][1]
-    assert payload['input']=='có mẫu nào cao 5cm ko' and payload['previous_response_id']=='resp_previous'
-    assert payload['store'] is True and payload['stream'] is False
+    assert payload['input']=='có mẫu nào cao 5cm ko' and 'previous_response_id' not in payload
+    assert payload['store'] is False and payload['stream'] is False
 
 @pytest.mark.parametrize('status',['failed','cancelled','in_progress','incomplete'])
 def test_unsuccessful_not_completed(approved,monkeypatch,status):

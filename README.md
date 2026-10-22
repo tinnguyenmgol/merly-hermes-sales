@@ -1,3 +1,5 @@
+> Bản refactor hội thoại: xem [HERMES-LED-DIALOGUE.md](HERMES-LED-DIALOGUE.md). Chưa nghiệm thu model thật; không tự deploy.
+
 # Merly Hermes sales pilot — no production cutover
 
 ## Status / architecture

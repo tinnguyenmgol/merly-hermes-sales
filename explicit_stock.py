@@ -17,6 +17,8 @@ def parse(message):
     for index,pattern in enumerate(_PATTERNS):
         match=pattern.fullmatch(text)
         if not match:continue
+        code=match.group('model')
+        if re.fullmatch(r'[0-9]+(?:[.,][0-9]+)?(?:cm|mm|m|inch|in|kg|g|phan)',code,re.I) and not re.match(r'^(?:sku|mã|ma)\b',text,re.I):return None
         question=match.group('question').casefold().replace('đ','d')
         question=''.join(ch for ch in unicodedata.normalize('NFD',question) if unicodedata.category(ch)!='Mn')
         question=re.sub(r'[?!.]+',' ',question)

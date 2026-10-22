@@ -47,7 +47,7 @@ def test_at_most_one_direct_attempt_for_multiple_scopes(source):
     r=d.recover(report,items()+items({**ARGS,'model_code':'1676'}),probe,time.time())
     assert len(calls)==1 and r['groups'][1]['operation_status']=='failed'
 
-def test_client_returns_source_after_model_tool_failure(source,approved,monkeypatch):
+def test_client_does_not_hide_tool_failure_with_gateway_lookup(source,approved,monkeypatch):
     monkeypatch.setattr(c,'audit',lambda:True);requests=[];probes=[]
     def request(path,payload):
         requests.append(path);output=wire(fresh());output[1]['output']='{"error":"invalid tool arguments"}'
@@ -55,9 +55,9 @@ def test_client_returns_source_after_model_tool_failure(source,approved,monkeypa
     def probe(scope,timeout):probes.append(scope);return {'stock_options':evidence(source)}
     monkeypatch.setattr(c,'request',request);monkeypatch.setattr(c,'probe_stock',probe)
     r=c.chat('synthetic explicit stock question','isolated-fixture')
-    assert requests==['/responses'] and probes==[{'model_code':'1514','size':38}]
-    assert r['stock_options']['resolution_path']=='direct_haravan'
-    assert {'Kem','Chì Bóng'}<={v['color'] for v in r['stock_options']['variants']}
+    assert requests==['/responses'] and probes==[]
+    assert r['stock_options']['mode']=='unverified'
+    assert r['lookup_incomplete'] and r['answer_mode']=='evidence_guard'
 
 def test_mcp_source_failure_uses_working_parent_api_reader(source):
     report={**evidence(source),'variants':[],'complete':False,'operation_status':'source_error'}

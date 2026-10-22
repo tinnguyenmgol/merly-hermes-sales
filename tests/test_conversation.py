@@ -47,7 +47,7 @@ def test_isolation_expiry_bounded(monkeypatch):
     for i in range(3):ctx.seed(str(i),{'size':41})
     assert len(ctx._STATE)==2
 
-def plan(**args):return [{'type':'function_call','name':'mcp__merly__search_products','arguments':json.dumps(args)}]
+def plan(**args):return [{'type':'function_call','name':'mcp__merly__search_products','call_id':'call_semantic','arguments':json.dumps(args)}]
 def test_dropped_criteria_rejected_before_display():
     ctx.prepare('a','tìm giày gót 5cm size41 màu đen')
     assert ctx.observe('merly-sales:web:a',plan(size=41,heel_cm=5)) is not None
@@ -81,16 +81,18 @@ def test_reset_disallows_old_model_plan():
     ctx.prepare('a','tìm mẫu khác')
     assert 'mã mẫu cũ' in ctx.observe('merly-sales:web:a',plan(model_code='1514',size=41))
 
-def test_gateway_multi_turn_uses_new_stock_each_time_and_no_ai(configured,monkeypatch):
+def test_gateway_followups_belong_to_hermes_not_legacy_slots(configured,monkeypatch):
     scopes=[]
-    monkeypatch.setattr(client,'chat',lambda *a:pytest.fail('followup must not invoke AI'))
+    turns=[]
+    monkeypatch.setattr(client,'chat',lambda *a:turns.append(a) or {'reply':'native followup','conversation_id':'resp_followup'})
     monkeypatch.setattr(client,'probe_stock',lambda s:scopes.append(dict(s)) or {'reply':'fixture','model_called':False})
     r=call('mẫu 1514 size41 còn không');cookie=r['headers']['Set-Cookie'].split(';')[0]
     assert call('màu đen thì sao',cookie=cookie)['status'].startswith('200')
     assert call('còn42',cookie=cookie)['status'].startswith('200')
-    assert scopes==[{'model_code':'1514','size':41},{'model_code':'1514','size':41,'color':'đen'},{'model_code':'1514','size':42,'color':'đen'}]
+    assert scopes==[{'model_code':'1514','size':41}]
+    assert [t[0] for t in turns]==['màu đen thì sao','còn42']
     import state
-    db=state.database();assert db.execute('SELECT count(*) FROM calls').fetchone()[0]==0;db.close()
+    db=state.database();assert db.execute('SELECT count(*) FROM calls').fetchone()[0]==2;db.close()
 
 def test_client_semantic_contract_one_model_turn_and_no_unsafe_report(configured,monkeypatch):
     from test_client import responses
@@ -104,9 +106,9 @@ def test_client_semantic_contract_one_model_turn_and_no_unsafe_report(configured
     r=client.chat('tìm giày gót5cm size41 màu đen',user,'resp_prior')
     assert r['lookup_incomplete'] and 'stock_options' not in r
     assert 'không cần nhập lại' in r['reply']
-    assert len(seen)==1 and seen[0][1]['previous_response_id']=='resp_prior'
-    assert 'LATEST_STRUCTURED_CUSTOMER_CONTEXT' in seen[0][1]['instructions']
-    assert 'last_plan' in seen[0][1]['instructions'] or 'hợp đồng yêu cầu' in seen[0][1]['instructions']
+    assert len(seen)==1 and 'previous_response_id' not in seen[0][1]
+    assert 'LATEST_STRUCTURED_CUSTOMER_CONTEXT' not in seen[0][1]['instructions']
+    assert seen[0][1]['conversation_history']==[]
 
 def test_model_understands_rich_request_then_followup_is_not_forced_to_old_sku():
     text='Có đôi nào gót 5 phân để đi làm, em mang 41 không?'
