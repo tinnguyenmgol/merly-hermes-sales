@@ -54,21 +54,19 @@ def audit():
     return True
 
 def chat(message,user,previous_response_id=''):
+    """One native agent run; explicit delivered history, not hidden response chains.
+    previous_response_id is a compatibility/diagnostic argument, never replayed:
+    native chains can contain wording the adapter did not deliver to the customer.
+    """
+    import dialogue
     turn_started=time.time()
     audit()
-    stock_request_id=secrets.token_hex(16)
-    payload={'input':message,'instructions':Path(__file__).with_name('SYSTEM-PROMPT.md').read_text(),'stream':False,'store':True}
-
-    import stock_scope_memory,fast_replies,conversation
-    structured=conversation.instructions(user)
-    if structured:payload['instructions']+=structured
-    else:
-        payload['instructions']+=stock_scope_memory.instructions(user)
-        payload['instructions']+=fast_replies.instructions(user)
+    payload={'input':message,'instructions':Path(__file__).with_name('SYSTEM-PROMPT.md').read_text(),
+             'conversation_history':dialogue.history(dialogue.sid(user)),
+             'stream':False,'store':False,
+             '_session_scope':user+':turn:'+secrets.token_hex(8)}
     model=os.getenv('HERMES_SALES_MODEL_ALIAS','')
     if model:payload['model']=model
-    if previous_response_id:payload['previous_response_id']=previous_response_id
-    payload['_session_scope']=user
     data=request('/responses',payload)
     if data.get('status')!='completed':
         exc=HermesError('turn_not_completed')
@@ -76,42 +74,9 @@ def chat(message,user,previous_response_id=''):
         raise exc
     rid=data.get('id')
     if not isinstance(rid,str) or not re.fullmatch(r'resp_[A-Za-z0-9_-]{1,120}',rid):raise HermesError('invalid_response_id')
-    final=[item for item in data.get('output',[]) if isinstance(item,dict) and item.get('type')=='message' and item.get('role','assistant')=='assistant' and item.get('phase')!='commentary']
-    if not final:raise HermesError('missing_final_message')
-    text=''.join(part.get('text','') for part in final[-1].get('content',[]) if isinstance(part,dict) and part.get('type')=='output_text' and isinstance(part.get('text'),str))
-    if not text.strip() or len(text)>12000:raise HermesError('invalid_answer')
-    import request_resolution
-    items=data.get('output',[])
-    clarification=conversation.observe(user,items)
-    if clarification is not None:
-        recovered=request_resolution.recover(user,items,discover_products,turn_started)
-        if recovered is not None:
-            return {**recovered,'conversation_id':rid,'model_called':True}
-        context=conversation.get(user.split('merly-sales:web:',1)[-1])
-        genuine=context.get('pending') or context.get('needs_clarification')
-        if genuine:return {'reply':clarification,'conversation_id':rid,'needs_clarification':True}
-        return {'reply':request_resolution.failure_reply(user),'conversation_id':rid,'lookup_incomplete':True}
+    from agent_answer import present
+    return present(data,rid,turn_started)
 
-    from stock_report import extract,summary
-    report,stock_requested=extract(data.get('output',[]),stock_request_id,turn_started=turn_started)
-    stock_scope_memory.after_model_turn(user,data.get('output',[]))
-    if not stock_requested and request_resolution.resolve(user,items) is not None:
-        recovered=request_resolution.recover(user,items,discover_products,turn_started)
-        if recovered is not None:return {**recovered,'conversation_id':rid,'model_called':True}
-        text=request_resolution.failure_reply(user)
-    if stock_requested and report.get('mode')=='unverified' and report.get('reason_code') in ('tool_invalid_arguments','missing_tool_output','not_a_report','invalid_tool_output','invalid_stock_contract'):
-        recovered=request_resolution.recover(user,items,discover_products,turn_started)
-        if recovered is not None:return {**recovered,'conversation_id':rid,'model_called':True}
-    if stock_requested:
-        from direct_stock import recover
-        report=recover(report,data.get('output',[]),probe_stock,turn_started)
-        text=request_resolution.failure_reply(user) if report.get('mode')=='unverified' else summary(report)
-    from source_links import collect
-    result={'reply':text,'conversation_id':rid,'source_links':collect(data.get('output',[]))}
-    if report is not None:
-        result['stock_options']=report
-        if report.get('mode')=='unverified':result['lookup_incomplete']=True
-    return result
 
 def probe_stock(scope,timeout=30):
     """Compose-only private endpoint, authenticated; no inference request."""

@@ -102,7 +102,8 @@ def test_full_tool_call_provenance_and_report_extraction(setup):
     r,requested=stock_report.extract(items,None,start)
     assert requested and r['mode']=='discovery' and all(v['available'] for v in r['variants'])
 
-def test_real_agent_adapter_routes_report_without_narrowing_criteria(setup,monkeypatch):
+def test_real_agent_adapter_routes_report_without_narrowing_criteria(setup,monkeypatch,tmp_path):
+    monkeypatch.setenv("HERMES_PILOT_STATE_DB",str(tmp_path/"agent-sessions.db"))
     import hermes_client as client,mcp_server,conversation as ctx
     from test_client import responses
     user='merly-sales:web:'+'b'*64;message='tìm giày cao 10cm size42 màu đen'
@@ -117,7 +118,7 @@ def test_real_agent_adapter_routes_report_without_narrowing_criteria(setup,monke
     monkeypatch.setattr(client,'request',request)
     r=client.chat(message,user)
     assert calls==['/responses'] and r['stock_options']['mode']=='discovery'
-    assert '1 mẫu còn hàng' in r['reply']
+    assert r['reply']=='FINAL' and len(r['stock_options']['variants'])==3
 
 def test_supported_criteria_with_model_are_not_rejected_or_dropped(setup):
     setup['products'][0]['title']='Giày cao gót 10cm mã GN-025'

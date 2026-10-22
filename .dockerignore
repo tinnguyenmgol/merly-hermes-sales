@@ -50,3 +50,8 @@
 
 !request_resolution.py
 !source_links.py
+
+!dialogue.py
+!agent_answer.py
+!catalog_view.py
+!tool_evidence.py

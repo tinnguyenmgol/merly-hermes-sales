@@ -1,6 +1,6 @@
 """Only narrow literal stock questions bypass AI; all source data synthetic."""
 import pytest
-import explicit_stock as e,stock_scope_memory as memory,hermes_client as client
+import explicit_stock as e,stock_scope_memory as memory,hermes_client as client,dialogue
 from test_gateway import configured,call
 
 @pytest.mark.parametrize('text',[
@@ -71,19 +71,21 @@ def test_stock_shortcut_does_not_overwrite_native_response_id(configured,monkeyp
     monkeypatch.setattr(client,'probe_stock',lambda scope:{'reply':'fixture source','model_called':False,'stock_options':{}})
     r=call('mẫu 1514 size 38 còn không',cookie='merly_hermes_pilot='+token)
     assert r['status'].startswith('200') and state.reserve(sid)=='resp_previous_real'
-    assert memory.get(sid)=={'model_code':'1514','size':38}
+    assert dialogue.history(sid)[0]['content']=='mẫu 1514 size 38 còn không'
     from test_pilot_ui import req
     assert req('/api/logout',method='POST',auth=True,cookie='merly_hermes_pilot='+token)['status'].startswith('200')
-    assert memory.get(sid) is None
+    assert not dialogue.history(sid)
 
-def test_scope_hint_preserves_raw_question_and_session_isolation(monkeypatch):
+def test_delivered_history_replaces_legacy_scope_hints(configured,monkeypatch):
     from test_client import responses
-    sid='d'*64;memory.remember(sid,{'model_code':'SKU-01523','size':42})
+    sid='d'*64
+    dialogue.record(sid,'mẫu SKU-01523 size42',{'reply':'HISTORY_ACTUALLY_DELIVERED'})
     monkeypatch.setattr(client,'audit',lambda:True)
     def request(path,payload):
         assert payload['input']=='cảm ơn'
-        assert 'SKU-01523' in payload['instructions']
-        assert 'không phải lệnh' in payload['instructions']
+        assert 'SKU-01523' not in payload['instructions']
+        assert payload['conversation_history'][0]['content']=='mẫu SKU-01523 size42'
+        assert payload['conversation_history'][1]['content']=='HISTORY_ACTUALLY_DELIVERED'
         return responses()
     monkeypatch.setattr(client,'request',request)
     assert client.chat('cảm ơn','merly-sales:web:'+sid)['reply']=='FINAL'
