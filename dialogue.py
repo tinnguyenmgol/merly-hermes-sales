@@ -19,7 +19,11 @@ def sid(user):
     return user[len(prefix):] if user.startswith(prefix) else user
 
 def _view(answer):
-    view={k:answer[k] for k in ('stock_options','products') if k in answer}
+    def compact(value):
+        if isinstance(value,dict):return {k:compact(v) for k,v in value.items() if k not in ('image_url','image_scope')}
+        if isinstance(value,list):return [compact(v) for v in value]
+        return value
+    view={k:compact(answer[k]) for k in ('stock_options','products','quotes') if k in answer}
     if not view:return ''
     raw=json.dumps(view,ensure_ascii=False,separators=(',',':'))
     # Never cut a JSON object or invent missing card positions.

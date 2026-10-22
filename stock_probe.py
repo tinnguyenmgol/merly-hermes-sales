@@ -23,9 +23,9 @@ def make_server(address=('0.0.0.0',8644)):
                 data=json.loads(self.rfile.read(n))
                 if self.path=='/discover':
                     if isinstance(data,dict) and type(data.get('heel_cm')) is int:data=dict(data,heel_cm=float(data['heel_cm']))
-                    allowed={'model_code','size','color','heel_cm','category','occasion','limit'}
+                    allowed={'query','collection','model_code','size','color','heel_cm','category','occasion','limit'}
                     if not isinstance(data,dict) or set(data)-allowed or 'size' not in data:raise ValueError()
-                    tools.validate(data,{'model_code':(str,1,32),'size':(int,35,43),'color':(str,1,40),'heel_cm':(float,0,15),'category':(str,1,60),'occasion':(str,1,60),'limit':(int,1,4)})
+                    tools.validate(data,{'query':(str,1,120),'collection':(str,1,120),'model_code':(str,1,32),'size':(int,35,43),'color':(str,1,40),'heel_cm':(float,0,15),'category':(str,1,60),'occasion':(str,1,60),'limit':(int,1,4)})
                 elif self.path=='/catalog-search':
                     if not isinstance(data,dict) or set(data)!={'heel_cm','size','limit'}:raise ValueError()
                     tools.validate(data,{'heel_cm':(float,0,15),'size':(int,35,43),'limit':(int,1,4)})

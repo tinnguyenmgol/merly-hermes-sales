@@ -1,0 +1,20 @@
+{
+  "base_main": "4869f73fb108ce291746c77fa20225f02bdfb55a",
+  "unit_integration": {
+    "tests": 478,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "chromium": {
+    "catalog_images": "PASS",
+    "public_iframe": "PASS",
+    "four_issues_regression": "PASS"
+  },
+  "provider": "SCRIPTED_NOT_LIVE",
+  "haravan_api": "FIXTURES_NOT_LIVE",
+  "public_photo_source": "https://merlyshoes.com/collections/all",
+  "preview_stock": "SIMULATED_NOT_ACTUAL",
+  "paid_model_calls": 0,
+  "production_changes": false
+}

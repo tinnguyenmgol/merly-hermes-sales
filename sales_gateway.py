@@ -94,6 +94,7 @@ def application(env,start):
                 body={'reply':reply['reply'],'engine':'hermes','source_links':reply.get('source_links',[]),'needs_clarification':reply.get('needs_clarification') is True,'lookup_incomplete':reply.get('lookup_incomplete') is True,'answer_mode':reply.get('answer_mode','native')}
                 if 'stock_options' in reply:body['stock_options']=reply['stock_options']
                 if 'products' in reply:body['products']=reply['products']
+                if 'quotes' in reply:body['quotes']=reply['quotes']
                 return deliver(body)
     except hermes_client.HermesError as exc:
         code=str(exc)

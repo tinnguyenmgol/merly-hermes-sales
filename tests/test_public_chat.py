@@ -97,12 +97,14 @@ def test_old_already_checked_tabs_still_work(public,monkeypatch):
     r=req('/api/public/chat','POST',cookie,token,data={'message':'mẫu 1514 38 còn màu gì','consent':True})
     assert r['status'].startswith('200')
 
-def test_official_logo_is_public_png_and_csp_allows_only_own_images(public):
+def test_official_logo_and_explicit_product_cdn_csp(public):
     r=req('/merly-logo.png')
     assert r['status'].startswith('200') and r['headers']['Content-Type']=='image/png'
     assert r['raw'].startswith(b'\x89PNG\r\n\x1a\n')
     html=req('/')
-    assert "img-src 'self';" in html['headers']['Content-Security-Policy']
+    csp=html['headers']['Content-Security-Policy']
+    assert "img-src 'self' https://product.hstatic.net https://file.hstatic.net https://cdn.hstatic.net https://theme.hstatic.net;" in csp
+    assert '*' not in csp and 'data:' not in csp and "script-src 'self';" in csp
     assert b'/merly-logo.png' in html['raw']
     js=req('/embed.js')['raw']
     assert b'/merly-logo.png' in js and b'.tip{' not in js
