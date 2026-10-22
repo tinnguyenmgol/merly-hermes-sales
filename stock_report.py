@@ -46,6 +46,10 @@ def clean_variant(row,size):
     if available!=(True if known>0 else False if complete else None):raise InvalidReport('inconsistent_available')
     result={k:row.get(k) for k in ('product_id','variant_id','color','size','price_vnd','available','known_available','inventory_complete','locations')}
     result['product_url']=safe_url(row.get('product_url'))
+    from media_urls import safe_image
+    result['image_url']=safe_image(row.get('image_url'))
+    result['image_scope']='variant' if row.get('image_scope')=='variant' else 'product'
+    if isinstance(row.get('title'),str) and len(row['title'])<=500:result['title']=row['title']
     return result
 
 def validate(report,request_id,args,turn_started=None):
@@ -155,7 +159,7 @@ def extract(items,request_id,turn_started=None):
     for cid,args in calls.items():
         good=reports.get(cid) if cid not in duplicates else None
         failed=unverified(args)
-        if good and good.get('mode')=='discovery' or 'model_code' not in args or any(k in args for k in ('heel_cm','category','occasion')):
+        if good and good.get('mode')=='discovery' or 'model_code' not in args or any(k in args for k in ('query','collection','heel_cm','category','occasion')):
             import product_discovery
             key=('discovery',json.dumps(product_discovery.criteria(args),sort_keys=True))
         else:key=(failed.get('model_code'),failed.get('size'),failed.get('color_filter'))

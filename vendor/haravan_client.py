@@ -5,14 +5,14 @@ class HaravanError(Exception): pass
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self,*args,**kwargs): return None
 
-def get(resource,params):
-    if resource not in ('products','inventory_locations','promotions','discounts') and not re.fullmatch(r'(?:(?:products|promotions|discounts|variants)/[1-9][0-9]{0,15}|products/[1-9][0-9]{0,15}/variants(?:/count)?)',resource): raise HaravanError('resource_not_allowed')
+def get(resource,params,timeout=12):
+    if resource not in ('products','inventory_locations','promotions','discounts','custom_collections','smart_collections') and not re.fullmatch(r'(?:(?:products|promotions|discounts|variants)/[1-9][0-9]{0,15}|products/[1-9][0-9]{0,15}/variants(?:/count)?)',resource): raise HaravanError('resource_not_allowed')
     token=os.getenv('HARAVAN_ACCESS_TOKEN','').strip()
     if not token: raise HaravanError('missing_access_token')
     req=urllib.request.Request('https://apis.haravan.com/com/'+resource+'.json?'+urlencode(params),headers={'Authorization':'Bearer '+token,'Accept':'application/json'},method='GET')
     started=time.monotonic(); success=False
     try:
-        with urllib.request.build_opener(NoRedirect).open(req,timeout=12) as r: raw=r.read(1048577)
+        with urllib.request.build_opener(NoRedirect).open(req,timeout=timeout) as r: raw=r.read(1048577)
         if len(raw)>1048576: raise HaravanError('response_too_large')
         data=json.loads(raw)
         if not isinstance(data,dict): raise HaravanError('invalid_response')

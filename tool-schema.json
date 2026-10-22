@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Merly Read-only Sales Tools",
-    "version": "0.3.0"
+    "version": "0.4.0"
   },
   "servers": [
     {
@@ -27,7 +27,7 @@
     "/tools/search_products": {
       "post": {
         "operationId": "search_products",
-        "summary": "Search verified product criteria; check_stock=true performs criteria search then fresh variant inventory, even without model_code. Requires confirmed size. Retains all requested filters; partial metadata/inventory is not no stock.",
+        "summary": "Search source product names/types/collections and all supplied criteria; check_stock=true then validates fresh variants and inventory. No fabricated model_code; size required for stock, not browsing.",
         "requestBody": {
           "required": true,
           "content": {
@@ -62,7 +62,7 @@
                   },
                   "category": {
                     "type": "string",
-                    "description": "Shoe category; requires verified metadata.",
+                    "description": "Product class/style phrase supported by source product_type/title or approved metadata. Does not prove comfort, fit or occasion.",
                     "minLength": 1,
                     "maxLength": 60
                   },
@@ -81,6 +81,18 @@
                   "check_stock": {
                     "type": "boolean",
                     "description": "With size: find candidates matching all supplied criteria, then fetch fresh variants and inventory. model_code is optional; never invent one."
+                  },
+                  "query": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "description": "Product name/style keywords, matched against Haravan title and product_type. Put size/color/heel in their separate fields; not the whole customer sentence. Never put a fabricated SKU in model_code."
+                  },
+                  "collection": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "description": "Public Haravan custom/smart collection title or handle. Resolves source membership using collection_id. Ambiguous/missing/error is not no stock; inspect collection_choices/status."
                   }
                 },
                 "required": []

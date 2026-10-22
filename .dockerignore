@@ -55,3 +55,7 @@
 !agent_answer.py
 !catalog_view.py
 !tool_evidence.py
+
+!media_urls.py
+!catalog_query.py
+!collection_catalog.py

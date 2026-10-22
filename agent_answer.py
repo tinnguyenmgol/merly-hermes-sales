@@ -54,15 +54,19 @@ def present(data,rid,started):
     invalid=any(not usable(call,outputs.get(cid,{}),started) for cid,call in calls.items() if cid not in repaired)
 
     body={'reply':text,'conversation_id':rid,'source_links':collect(items),'model_called':True,'answer_mode':'native'}
-    from catalog_view import collect as catalog_cards
+    from catalog_view import collect as catalog_cards,quotes as quote_cards
     products=catalog_cards(calls,outputs,duplicates)
     if products:body['products']=products
+    quotes=quote_cards(calls,outputs,duplicates,started)
+    if quotes:body['quotes']=quotes
     missing=bool(duplicates or set(outputs)-set(calls) or set(calls)-set(outputs))
     if requested:
         body['stock_options']=report
         if missing or invalid or not verified(report) or risky_stock_wording(text,report):
             body.update(reply=summary(report) if report.get('mode')!='unverified' else FAILURE,
                         lookup_incomplete=bool(missing or invalid or not verified(report)),answer_mode='evidence_guard')
+    elif quotes and not missing and not invalid and risky_stock_wording(text,{'variants':quotes}):
+        body.update(reply='Mình đã gửi thông tin biến thể đã tra trong thẻ bên dưới; chưa giữ hàng.',answer_mode='evidence_guard')
     elif missing or invalid:
         body.update(reply='Mình chưa lấy được dữ liệu hợp lệ để trả lời chắc chắn lượt này. Bạn không cần nhập lại thông tin đã gửi; có thể nhờ nhân viên Merly kiểm tra tiếp.',lookup_incomplete=True,answer_mode='evidence_guard')
     return body

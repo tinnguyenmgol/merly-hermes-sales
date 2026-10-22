@@ -3,7 +3,7 @@ import json,os,time,tempfile
 from pathlib import Path
 MAX_BYTES=25*1024*1024
 PRODUCT=('id','title','handle','published_at','published_scope','status','options','image','images','product_type')
-VARIANT=('id','sku','title','option1','option2','option3')
+VARIANT=('image_id','id','sku','title','option1','option2','option3')
 
 def path():
     value=os.getenv('CATALOG_CACHE_PATH','').strip()

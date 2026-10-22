@@ -1,5 +1,6 @@
 """Read-only bounded live inventory sweep for a model/size; no LLM selection."""
 import time
+from media_urls import picture
 from datetime import datetime,timezone
 MAX_PRODUCTS=20
 MAX_VARIANTS=100
@@ -40,7 +41,7 @@ def lookup(data,tools):
                 vid=variant.get('id')
                 if type(vid) is not int or not 1<=vid<10**16 or vid in seen or vid in local:raise tools.h.HaravanError('invalid_variant_identity')
                 local.add(vid)
-                selected.append({'product_id':product['id'],'variant_id':vid,'title':product.get('title',''),'color':color,'size':str(size),'price_vnd':tools.variant_price(variant),'available':None,'known_available':0,'inventory_complete':False,'locations':[{'name':name,'available':None} for name in tools.LOCATIONS.values()],'product_url':tools.product_url(product),'image_url':tools.image(product)})
+                selected.append({'product_id':product['id'],'variant_id':vid,'title':product.get('title',''),'color':color,'size':str(size),'price_vnd':tools.variant_price(variant),'available':None,'known_available':0,'inventory_complete':False,'locations':[{'name':name,'available':None} for name in tools.LOCATIONS.values()],'product_url':tools.product_url(product),**picture(product,variant)})
             if metadata_issue:report['issues'].append({'stage':'product_variants','code':'variant_size_metadata_unverified'})
             seen.update(local);coverage['products_checked']+=1;coverage['unverified_products']-=1;coverage['variants_found']+=len(selected)
             room=MAX_VARIANTS-len(records);records.extend(selected[:room]);coverage['omitted_variants']+=max(0,len(selected)-room)

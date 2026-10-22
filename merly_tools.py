@@ -6,6 +6,7 @@ from urllib.parse import urlsplit
 sys.path.insert(0,str(Path(__file__).parent/'vendor'))
 import catalog,haravan_client as h,promotions
 import haravan_variants
+from media_urls import picture
 ROOT=Path(__file__).parent
 LOCATIONS={80371:'876 Trường Sa',80441:'561 Lũy Bán Bích',977854:'Tổng Kho'}
 class Invalid(ValueError):pass
@@ -17,15 +18,7 @@ def validate(data,fields):
         if type(value) is not kind or (kind is str and not low<=len(value)<=high) or (kind in (int,float) and (not math.isfinite(value) or not low<=value<=high)):raise Invalid('invalid_'+key)
 
 def image(p):
-    images=p.get('images');item=p.get('image')
-    if not isinstance(item,dict):item=images[0] if isinstance(images,list) and images else {}
-    value=item.get('src') if isinstance(item,dict) else None
-    if not isinstance(value,str):return None
-    try:
-        u=urlsplit(value)
-        if u.scheme=='https' and u.hostname in ('product.hstatic.net','file.hstatic.net','cdn.hstatic.net','theme.hstatic.net') and not u.username and not u.password and u.port in (None,443):return value
-    except ValueError:pass
-    return None
+    return picture(p)['image_url']
 
 def product_url(p):
     handle=p.get('handle')
@@ -56,21 +49,32 @@ def verified_product_specs(product,approved):
     meta=dict(approved)
     title=catalog.norm(product.get('title',''))
     values={float(m.replace(',','.')) for m in re.findall(r'(?<![a-z])(?:chieu cao got|cao got|got)(?:\s+(?:cao|vuong|nhon|tru))?\s*[:(]?\s*([0-9]{1,2}(?:[.,][0-9])?)\s*cm(?![a-z0-9_])',title)}
+    # Source-title measurement, including names with words between heel and cm.
+    # Never interpret SKU/foot dimensions or approximate bounds as exact heels.
+    context=title+' '+catalog.norm(product.get('product_type',''))
+    if re.search(r'\b(?:cao got|got nhon|got vuong|got tru)\b',context):
+        measures=list(re.finditer(r'(?<![a-z0-9_.-])([0-9]{1,2}(?:[.,][0-9])?)\s*cm(?![a-z0-9_])',title))
+        safe=[]
+        for match in measures:
+            before=title[max(0,match.start()-25):match.start()]
+            if re.search(r'(?:chan|chieu dai|vong|ngang|sku|ma|khoang|tam|tu|den)\s*[:#]?\s*$|[<>~]\s*$',before):continue
+            safe.append(float(match.group(1).replace(',','.')))
+        if len(measures)==len(safe):values.update(safe)
     if any(not 0<=v<=15 for v in values):
         meta.pop('heel_cm',None);return meta
-    if len(values)==1 and 'khong' not in title:
+    if len(values)==1 and not re.search(r'\bkhong(?: (?:phai|co))? (?:cao )?got\b',title):
         value=next(iter(values))
         if 'heel_cm' not in meta:meta['heel_cm']=value
         elif meta['heel_cm']!=value:meta.pop('heel_cm',None)
     elif len(values)>1:meta.pop('heel_cm',None)
     return meta
 
-def search_products(data):
-    validate(data,{'model_code':(str,1,32),'color':(str,1,40),'size':(int,35,43),'heel_cm':(float,0,15),'category':(str,1,60),'occasion':(str,1,60),'limit':(int,1,6),'check_stock':(bool,0,0),'stock_request_id':(str,32,32)})
+def search_products(data,candidate_only=False):
+    validate(data,{'model_code':(str,1,32),'query':(str,1,120),'collection':(str,1,120),'color':(str,1,40),'size':(int,35,43),'heel_cm':(float,0,15),'category':(str,1,60),'occasion':(str,1,60),'limit':(int,1,6),'check_stock':(bool,0,0),'stock_request_id':(str,32,32)})
     if data.get('check_stock'):
         if 'size' not in data:raise Invalid('stock_scope_required')
         if 'stock_request_id' in data and not re.fullmatch(r'[0-9a-f]{32}',data['stock_request_id']):raise Invalid('stock_scope_required')
-        if 'model_code' not in data or any(k in data for k in ('heel_cm','category','occasion')):
+        if 'model_code' not in data or any(k in data for k in ('query','collection','heel_cm','category','occasion')):
             import product_discovery
             return product_discovery.lookup(data,sys.modules[__name__])
         import stock_options
@@ -78,32 +82,52 @@ def search_products(data):
             import secrets
             data=dict(data,stock_request_id=secrets.token_hex(16),_stock_schema='merly-stock-options-v2')
         return stock_options.lookup(data,sys.modules[__name__])
-    rows=catalog.snapshot()
+    import catalog_query,collection_catalog
+    group=None
+    if 'collection' in data:
+        group=collection_catalog.resolve(data['collection'],h,catalog.FIELDS)
+        if group['status']!='resolved':
+            return {'status':'partial_metadata','products':[],'unknown_spec_products':1,'matched_products':0,'stock_checked':False,'collection_status':group['status'],'collection_choices':group.get('choices',[])}
+        rows=group['products']
+    else:rows=catalog.snapshot()
     if rows is None:return {'status':'catalog_loading','retryable':True,'products':[]}
     metadata=enrichment();results=[];unknown=0
     for p in rows:
         if not catalog.eligible(p):continue
         code=data.get('model_code')
-        if code and not (re.search(r'(?<!\w)'+re.escape(catalog.norm(code))+r'(?!\w)',catalog.norm(p.get('title',''))) or any(catalog.norm(v.get('sku',''))==catalog.norm(code) for v in p['variants'])):continue
-        meta=verified_product_specs(p,metadata.get(str(p['id']),{}))
+        if code and not matches_model(p,code):continue
+        if 'query' in data and not catalog_query.name_matches(p,data['query']):continue
+        approved=metadata.get(str(p['id']),{})
+        meta=catalog_query.specs(p,approved,data,verified_product_specs)
         failed=False
         for field in ('heel_cm','category','occasion'):
             if field not in data:continue
             actual=meta.get(field)
-            if actual is None:unknown+=1;failed=True;break
-            if field=='heel_cm':match=type(actual) in (int,float) and actual==data[field]
-            else:match=isinstance(actual,str) and catalog.norm(actual)==catalog.norm(data[field])
+            if actual is None:
+                if field!='category' or not (p.get('product_type') or approved.get('category')):unknown+=1
+                failed=True;break
+            match=actual==data[field] if field=='heel_cm' else catalog.norm(actual)==catalog.norm(data[field])
             if not match:failed=True;break
         if failed:continue
         variants=[]
         for v in p['variants']:
             size=variant_size(p,v);color=variant_color(p,v)
-            if 'size' in data and str(data['size'])!=size:continue
-            if 'color' in data and (color is None or catalog.norm(data['color'])!=catalog.norm(color)):continue
+            if not candidate_only and 'size' in data and str(data['size'])!=size:continue
+            if not candidate_only and 'color' in data and (color is None or catalog.norm(data['color'])!=catalog.norm(color)):continue
             variants.append({'variant_id':v['id'],'size':size,'color':color})
-        if variants:
-            results.append({'product_id':p['id'],'title':p.get('title',''),'image_url':image(p),'product_url':product_url(p),'variants':variants[:12],'variants_total':len(variants),'variants_truncated':len(variants)>12,'verified_specs':{k:meta[k] for k in ('heel_cm','category','occasion') if k in meta},'availability':'not_checked'})
-    return {'status':'partial_metadata' if unknown else 'ok','products':results[:data.get('limit',4)],'unknown_spec_products':unknown,'stock_checked':False,'matched_products':len(results),'products_truncated':len(results)>data.get('limit',4),'note':'No price/stock claim until quote_variant; missing metadata is not no stock.'}
+        if variants or candidate_only:
+            evidence={}
+            if 'category' in data:evidence['category']=catalog_query.category_evidence(p,data['category'],approved)
+            if 'query' in data:evidence['query']={'field':'title/product_type','value':data['query']}
+            results.append({'product_id':p['id'],'title':p.get('title',''),'product_type':p.get('product_type'),'image_url':image(p),'image_scope':'product','product_url':product_url(p),'variants':variants[:12],'variants_total':len(variants),'variants_truncated':len(variants)>12,'verified_specs':{k:meta[k] for k in ('heel_cm','category','occasion') if k in meta},'match_evidence':evidence,'availability':'not_checked'})
+    if candidate_only and 'size' in data:results.sort(key=lambda p:not any(v['size']==str(data['size']) for v in p['variants']))
+    limit=data.get('limit',4)
+    result={'status':'partial_metadata' if unknown else 'ok','products':results[:limit],'unknown_spec_products':unknown,'stock_checked':False,'matched_products':len(results),'products_truncated':len(results)>limit,'note':'Names/types are retrieval evidence, not stock, fit or comfort. Fetch fresh inventory before claiming availability.'}
+    types=sorted({p['product_type'] for p in rows if isinstance(p.get('product_type'),str) and 1<=len(p['product_type'])<=255 and catalog.eligible(p)})
+    result.update(available_product_types=types[:30],product_types_truncated=len(types)>30)
+    if group:
+        result.update(collection_status='resolved',collection_evidence={**group['collection'],'product_ids':[p['product_id'] for p in results[:limit]]},catalog_fresh=True)
+    return result
 
 def quote_variant(data):
     validate(data,{'product_id':(int,1,10**16-1),'variant_id':(int,1,10**16-1),'quantity':(int,1,20)})
@@ -125,7 +149,7 @@ def quote_variant(data):
         price=promotions.number(v.get('price'))
         price=int(price) if price==price.to_integral_value() else None
     except ValueError:price=None
-    return {'status':'ok' if complete else 'partial_inventory','product_id':p['id'],'variant_id':v['id'],'title':p.get('title',''),'size':variant_size(p,v),'color':variant_color(p,v),'price_vnd':price,'quantity':quantity,'subtotal_vnd':price*quantity if price is not None else None,'available':available,'known_available':total,'inventory_complete':complete,'locations':[{'name':name,'available':counts.get(loc)} for loc,name in LOCATIONS.items()],'checked_at':datetime.now(timezone.utc).isoformat(),'product_url':product_url(p),'image_url':image(p),'reserved':False,'discounts_applied':False}
+    return {'status':'ok' if complete else 'partial_inventory','product_id':p['id'],'variant_id':v['id'],'title':p.get('title',''),'size':variant_size(p,v),'color':variant_color(p,v),'price_vnd':price,'quantity':quantity,'subtotal_vnd':price*quantity if price is not None else None,'available':available,'known_available':total,'inventory_complete':complete,'locations':[{'name':name,'available':counts.get(loc)} for loc,name in LOCATIONS.items()],'checked_at':datetime.now(timezone.utc).isoformat(),'product_url':product_url(p),**picture(p,v),'reserved':False,'discounts_applied':False}
 
 def size_guide(data):
     validate(data,{'size':(int,35,43),'length_cm':(float,15,35),'girth_cm':(float,10,40)})

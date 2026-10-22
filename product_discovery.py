@@ -1,12 +1,15 @@
 """Generic criteria -> fresh products/variants -> live inventory. No phrases/LLM."""
 import math,secrets,time
+import catalog_query
+from media_urls import picture,safe_image
 from datetime import datetime,timezone
-KEYS=('model_code','size','color','heel_cm','category','occasion')
+KEYS=('query','collection','model_code','size','color','heel_cm','category','occasion')
 MAX_PRODUCTS=4;MAX_VARIANTS=40;BATCH=10;SECONDS=15
 
 def criteria(data):return {k:data[k] for k in KEYS if k in data}
 def matching_specs(product,data,tools,meta):
-    specs=tools.verified_product_specs(product,meta.get(str(product['id']),{}))
+    specs=catalog_query.specs(product,meta.get(str(product['id']),{}),data,tools.verified_product_specs)
+    if 'query' in data and not catalog_query.name_matches(product,data['query']):return specs,'changed'
     for field in ('heel_cm','category','occasion'):
         if field not in data:continue
         value=specs.get(field)
@@ -19,21 +22,25 @@ def matching_specs(product,data,tools,meta):
 def lookup(data,tools):
     deadline=time.monotonic()+SECONDS
     # Color checked EXACTLY against fresh variants, not merged by substring.
-    query={k:v for k,v in data.items() if k in ('model_code','size','heel_cm','category','occasion')}
+    query={k:v for k,v in data.items() if k in ('query','collection','model_code','size','heel_cm','category','occasion')}
     query['limit']=min(data.get('limit',MAX_PRODUCTS),MAX_PRODUCTS)
-    found=tools.search_products(query);source=tools.catalog.status();meta=tools.enrichment()
+    found=tools.search_products(query,candidate_only=True);source={'ready':True,'age_seconds':0} if found.get('catalog_fresh') else tools.catalog.status();meta=tools.enrichment()
     report={'schema':'merly-product-discovery-v1','operation_id':secrets.token_hex(16),'mode':'discovery','criteria':criteria(data),'complete':False,'products':[],'variants':[],'issues':[],
       'coverage':{'catalog_matches':found.get('matched_products',0),'unknown_spec_products':found.get('unknown_spec_products',0),'omitted_products':max(0,found.get('matched_products',0)-len(found['products'])),'omitted_variants':0},
       'catalog_age_seconds':source.get('age_seconds'),'source_status':found['status'],'checked_at':datetime.now(timezone.utc).isoformat()}
+    if 'collection' in data:
+        report['collection_status']=found.get('collection_status','source_unavailable')
+        if found.get('collection_evidence'):report['collection_evidence']=found['collection_evidence']
+        report['collection_choices']=found.get('collection_choices',[])
     records=[];seen=set()
     for candidate in found['products']:
-        item={'product_id':candidate['product_id'],'title':candidate.get('title','')[:300],'product_url':candidate.get('product_url'),'verified_specs':candidate.get('verified_specs',{}),'status':'unchecked'}
+        item={'product_id':candidate['product_id'],'title':candidate.get('title','')[:300],'product_url':candidate.get('product_url'),'image_url':candidate.get('image_url'),'image_scope':'product','product_type':candidate.get('product_type'),'verified_specs':candidate.get('verified_specs',{}),'status':'unchecked'}
         report['products'].append(item)
         if time.monotonic()>=deadline:continue
         try:
             product=tools.h.get('products/'+str(item['product_id']),{}).get('product')
             if not isinstance(product,dict) or product.get('id')!=item['product_id'] or not tools.catalog.eligible(product):raise tools.h.HaravanError('product_identity_changed')
-            item.update(title=product.get('title','')[:300],product_url=tools.product_url(product))
+            item.update(title=product.get('title','')[:300],product_url=tools.product_url(product),image_url=tools.image(product),product_type=product.get('product_type'))
             specs,error=matching_specs(product,data,tools,meta);item['verified_specs']={k:specs[k] for k in ('heel_cm','category','occasion') if k in specs}
             if error:item['status']=error;continue
             variants=tools.haravan_variants.all_variants(tools.h,product['id'],deadline)
@@ -47,7 +54,7 @@ def lookup(data,tools):
                 vid=v.get('id')
                 if type(vid) is not int or not 1<=vid<10**16 or vid in seen:raise tools.h.HaravanError('invalid_variant_identity')
                 seen.add(vid)
-                selected.append({'product_id':product['id'],'variant_id':vid,'title':item['title'],'color':color,'size':size,'price_vnd':tools.variant_price(v),'available':None,'known_available':0,'inventory_complete':False,'locations':[{'name':name,'available':None} for name in tools.LOCATIONS.values()],'product_url':item['product_url']})
+                selected.append({'product_id':product['id'],'variant_id':vid,'title':item['title'],'color':color,'size':size,'price_vnd':tools.variant_price(v),'available':None,'known_available':0,'inventory_complete':False,'locations':[{'name':name,'available':None} for name in tools.LOCATIONS.values()],'product_url':item['product_url'],**picture(product,v)})
             item['status']='metadata_unverified' if unclassified else 'matched' if selected else 'no_matching_variants'
             room=MAX_VARIANTS-len(records);records.extend(selected[:room]);report['coverage']['omitted_variants']+=max(0,len(selected)-room)
         except tools.h.HaravanError:
@@ -74,14 +81,14 @@ def lookup(data,tools):
 def validate(report,args,turn_started):
     import re
     from stock_report import InvalidReport,clean_variant,safe_url
-    from merly_tools import catalog,LOCATIONS
+    from merly_tools import catalog,LOCATIONS,enrichment
     def bad(code):raise InvalidReport(code)
     if not isinstance(report,dict) or report.get('schema')!='merly-product-discovery-v1' or report.get('mode')!='discovery':bad('invalid_shape')
     if report.get('criteria')!=criteria(args):bad('wrong_scope')
     for k,v in criteria(args).items():
         if k=='heel_cm':
             if type(v) not in (int,float) or not math.isfinite(v) or not 0<=v<=15:bad('invalid_scope')
-        elif k!='size' and (not isinstance(v,str) or not 1<=len(v)<=(32 if k=='model_code' else 40 if k=='color' else 60)):bad('invalid_scope')
+        elif k!='size' and (not isinstance(v,str) or not 1<=len(v)<=(120 if k in ('query','collection') else 32 if k=='model_code' else 40 if k=='color' else 60)):bad('invalid_scope')
     if type(args.get('size')) is not int or not 35<=args['size']<=43:bad('invalid_scope')
     if not isinstance(report.get('operation_id'),str) or not re.fullmatch(r'[0-9a-f]{32}',report['operation_id']):bad('invalid_operation_id')
     try:
@@ -105,8 +112,30 @@ def validate(report,args,turn_started):
             if k=='heel_cm':
                 if type(v) not in (int,float) or not math.isfinite(v) or not 0<=v<=15:bad('invalid_specs')
             elif k not in ('category','occasion') or not isinstance(v,str) or not 1<=len(v)<=60:bad('invalid_specs')
-        parent={'product_id':p['product_id'],'title':p['title'],'product_url':safe_url(p.get('product_url')),'verified_specs':dict(specs),'status':p['status']}
+        parent={'product_id':p['product_id'],'title':p['title'],'product_url':safe_url(p.get('product_url')),'image_url':safe_image(p.get('image_url')),'image_scope':'product','product_type':p.get('product_type') if isinstance(p.get('product_type'),str) and len(p['product_type'])<=255 else None,'verified_specs':dict(specs),'status':p['status']}
         parents[p['product_id']]=parent;clean_products.append(parent)
+    collection_info={}
+    if 'collection' in args:
+        status=report.get('collection_status')
+        if status not in ('resolved','ambiguous','not_found','source_unavailable'):bad('invalid_collection')
+        collection_info['collection_status']=status
+        choices=report.get('collection_choices',[])
+        if not isinstance(choices,list) or len(choices)>8:bad('invalid_collection')
+        cleaned_choices=[]
+        for choice in choices:
+            if not isinstance(choice,dict) or type(choice.get('id')) is not int or not 0<choice['id']<10**16:bad('invalid_collection')
+            if any(not isinstance(choice.get(k),str) or not 1<=len(choice[k])<=255 for k in ('title','handle')):bad('invalid_collection')
+            cleaned_choices.append({k:choice[k] for k in ('id','title','handle')})
+        collection_info['collection_choices']=cleaned_choices
+        if status=='resolved':
+            proof=report.get('collection_evidence')
+            if not isinstance(proof,dict) or type(proof.get('id')) is not int or not 0<proof['id']<10**16:bad('invalid_collection')
+            if any(not isinstance(proof.get(k),str) or not 1<=len(proof[k])<=255 for k in ('title','handle')):bad('invalid_collection')
+            if catalog_query.norm(args['collection']) not in (catalog_query.norm(proof['title']),catalog_query.norm(proof['handle'])) and not catalog_query.phrase(proof['title'],args['collection']):bad('wrong_scope')
+            ids=proof.get('product_ids')
+            if not isinstance(ids,list) or any(type(i) is not int for i in ids) or len(set(ids))!=len(ids) or set(ids)!=set(parents):bad('invalid_collection_membership')
+            collection_info['collection_evidence']={k:proof[k] for k in ('id','title','handle','product_ids')}
+        elif products or rows or report['complete']:bad('false_complete')
     clean=[];seen=set()
     for row in rows:
         item=clean_variant(row,args['size']);parent=parents.get(item['product_id'])
@@ -119,11 +148,14 @@ def validate(report,args,turn_started):
             if k not in args:continue
             value=parent['verified_specs'].get(k)
             if value is None or (value!=args[k] if k=='heel_cm' else catalog.norm(value)!=catalog.norm(args[k])):bad('wrong_scope')
-        item['title']=parent['title'];clean.append(item)
+        if 'query' in args and not catalog_query.name_matches(parent,args['query']):bad('wrong_scope')
+        if 'category' in args and not catalog_query.category_evidence(parent,args['category'],enrichment().get(str(parent['product_id']),{})):bad('wrong_scope')
+        item['title']=parent['title'];item['product_type']=parent.get('product_type');clean.append(item)
     source=report.get('source_status');age=report.get('catalog_age_seconds')
     if source not in ('ok','partial_metadata','catalog_loading'):bad('invalid_source_status')
     if report['complete'] and (source=='catalog_loading' or type(age) not in (int,float) or not 0<=age<=300 or any(cov[k] for k in ('unknown_spec_products','omitted_products','omitted_variants')) or any(p['status'] not in ('matched','changed','no_matching_variants') for p in clean_products) or not all(r['inventory_complete'] for r in clean) or report.get('issues')):bad('false_complete')
     result={'mode':'discovery','criteria':criteria(args),'complete':report['complete'],'products':clean_products,'variants':clean,'coverage':dict(cov),'checked_at':report['checked_at'],'source_status':source}
+    result.update(collection_info)
     return classify(result)
 
 def classify(report):
@@ -137,14 +169,18 @@ def classify(report):
 
 def summary(report):
     state=report['operation_status']
+    if report.get('collection_status')=='ambiguous' and report.get('collection_choices'):
+        names='; '.join(c['title'] for c in report['collection_choices'])
+        return 'Có nhiều nhóm phù hợp tên bạn hỏi: '+names+'. Bạn muốn xem nhóm nào? Mình chưa tra tồn và vẫn giữ các điều kiện bạn đã gửi.'
     if state in ('available','partial_available'):
         n=len({r['product_id'] for r in report['variants'] if r['available'] is True})
         return 'Đã kiểm tra theo tiêu chí bạn hỏi: có '+str(n)+' mẫu còn hàng đã xác minh ở bên dưới. '+('Phạm vi tra chưa đầy đủ; không kết luận các mẫu khác hết hàng. ' if not report['complete'] else '')+'Chưa giữ hàng.'
     if state=='catalog_loading':return 'Danh mục đang đồng bộ. Chưa có kết quả tìm mẫu và tồn; không phải thông báo hết hàng.'
     if state=='metadata_missing':
-        labels={'heel_cm':'chiều cao gót','category':'kiểu giày','occasion':'dịp sử dụng'}
+        labels={'collection':'nhóm sản phẩm','heel_cm':'chiều cao gót','category':'kiểu giày','occasion':'dịp sử dụng'}
         missing={k for p in report['products'] if p['status']=='metadata_unverified' for k in labels if k in report['criteria'] and k not in p['verified_specs']}
         if report['coverage']['unknown_spec_products']:missing.update(k for k in labels if k in report['criteria'])
+        if report.get('collection_status')=='resolved':missing.discard('collection')
         subject=', '.join(labels[k] for k in labels if k in missing) or 'size/màu của biến thể'
         return 'Merly chưa đủ dữ liệu đã xác minh về '+subject+' để chọn đúng yêu cầu. Các điều kiện bạn đã nói vẫn được giữ, mình chưa kết luận hết hàng. Bạn muốn [nhắn nhân viên Merly](https://oa.zalo.me/2969822963244380594) để được kiểm tra tiếp không?'
     if state=='source_error':return 'Đã tìm được ứng viên trong danh mục nhưng chưa kiểm tra xong dữ liệu hoặc tồn. Các mẫu chưa xác minh được ghi rõ bên dưới; không phải kết luận hết hàng.'
