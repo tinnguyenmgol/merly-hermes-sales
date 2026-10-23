@@ -1,3 +1,5 @@
+> Historical FAQ-only release. Superseded by POLICY-KNOWLEDGE-NATIVE.md; current approved knowledge includes both customer sources.
+
 # Approved customer FAQ excerpt
 
 Owner source:07_MERLY_FAQ.md v1.1, UPDATED2026-09-21; no invented effective date.

@@ -33,13 +33,14 @@ def test_actual_visible_reply_and_cards_survive_worker_restart(configured,monkey
     assert seen[0]['_session_scope']!=seen[1]['_session_scope']
     assert dialogue.history(dialogue.sid(seen[0]['_session_scope'].split(':turn:')[0]))[-1]['content']==b['body']['reply']
 
-def test_fast_policy_enters_the_same_transcript(configured,monkeypatch):
-    a=call('bảo hành bao lâu');seen=[]
+def test_policy_native_reply_enters_the_same_transcript(configured,monkeypatch):
+    seen=[]
     monkeypatch.setattr(c,'audit',lambda:True)
     monkeypatch.setattr(c,'request',lambda path,p:seen.append(p) or final('Mình giải thích thêm về điều kiện bảo hành nhé.'))
+    a=call('bảo hành bao lâu')
     b=call('còn đôi đã mua lâu rồi thì sao?',cookie=cookie(a))
-    assert b['status'].startswith('200') and seen[0]['conversation_history'][1]['content']==a['body']['reply']
-    assert '365' in seen[0]['conversation_history'][1]['content']
+    assert b['status'].startswith('200') and seen[1]['conversation_history'][1]['content']==a['body']['reply']
+    assert '365' in seen[0]['instructions'] and len(seen)==2
 
 def test_native_stock_language_is_preserved_but_cards_are_source_owned(source,approved,monkeypatch):
     monkeypatch.setattr(c,'audit',lambda:True)

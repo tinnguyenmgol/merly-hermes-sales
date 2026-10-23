@@ -1,0 +1,26 @@
+{
+  "base_main": "b4b77140f4f2a77e187224ddb6108811d4fd9fbb",
+  "unit_integration": {
+    "tests": 502,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "knowledge": {
+    "approved_topics": 12,
+    "revision": "ef80d9692d121eeaad49c225fdea0a6705a7db2faaf8b8f508476041c2ac42f7",
+    "context_bytes": 7824
+  },
+  "phrase_policy_router_removed": true,
+  "pinned_hermes_agent_to_provider_transport": "PASS_LOCAL_HTTP_STUB_NOT_REAL_MODEL",
+  "chromium_public_and_images": "PASS_SCRIPTED_PROVIDER",
+  "local_load": "performance/policy-native-local-load.json",
+  "real_model_semantics": "NOT_RUN",
+  "live_configuration_presence": {
+    "endpoint_configured": false,
+    "api_key_configured": false,
+    "cost_approved": false
+  },
+  "paid_calls": 0,
+  "production_changes": false
+}

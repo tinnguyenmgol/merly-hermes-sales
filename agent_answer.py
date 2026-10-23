@@ -59,6 +59,16 @@ def present(data,rid,started):
     if products:body['products']=products
     quotes=quote_cards(calls,outputs,duplicates,started)
     if quotes:body['quotes']=quotes
+    body['_tools_used']=list(dict.fromkeys(c['name'] for c in calls.values()))
+    body['_policy_topics']=[]
+    import json,policy_knowledge
+    for call in calls.values():
+        if call['name']!='mcp__merly__get_policy':continue
+        try:
+            args=json.loads(call.get('arguments','{}')) if isinstance(call.get('arguments'),str) else call.get('arguments',{})
+            topic=args.get('topic')
+            if topic in policy_knowledge.TOPICS:body['_policy_topics'].append(topic)
+        except (ValueError,TypeError,AttributeError):pass
     missing=bool(duplicates or set(outputs)-set(calls) or set(calls)-set(outputs))
     if requested:
         body['stock_options']=report

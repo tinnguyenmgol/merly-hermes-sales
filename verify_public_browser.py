@@ -21,7 +21,7 @@ with tempfile.TemporaryDirectory(prefix='public-browser-') as tmp:
     c.discover_products=search
     # Scripted model decisions test UI transport only, not language understanding.
     import dialogue
-    scripted=iter([lambda:search({'heel_cm':5.0,'size':41,'limit':4}),lambda:probe({'model_code':'1514','size':38,'color':'đen'}),lambda:probe({'model_code':'1514','size':42,'color':'đen'}),lambda:probe({'model_code':'1514','size':42})])
+    scripted=iter([lambda:{'reply':'SCRIPTED warranty 365 ngày','engine':'hermes'},lambda:search({'heel_cm':5.0,'size':41,'limit':4}),lambda:probe({'model_code':'1514','size':38,'color':'đen'}),lambda:probe({'model_code':'1514','size':42,'color':'đen'}),lambda:probe({'model_code':'1514','size':42})])
     native_histories=[]
     def native(message,user,cid):
         native_histories.append(dialogue.history(dialogue.sid(user)))
@@ -107,8 +107,8 @@ with tempfile.TemporaryDirectory(prefix='public-browser-') as tmp:
             button.click();expect(framed.locator('#merly-chat-widget iframe')).to_have_count(1)
             button.focus();button.press('Escape');expect(button).to_have_attribute('aria-expanded','false')
             assert public_payloads and all(set(p)=={'message'} for p in public_payloads)
-            assert len(native_histories)==4 and '365' in native_histories[0][-1]['content']
-            assert 'LỊCH SỬ' in native_histories[1][-1]['content']
+            assert len(native_histories)==5 and '365' in native_histories[1][-1]['content']
+            assert 'LỊCH SỬ' in native_histories[2][-1]['content']
             assert not errors,errors
             touch=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True)
             touch.route('https://chat.merlyshoes.com/**',proxy)
@@ -122,5 +122,5 @@ with tempfile.TemporaryDirectory(prefix='public-browser-') as tmp:
             mb.tap();expect(mb).to_have_attribute('aria-expanded','false')
             touch.close()
             browser.close()
-        print('PASS_PUBLIC_CHROMIUM no_login_key=true csrf_cookie=true source_query=true paid_inference_calls=0 native_scripted_turns=4 xss_literal=true Haravan_main_iframe=true legacy_embed_tag=true singleton_lazy_widget=true official_merly_logo=true prominent_116x72_mobile_desktop=true no_floating_tooltip=true no_consent_checkbox=true no_fabricated_consent_field=true fast_policy_native_catalog=true contextual_followups=true synthetic_only=true')
+        print('PASS_PUBLIC_CHROMIUM no_login_key=true csrf_cookie=true source_query=true paid_inference_calls=0 native_scripted_turns=5 xss_literal=true Haravan_main_iframe=true legacy_embed_tag=true singleton_lazy_widget=true official_merly_logo=true prominent_116x72_mobile_desktop=true no_floating_tooltip=true no_consent_checkbox=true no_fabricated_consent_field=true native_policy_catalog=true contextual_followups=true synthetic_only=true')
     finally:server.shutdown();server.server_close()

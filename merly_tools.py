@@ -160,42 +160,15 @@ def size_guide(data):
     if 'length_cm' in data:rows=[r for r in rows if r['length_cm']==data['length_cm']]
     return {'status':'reference_only' if rows else 'needs_staff_review','chart':rows,'source':k['source_url'],'girth_provided':data.get('girth_cm'),'fit_confirmed':False,'note':'Exact reference points only. Do not round or infer fit; ask for model and foot circumference.'}
 
-POLICY_TOPICS=('shipping','size_exchange','warranty','store_hours','store_address',
-    'sale_returns','new_customer','loyalty','business_orders','tiktok_exchange','product_links','customer_support')
-
-def _policy_date(sources):
-    dates=[]
-    for source in sources:
-        if not isinstance(source,dict):return None
-        value=source.get('effective_date',source.get('updated_date'))
-        if not isinstance(value,str) or not re.fullmatch(r'\d{4}-\d{2}-\d{2}',value):return None
-        try:datetime.strptime(value,'%Y-%m-%d')
-        except ValueError:return None
-        dates.append(value)
-    return max(dates) if dates else None
+from policy_knowledge import TOPICS as POLICY_TOPICS,source_date as _policy_date
 
 def get_policy(data):
     validate(data,{'topic':(str,1,40)})
     topic=data.get('topic')
     if topic not in POLICY_TOPICS:raise Invalid('unknown_topic')
-    legacy=json.loads((ROOT/'vendor/knowledge-public-draft.json').read_text())
-    path=ROOT/'vendor/knowledge-customer-faq.json'
-    faq=json.loads(path.read_text()) if path.exists() else {}
-    candidates=[]
-    if legacy.get('approved') is True and isinstance(legacy.get(topic),str):
-        candidates.append((legacy[topic],legacy.get('sources',[])))
-    if faq.get('approved') is True and faq.get('scope')=='customer_only' and isinstance(faq.get('policies',{}).get(topic),str):
-        candidates.append((faq['policies'][topic],[faq.get('source',{})]))
-    if not candidates:return {'status':'unverified','topic':topic}
-    dated=[(_policy_date(sources),text,sources) for text,sources in candidates]
-    if any(date is None for date,_,_ in dated):
-        return {'status':'needs_staff_confirmation','topic':topic,'reason':'source_date_missing_or_invalid'}
-    newest=max(date for date,_,_ in dated);chosen=[(text,sources) for date,text,sources in dated if date==newest]
-    if len({text for text,_ in chosen})!=1:
-        return {'status':'needs_staff_confirmation','topic':topic,'reason':'same_date_source_conflict'}
-    text,sources=chosen[0]
-    return {'status':'approved','topic':topic,'text':text,'sources':sources,
-        'eligibility_confirmed':False,'stacking_confirmed':False}
+    import policy_knowledge
+    return policy_knowledge.get(ROOT,topic)
+
 
 def get_promotions(data):
     validate(data,{})

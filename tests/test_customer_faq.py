@@ -15,7 +15,7 @@ def test_approved_customer_policies(topic,monkeypatch):
     monkeypatch.setattr(tools.h,'get',lambda *a,**kw:pytest.fail('policy must not fetch Haravan'))
     r=tools.dispatch('get_policy',{'topic':topic})
     assert r['status']=='approved' and r['text']==FAQ['policies'][topic]
-    assert r['sources']==[FAQ['source']]
+    assert r['sources']==FAQ['topic_sources'][topic]
     assert not r['eligibility_confirmed'] and not r['stacking_confirmed']
 
 def test_only_public_subset_and_no_unapproved_extras():
@@ -23,13 +23,13 @@ def test_only_public_subset_and_no_unapproved_extras():
     for forbidden in ['merly.io.vn','chatgpt.com/g/','baohanh.merlyshoes.com','lương','chấm công','attendance','giá vốn','lợi nhuận','mst','cần duyệt']:
         assert forbidden not in text
     exchange=FAQ['policies']['size_exchange']
-    assert '30 ngày' not in exchange and '01 lần' not in exchange
+    assert '30 ngày' in exchange and '01 lần' in exchange
     assert '20.000đ' in exchange and '30%' in exchange
     assert '365 ngày' in FAQ['policies']['warranty']
     assert '300.000đ sau giảm' in FAQ['policies']['shipping']
     assert '5%' in FAQ['policies']['new_customer'] and '30.000đ' in FAQ['policies']['new_customer']
-    assert tools.get_policy({'topic':'store_hours'})['status']=='unverified'
-    assert tools.get_policy({'topic':'store_address'})['status']=='unverified'
+    assert tools.get_policy({'topic':'store_hours'})['status']=='approved'
+    assert tools.get_policy({'topic':'store_address'})['status']=='approved'
 
 @pytest.fixture
 def local(monkeypatch,tmp_path):
@@ -63,7 +63,7 @@ def test_same_date_conflict_fails_closed(local):
 
 @pytest.mark.parametrize('bad',['','2026-02-30','2026-9-21',None])
 def test_undated_source_not_assumed_current(local,bad):
-    faq,old,save=local;faq['source']['updated_date']=bad;save()
+    faq,old,save=local;faq['topic_sources']['shipping'][1]['updated_date']=bad;save()
     assert tools.get_policy({'topic':'shipping'})['status']=='needs_staff_confirmation'
 
 def test_sales_soul_migration_preserves_custom_text_and_is_idempotent(tmp_path):

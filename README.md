@@ -1,3 +1,5 @@
+> Chính sách/ngôn ngữ tự nhiên: [POLICY-KNOWLEDGE-NATIVE.md](POLICY-KNOWLEDGE-NATIVE.md). Không còn FAQ phrase router; chưa nghiệm thu model thật.
+
 > Tìm tên/loại/nhóm và ảnh nhỏ: [CATALOG-SEARCH-IMAGES.md](CATALOG-SEARCH-IMAGES.md). Bản nhánh riêng, chưa deploy.
 
 > Bản refactor hội thoại: xem [HERMES-LED-DIALOGUE.md](HERMES-LED-DIALOGUE.md). Chưa nghiệm thu model thật; không tự deploy.
