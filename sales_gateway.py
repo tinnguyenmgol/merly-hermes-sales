@@ -2,7 +2,7 @@
 import hmac,json,os,time,secrets,logging,re
 from pathlib import Path
 import hermes_client,state
-import explicit_stock,fast_replies,fast_limits,dialogue
+import explicit_stock,fast_limits,dialogue
 import public_chat
 WEB=Path(__file__).resolve().with_name('pilot-web')
 SECURITY=[('X-Content-Type-Options','nosniff'),('Referrer-Policy','no-referrer'),('X-Frame-Options','DENY'),('Permissions-Policy','camera=(), microphone=(), geolocation=()'),('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'")]
@@ -65,17 +65,14 @@ def application(env,start):
         with fast_limits.session(sid) as acquired:
             if not acquired:return limited('turn_in_progress')
             cid=state.touch(sid)
-            def deliver(answer):
+            def deliver(answer,trace=None):
                 message=data['message'] if not probe else 'Tra tồn theo lựa chọn: '+json.dumps(data,ensure_ascii=False)
                 dialogue.record(sid,message,answer)
+                answer['diagnostic_id']=diagnostic_id
+                logging.getLogger('merly.gateway').info('MERLY_CHAT_COMPLETED %s',json.dumps({'diagnostic_id':diagnostic_id,'engine':answer.get('engine'),'answer_mode':answer.get('answer_mode'),'knowledge_revision':answer.get('knowledge_revision'),'elapsed_ms':round((time.monotonic()-turn_started)*1000),**(trace or {})}))
                 return result('200 OK',answer,token)
-            # Only standalone, complete shortcuts. No regex-derived dialogue slots,
-            # no pre-model clarification, and no inferred choice from prior replies.
-            if not probe:
-                quick=fast_replies.policy(data['message'])
-                if quick is not None:
-                    quick.pop('_topic',None)
-                    return deliver(quick)
+            # All policy/free-form language reaches Hermes, never phrase lookup.
+            # Only complete literal stock requests retain the independent shortcut.
             scope=data if probe else explicit_stock.parse(data['message'])
             if scope is not None:
                 with fast_limits.slot('STOCK') as available:
@@ -95,10 +92,12 @@ def application(env,start):
                 if 'stock_options' in reply:body['stock_options']=reply['stock_options']
                 if 'products' in reply:body['products']=reply['products']
                 if 'quotes' in reply:body['quotes']=reply['quotes']
-                return deliver(body)
+                for key in ('knowledge_revision','approved_policy_topics'):
+                    if key in reply:body[key]=reply[key]
+                return deliver(body,{'tools_used':reply.get('_tools_used',[]),'policy_topics':reply.get('_policy_topics',[])})
     except hermes_client.HermesError as exc:
         code=str(exc)
-        allowed={'stock_probe_unavailable','hermes_timeout','hermes_unavailable','turn_not_completed','response_limit','invalid_response','invalid_response_id','missing_final_message','invalid_answer','sales_not_approved_or_configured','responses_not_supported','tool_discovery_unavailable','invalid_tool_inventory','unsafe_enabled_toolset','sales_runtime_attestation_required','invalid_sales_endpoint','https_required'}
+        allowed={'knowledge_context_invalid','stock_probe_unavailable','hermes_timeout','hermes_unavailable','turn_not_completed','response_limit','invalid_response','invalid_response_id','missing_final_message','invalid_answer','sales_not_approved_or_configured','responses_not_supported','tool_discovery_unavailable','invalid_tool_inventory','unsafe_enabled_toolset','sales_runtime_attestation_required','invalid_sales_endpoint','https_required'}
         if code not in allowed and not re.fullmatch(r'hermes_http_[1-5][0-9]{2}',code):code='unclassified_hermes_error'
         status=getattr(exc,'response_status','not_available')
         if status not in ('failed','cancelled','in_progress','incomplete','queued','unrecognized'):status='not_available'

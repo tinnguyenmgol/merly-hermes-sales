@@ -1,0 +1,13 @@
+{
+  "requests": 100,
+  "http200": 25,
+  "http429_backpressure": 75,
+  "local_only": true,
+  "inference_calls": 0,
+  "ai_budget_already_full": true,
+  "all_status_p50_ms": 935.5,
+  "all_status_p95_ms": 1730.8,
+  "all_status_max_ms": 1817.5,
+  "stock_with_full_ai_budget": 200,
+  "policy_ai_blocked": 429
+}

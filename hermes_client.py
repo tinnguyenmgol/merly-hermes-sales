@@ -58,13 +58,16 @@ def chat(message,user,previous_response_id=''):
     previous_response_id is a compatibility/diagnostic argument, never replayed:
     native chains can contain wording the adapter did not deliver to the customer.
     """
-    import dialogue
+    import dialogue,policy_knowledge
     turn_started=time.time()
     audit()
     payload={'input':message,'instructions':Path(__file__).with_name('SYSTEM-PROMPT.md').read_text(),
              'conversation_history':dialogue.history(dialogue.sid(user)),
              'stream':False,'store':False,
              '_session_scope':user+':turn:'+secrets.token_hex(8)}
+    try:knowledge,revision,approved=policy_knowledge.context(Path(__file__).parent)
+    except policy_knowledge.InvalidKnowledge:raise HermesError('knowledge_context_invalid') from None
+    payload['instructions']+=knowledge
     model=os.getenv('HERMES_SALES_MODEL_ALIAS','')
     if model:payload['model']=model
     data=request('/responses',payload)
@@ -75,7 +78,10 @@ def chat(message,user,previous_response_id=''):
     rid=data.get('id')
     if not isinstance(rid,str) or not re.fullmatch(r'resp_[A-Za-z0-9_-]{1,120}',rid):raise HermesError('invalid_response_id')
     from agent_answer import present
-    return present(data,rid,turn_started)
+    answer=present(data,rid,turn_started)
+    answer['knowledge_revision']=revision
+    answer['approved_policy_topics']=approved
+    return answer
 
 
 def probe_stock(scope,timeout=30):

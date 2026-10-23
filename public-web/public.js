@@ -35,7 +35,7 @@
     $('conversation').append(panel);
   }
   function failure(d) {
-    const messages={daily_budget_limit:'Phần tư vấn AI đã đạt hạn mức hiện tại. Bạn vẫn có thể hỏi chính sách hoặc tra mẫu và tồn kho trực tiếp.',ai_minute_limit:'Phần tư vấn AI đang giới hạn lượt. Bạn vẫn có thể hỏi chính sách hoặc tra mẫu/size.',ai_capacity:'Các lượt tư vấn AI đang được xử lý. Bạn vẫn có thể tra mẫu hoặc hỏi chính sách.',turn_in_progress:'Câu hỏi trước vẫn đang xử lý. Vui lòng chờ, không gửi lại.',stock_capacity:'Đang có lượt tra cứu hàng. Vui lòng chờ một chút rồi thử lại.',stock_rate_limit:'Tra cứu hàng đang tạm giới hạn lượt. Vui lòng thử lại sau.',visitor_rate_limit:'Bạn gửi tin nhắn hơi nhanh. Vui lòng chờ trước khi gửi tiếp.',public_rate_limit:'Có nhiều lượt gửi cùng lúc. Vui lòng thử lại sau.'};
+    const messages={daily_budget_limit:'Phần tư vấn AI đã đạt hạn mức hiện tại. Bạn vẫn có thể tra tồn trực tiếp khi có mã mẫu và size.',ai_minute_limit:'Phần tư vấn AI đang giới hạn lượt. Bạn vẫn có thể tra tồn trực tiếp khi có mã mẫu và size.',ai_capacity:'Các lượt tư vấn AI đang được xử lý. Bạn vẫn có thể tra tồn trực tiếp khi có mã mẫu và size.',turn_in_progress:'Câu hỏi trước vẫn đang xử lý. Vui lòng chờ, không gửi lại.',stock_capacity:'Đang có lượt tra cứu hàng. Vui lòng chờ một chút rồi thử lại.',stock_rate_limit:'Tra cứu hàng đang tạm giới hạn lượt. Vui lòng thử lại sau.',visitor_rate_limit:'Bạn gửi tin nhắn hơi nhanh. Vui lòng chờ trước khi gửi tiếp.',public_rate_limit:'Có nhiều lượt gửi cùng lúc. Vui lòng thử lại sau.'};
     let text=messages[d.error]||'Chưa xử lý được. Vui lòng không gửi lại liên tục.';
     if(Number.isInteger(d.retry_after)&&d.retry_after>1&&d.retry_after<=60)text+=' Có thể thử sau khoảng '+d.retry_after+' giây.';
     return text;

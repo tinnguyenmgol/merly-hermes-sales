@@ -1,27 +1,10 @@
-"""Only complete allowlisted requests bypass AI; never infer stock or fit."""
+"""Legacy slot helper for old regression tests; not imported or shipped in the chat runtime."""
 import re,unicodedata
 
 def norm(text):
     text=text.casefold().replace('đ','d')
     text=''.join(c for c in unicodedata.normalize('NFD',text) if unicodedata.category(c)!='Mn')
     return ' '.join(re.sub(r'[?!.]+$','',text.strip()).split())
-TOPICS={
-'shipping':('phi ship bao nhieu','don bao nhieu thi freeship','freeship tu bao nhieu','bao nhieu thi freeship','co freeship khong'),
-'size_exchange':('doi size the nao','doi size mat phi khong','phi doi size bao nhieu','doi hang the nao','chinh sach doi hang'),
-'warranty':('bao hanh bao lau','chinh sach bao hanh'),
-'store_hours':('gio mo cua','cua hang mo may gio'),
-'store_address':('dia chi cua hang','merly o dau'),
-'new_customer':('khach moi duoc giam gi','khach moi giam gi'),
-'loyalty':('gold giam bao nhieu','gold+ giam bao nhieu','chinh sach thanh vien')}
-def policy(message):
-    if not isinstance(message,str) or len(message)>160:return None
-    text=norm(message)
-    topic=next((topic for topic,phrases in TOPICS.items() if text in phrases),None)
-    if topic is None:return None
-    from merly_tools import get_policy
-    data=get_policy({'topic':topic})
-    reply=data['text'] if data['status']=='approved' else 'Merly cần xác nhận lại chính sách này. Bạn có thể nhắn nhân viên Merly để được hỗ trợ; mình chưa đủ dữ liệu để cam kết.'
-    return {'reply':reply,'engine':'policy-readonly','policy_status':data['status'],'model_called':False,'_topic':topic}
 def shopping(message):
     if not isinstance(message,str) or len(message)>120:return None
     m=re.fullmatch(r'(?:can |tim |cho minh |cho toi )?(?:mau |giay )?(?:(?:cao|got) )?([0-9]{1,2}(?:[.,][0-9])?)\s*cm\s+size\s*(3[5-9]|4[0-3])',norm(message))

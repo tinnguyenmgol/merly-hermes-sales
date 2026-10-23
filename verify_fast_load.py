@@ -1,4 +1,4 @@
-"""Real local Gunicorn(1 worker/4 threads),100 concurrent visitors; NO inference."""
+"""Real local Gunicorn(1 worker/4 threads),100 complete literal stock requests with AI budget full; NO inference."""
 import json,os,socket,subprocess,sys,tempfile,time,urllib.request,urllib.error
 from pathlib import Path
 ROOT=Path(__file__).resolve().parent
@@ -37,9 +37,10 @@ with tempfile.TemporaryDirectory(prefix='merly-fast-load-',dir=os.getenv('TMPDIR
                         cookie,csrf=visitor;start=time.perf_counter()
                         async with client.post(base+'/api/public/chat',json={'message':message},headers={'Origin':'https://chat.merlyshoes.com','Cookie':cookie,'X-Merly-CSRF':csrf}) as r:
                             return r.status,await r.json(),time.perf_counter()-start
-                    rows=await asyncio.gather(*(post(s,'bảo hành bao lâu?') for s in sessions))
-                    assert all(status==200 and '365' in body['reply'] and body['model_called'] is False for status,body,_ in rows),rows
-                    blocked=await post(sessions[0],'tư vấn chọn giày dự tiệc')
+                    rows=await asyncio.gather(*(post(s,'mẫu 1514 38 còn màu gì') for s in sessions))
+                    assert all((status==200 and body.get('reply')=='SYNTHETIC inventory' and body.get('model_called') is False) or (status==429 and body.get('error')=='stock_capacity') for status,body,_ in rows),rows
+                    assert any(status==200 for status,_,_ in rows)
+                    blocked=await post(sessions[0],'địa chỉ shop')
                     assert blocked[0]==429 and blocked[1]['error']=='daily_budget_limit'
                     stock=await post(sessions[0],'mẫu 1514 38 còn màu gì')
                     assert stock[0]==200 and stock[1]['model_called'] is False
@@ -47,7 +48,7 @@ with tempfile.TemporaryDirectory(prefix='merly-fast-load-',dir=os.getenv('TMPDIR
             rows,blocked,stock=asyncio.run(exercise())
             db=state.database();assert db.execute('SELECT count(*) FROM calls').fetchone()[0]==100;db.close()
             times=sorted(t for _,_,t in rows)
-            result={'requests':100,'http200':100,'local_only':True,'inference_calls':0,'ai_budget_already_full':True,'policy_p50_ms':round(times[49]*1000,1),'policy_p95_ms':round(times[94]*1000,1),'policy_max_ms':round(times[-1]*1000,1),'stock_with_full_ai_budget':stock[0],'general_ai_blocked':blocked[0]}
+            result={'requests':len(rows),'http200':sum(status==200 for status,_,_ in rows),'http429_backpressure':sum(status==429 for status,_,_ in rows),'local_only':True,'inference_calls':0,'ai_budget_already_full':True,'all_status_p50_ms':round(times[49]*1000,1),'all_status_p95_ms':round(times[94]*1000,1),'all_status_max_ms':round(times[-1]*1000,1),'stock_with_full_ai_budget':stock[0],'policy_ai_blocked':blocked[0]}
             if os.getenv('MERLY_LOAD_REPORT'):Path(os.environ['MERLY_LOAD_REPORT']).write_text(json.dumps(result,indent=2)+'\n')
             print(json.dumps(result))
         except Exception:

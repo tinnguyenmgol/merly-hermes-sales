@@ -59,3 +59,5 @@
 !media_urls.py
 !catalog_query.py
 !collection_catalog.py
+
+!policy_knowledge.py

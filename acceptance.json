@@ -103,6 +103,34 @@
         "Phân biệt đề xuất của bot với xác nhận của khách.",
         "Giữ nguyên màu được chọn; không gộp hai màu."
       ]
+    },
+    {
+      "name": "policy-natural-questions",
+      "turns": [
+        "có freeship ko",
+        "thế shop ở đâu vậy fen",
+        "tối nay mấy giờ đóng cửa"
+      ],
+      "review": [
+        "Trả đúng câu hiện tại, không chỉ chào.",
+        "Nêu ngưỡng 300.000đ sau giảm, không tự tính điều kiện đơn.",
+        "Địa chỉ đúng hai địa chỉ nguồn; không tự thêm phường/quận.",
+        "Giờ 09:30–21:30; không tự cam kết lịch ngoại lệ.",
+        "engine phải là hermes, có knowledge_revision và diagnostic_id."
+      ]
+    },
+    {
+      "name": "policy-rules-followup",
+      "turns": [
+        "mua rồi đổi trong bao lâu",
+        "đổi online có mất tiền ko",
+        "Silver với Diamond ưu đãi khác gì"
+      ],
+      "review": [
+        "30 ngày và thông thường 01 lần/đơn, kèm điều kiện phù hợp.",
+        "Phí 20.000đ/voucher20.000đ; không bịa điều kiện voucher.",
+        "Đọc đúng hạng trong tài liệu, không tự xác nhận hạng khách."
+      ]
     }
   ]
 }
