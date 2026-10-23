@@ -68,6 +68,8 @@ def chat(message,user,previous_response_id=''):
     try:knowledge,revision,approved=policy_knowledge.context(Path(__file__).parent)
     except policy_knowledge.InvalidKnowledge:raise HermesError('knowledge_context_invalid') from None
     payload['instructions']+=knowledge
+    snapshot=json.loads(knowledge.rsplit('\n',1)[-1])
+    reference_links=[u for row in snapshot['policies'] for u in row.get('website_reference',{}).get('customer_links',[])]
     model=os.getenv('HERMES_SALES_MODEL_ALIAS','')
     if model:payload['model']=model
     data=request('/responses',payload)
@@ -79,6 +81,7 @@ def chat(message,user,previous_response_id=''):
     if not isinstance(rid,str) or not re.fullmatch(r'resp_[A-Za-z0-9_-]{1,120}',rid):raise HermesError('invalid_response_id')
     from agent_answer import present
     answer=present(data,rid,turn_started)
+    answer['source_links']=list(dict.fromkeys(answer.get('source_links',[])+reference_links))[:64]
     answer['knowledge_revision']=revision
     answer['approved_policy_topics']=approved
     return answer

@@ -1,0 +1,1563 @@
+{
+  "reviewed_at": "2026-10-23T02:36:34.674138+00:00",
+  "scope": "Public /pages/ and /blogs/ sitemap URLs only. Products/prices/inventory stay live via Haravan; raw pages and historical marketing are not loaded into model context.",
+  "summary": {
+    "urls": 154,
+    "http200": 154,
+    "pages": 37,
+    "blogs": 117,
+    "no_extractable_text": 6,
+    "curated_topics": 10,
+    "curated_sources": 12,
+    "nonarticle_catalog_landings": 2,
+    "remaining_empty_or_dynamic": 4
+  },
+  "sources": [
+    {
+      "url": "https://merlyshoes.com/pages/mo-dai-ly",
+      "sitemap_lastmod": "2025-02-24T05:46:50.324Z",
+      "status": 200,
+      "title": "Chính sách đại lý - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:09.324094+00:00",
+      "html_sha256": "15a3070ff322c8f7fa4a0f5ad98b9c6551e611d1279da7a1e660096524f92f63",
+      "text_chars": 2176,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/showroom-13-to-ngoc-van-phuong-linh-tay-quan-thu-duc-tp-ho-chi-min",
+      "sitemap_lastmod": "2019-12-26T07:41:03.087Z",
+      "status": 200,
+      "title": "Showroom 13 Tô Ngọc Vân, Phường Linh Tây, Quận Thủ Đức, Tp. Hồ Chí Min - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:09.196638+00:00",
+      "html_sha256": "20ebdc91019120eff50b80ce65f6dd23d6593bc337d9b556dc3f73757c196e92",
+      "text_chars": 547,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/showroom-38-tan-son-nhi-phuong-tan-son-nhi-tp-ho-chi-minh",
+      "sitemap_lastmod": "2024-02-26T04:28:07.275Z",
+      "status": 200,
+      "title": "Showroom 38 Tân Sơn Nhì, Phường Tân Sơn Nhì, Tp. Hồ Chí Minh - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:09.125268+00:00",
+      "html_sha256": "e181b386871a34a4678dbb4c9ac0e385c163679cbc9c68ae53c27fe114ee142b",
+      "text_chars": 598,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/mot-so-cau-hoi-thuong-gap",
+      "sitemap_lastmod": "2022-09-05T02:54:23.556Z",
+      "status": 200,
+      "title": "Một số câu hỏi thường gặp - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:09.672728+00:00",
+      "html_sha256": "c1c5c65834008c2560a263bd3334d1b94879ddb6f10e2c5b101ef7901b9eab45",
+      "text_chars": 1095,
+      "disposition": "mixed_source_only_curated_fragments_allowed"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/danh-sach-yeu-thich",
+      "sitemap_lastmod": "2022-09-29T04:42:07.003Z",
+      "status": 200,
+      "title": "Danh sách yêu thích - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:09.936012+00:00",
+      "html_sha256": "0ea1ed64d69ccece52c29f45be728ac9427c30f9df03361379b5e38137f3fc65",
+      "text_chars": 0,
+      "disposition": "needs_render_or_image_review",
+      "layout_review": "No substantive article text in inspected main region; app/empty document is not a source of new policy or a verified functioning lookup."
+    },
+    {
+      "url": "https://merlyshoes.com/pages/huong-dan-dang-ky-thanh-vien",
+      "sitemap_lastmod": "2023-09-26T06:47:15.047Z",
+      "status": 200,
+      "title": "Hướng Dẫn Đăng Ký Thành Viên - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:10.008979+00:00",
+      "html_sha256": "ddcaa7bc5db3e285e151469e9d429cdaf802a680b916d0c45063df177e22fee6",
+      "text_chars": 80,
+      "disposition": "curated_customer_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/khai-truong-chi-nhanh-merly-38-tan-son-nhi-quan-tan-phu",
+      "sitemap_lastmod": "2023-12-26T13:01:45.233Z",
+      "status": 200,
+      "title": "Shop Giày Nữ Quận Tân Phú - Merly 561 Lũy Bán Bích - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:10.275742+00:00",
+      "html_sha256": "854872be4fe62b625c74098c593ca264748500bfdf7bdb24a4f4d3d6d64f37ae",
+      "text_chars": 1286,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/chinh-sach-thanh-toan",
+      "sitemap_lastmod": "2023-08-09T04:14:36.456Z",
+      "status": 200,
+      "title": "Chính sách thanh toán - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:10.845475+00:00",
+      "html_sha256": "cd7fba43d7d730fa1e67b8b198afd6127c85c9d59857bfae9a75b999feec3e41",
+      "text_chars": 1145,
+      "disposition": "mixed_source_only_curated_fragments_allowed"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/chinh-sach-giao-nhan",
+      "sitemap_lastmod": "2024-01-24T04:08:46.119Z",
+      "status": 200,
+      "title": "Chính sách giao nhận - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:10.506902+00:00",
+      "html_sha256": "a082c175b389ac57797439723e3c41383362f6166b061c6359878fd1c1b50335",
+      "text_chars": 1456,
+      "disposition": "mixed_source_only_curated_fragments_allowed"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/cua-hang-giay-nu-merly",
+      "sitemap_lastmod": "2023-12-26T12:43:07.297Z",
+      "status": 200,
+      "title": "Cửa hàng giày nữ Merly - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:10.748588+00:00",
+      "html_sha256": "e343ba10c3384d81e40ad8f64a0ac0e35aa168fbb7d516407e6f5e87b44fb7af",
+      "text_chars": 0,
+      "disposition": "needs_render_or_image_review",
+      "layout_review": "No substantive article text in inspected main region; app/empty document is not a source of new policy or a verified functioning lookup."
+    },
+    {
+      "url": "https://merlyshoes.com/pages/huong-dan-thanh-toan-bang-vnpay",
+      "sitemap_lastmod": "2020-03-14T09:57:10.85Z",
+      "status": 200,
+      "title": "Hướng dẫn thanh toán bằng VNPAY - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:10.965052+00:00",
+      "html_sha256": "971f1e952f17d2e4d8426bc3b9089adf3b11c70ff970827b9889e66dbe397ea8",
+      "text_chars": 2378,
+      "disposition": "mixed_source_only_curated_fragments_allowed"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/san-xuat-giay-dong-phuc-cong-ty-cao-cap-thuong-hieu-merly",
+      "sitemap_lastmod": "2024-04-15T04:43:25.182Z",
+      "status": 200,
+      "title": "Báo Giá Giày Đồng Phục Nữ Sản Xuất Theo Yêu Cầu từ Merly - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:11.376436+00:00",
+      "html_sha256": "aab72461ff034b1f7e0a7236ef0fc2f1b6e01d5dad863c61748b470e9c68d8ab",
+      "text_chars": 3151,
+      "disposition": "mixed_source_only_curated_fragments_allowed"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/giam-gia-20-shop-giay-cao-got-big-size-merly-tai-cua-hang",
+      "sitemap_lastmod": "2024-07-24T05:36:28.669Z",
+      "status": 200,
+      "title": "Shop Giày Cao Gót Big Size Merly giảm 20% - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:11.487908+00:00",
+      "html_sha256": "56c8cd5286928578a36002d55baf3fd13f8c3a96fb4c1424e40fc0d95af8d3ae",
+      "text_chars": 1166,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/chinh-sach-bao-hanh",
+      "sitemap_lastmod": "2022-09-29T07:35:50.46Z",
+      "status": 200,
+      "title": "Chính sách bảo hành - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:11.468186+00:00",
+      "html_sha256": "9e2d19d51cfa0e360b62cdde4298571aa4a2d91dbcc6164d659dd3cd19ca389c",
+      "text_chars": 2533,
+      "disposition": "mixed_source_only_curated_fragments_allowed"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/lien-he-1",
+      "sitemap_lastmod": "2024-01-03T03:37:18.464Z",
+      "status": 200,
+      "title": "LIÊN HỆ GIÀY NỮ MERLY - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:11.888485+00:00",
+      "html_sha256": "b60428ef42cdcfc2e1939ff2b8f45cdb26819d83d8715c2dc49e31c0919bcf1f",
+      "text_chars": 1222,
+      "disposition": "curated_customer_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/kiem-tra-don-hang",
+      "sitemap_lastmod": "2022-09-29T04:46:29.452Z",
+      "status": 200,
+      "title": "Kiểm tra đơn hàng - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:11.909139+00:00",
+      "html_sha256": "645017de1aa237e81663e5a637772d47a4ae0422af15eaee3d499e0f3eedc0ac",
+      "text_chars": 0,
+      "disposition": "needs_render_or_image_review",
+      "layout_review": "No substantive article text in inspected main region; app/empty document is not a source of new policy or a verified functioning lookup."
+    },
+    {
+      "url": "https://merlyshoes.com/pages/dieu-khoan-dich-vu",
+      "sitemap_lastmod": "2017-12-14T04:56:19.914Z",
+      "status": 200,
+      "title": "Điều khoản dịch vụ - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:12.223372+00:00",
+      "html_sha256": "2676c44a353797aaa8e99b6c6a17e05af6b1e2dd6169a17dbd5558535d871586",
+      "text_chars": 0,
+      "disposition": "needs_render_or_image_review",
+      "layout_review": "No substantive article text in inspected main region; app/empty document is not a source of new policy or a verified functioning lookup."
+    },
+    {
+      "url": "https://merlyshoes.com/pages/cau-hoi-thuong-gap",
+      "sitemap_lastmod": "2022-09-05T02:54:09.146Z",
+      "status": 200,
+      "title": "Câu hỏi thường gặp - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:12.450673+00:00",
+      "html_sha256": "8f999134c6bc3385bd9b9223c1594b32f498018a4a8046fabddd176856767b02",
+      "text_chars": 4289,
+      "disposition": "mixed_source_only_curated_fragments_allowed"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/sieu-sale-1-1",
+      "sitemap_lastmod": "2023-12-30T08:51:29.004Z",
+      "status": 200,
+      "title": "Siêu sale 1.1\n         \n         \n         \n         \n         Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:12.898295+00:00",
+      "html_sha256": "49acd05df205c69e1324f21494fae75a9c465a25280d7a48e604743df4b3ec6f",
+      "text_chars": 0,
+      "disposition": "marketing_catalog_landing_not_static_knowledge",
+      "layout_review": "Separate landing layout includes product imagery/catalog. Not an empty policy document; live products/prices remain Haravan-only."
+    },
+    {
+      "url": "https://merlyshoes.com/pages/giay-merly-giam-gia",
+      "sitemap_lastmod": "2024-01-04T10:17:39.854Z",
+      "status": 200,
+      "title": "Giày Giảm Giá, Giày Giá Rẻ\n         \n         \n         \n         \n         Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:13.008607+00:00",
+      "html_sha256": "a9657ca51dd9bc9bc4f6ae0c9b1c28e4225d3f8e2ffcb12c12d7fd3bf5d2f475",
+      "text_chars": 0,
+      "disposition": "marketing_catalog_landing_not_static_knowledge",
+      "layout_review": "Separate landing layout includes product imagery/catalog. Not an empty policy document; live products/prices remain Haravan-only."
+    },
+    {
+      "url": "https://merlyshoes.com/pages/xe-khach-7-cho-bao-loc-sai-gon-va-nguoc-lai",
+      "sitemap_lastmod": "2025-02-28T05:40:35.355Z",
+      "status": 200,
+      "title": "Xe khách 7 chỗ Sài Gòn - Bảo Lộc - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:12.917982+00:00",
+      "html_sha256": "59078a92b9572c470df3715de54d0c80f308e2bb53cbb884a1d22297b30fa9b9",
+      "text_chars": 1852,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/combo-ngay-nang-sam-giay-xinh-rinh-ngay-qua-tang",
+      "sitemap_lastmod": "2024-03-26T10:59:33.864Z",
+      "status": 200,
+      "title": "Combo Ngày Nắng - Sắm giày xinh, rinh ngay Quà tặng - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:13.587562+00:00",
+      "html_sha256": "41f89553c11c99fc590f7cefa130798bbbe040ee41bdba6c65b178d77560282e",
+      "text_chars": 1644,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/lien-he",
+      "sitemap_lastmod": "2024-01-04T11:04:12.564Z",
+      "status": 200,
+      "title": "Liên hệ Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:13.570710+00:00",
+      "html_sha256": "e16ec4d0b164f9270296c02a2912a4d89207578ac375fbf705d254882f8dd252",
+      "text_chars": 915,
+      "disposition": "mixed_source_only_curated_fragments_allowed"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/huong-dan-do-size-giay",
+      "sitemap_lastmod": "2024-01-08T02:54:49.746Z",
+      "status": 200,
+      "title": "Cách Chọn Size Giày Nữ - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:13.450987+00:00",
+      "html_sha256": "f226a11de26cf297c9eb764093f10e329e539c6d0657b7857f8ebb34b6e42e92",
+      "text_chars": 439,
+      "disposition": "curated_customer_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/chinh-sach-khach-hang-than-thiet",
+      "sitemap_lastmod": "2024-06-25T03:55:50.842Z",
+      "status": 200,
+      "title": "Chiết khấu lên tới 20% cho KH đã đăng ký viên Giày Nữ Merly từ 2024",
+      "fetched_at": "2026-10-23T02:25:13.991921+00:00",
+      "html_sha256": "bc17d91526b533b5ad6ee0893847c01c1836818771fca4b2605efa15890eb9bf",
+      "text_chars": 2462,
+      "disposition": "mixed_source_only_curated_fragments_allowed"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/chinh-sach-bao-mat",
+      "sitemap_lastmod": "2022-08-12T08:26:49.07Z",
+      "status": 200,
+      "title": "Chính sách bảo mật - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:14.208011+00:00",
+      "html_sha256": "c061807906262f3211a53e87257e73712f5f0dd1b8cccf78666a39bd3ddb7faa",
+      "text_chars": 4217,
+      "disposition": "mixed_source_only_curated_fragments_allowed"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/san-pham-ve-sinh-giay-danh-bong-giay-da-da-nang",
+      "sitemap_lastmod": "2018-04-27T04:31:36.714Z",
+      "status": 200,
+      "title": "Sản phẩm vệ sình giày, đánh bóng giày,da đa năng. - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:15.376467+00:00",
+      "html_sha256": "291905c3ab689698c79264956dece485611e1732be00bc93522b3479a87590ac",
+      "text_chars": 400,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/chinh-sach-doi-tra",
+      "sitemap_lastmod": "2023-08-09T04:38:29.134Z",
+      "status": 200,
+      "title": "Chính sách đổi trả - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:14.336008+00:00",
+      "html_sha256": "eb7580bdda0e18f187253687d22a7770ae5fa56fd8f2774e711261930f8e8046",
+      "text_chars": 1366,
+      "disposition": "mixed_source_only_curated_fragments_allowed"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/showroom-876-truong-sa-phuong-13-quan-3-tp-ho-chi-minh",
+      "sitemap_lastmod": "2024-04-08T06:01:24.81Z",
+      "status": 200,
+      "title": "Shop Giày Dép Nữ Đẹp TPHCM | Merly Quận 3 - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:15.824339+00:00",
+      "html_sha256": "4cf05b60136c5778475450043936e85bd38cf398fffc24d373880b494959ed76",
+      "text_chars": 1203,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/khai-truong-chi-nhanh-4-merly-13-to-ngoc-van-thu-duc",
+      "sitemap_lastmod": "2019-12-20T14:53:12.338Z",
+      "status": 200,
+      "title": "KHAI TRƯƠNG CHI NHÁNH 4 MERLY 13 TÔ NGỌC VÂN, THỦ ĐỨC - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:15.092503+00:00",
+      "html_sha256": "c85af5a9ab9b767d352a57ec5cbd097fa494154fb87b137e4078f46c6a81ac9c",
+      "text_chars": 208,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/showroom-242-phan-chau-trinh-phuong-tan-loi-thanh-pho-buon-ma-thuot",
+      "sitemap_lastmod": "2019-12-26T07:37:18.759Z",
+      "status": 200,
+      "title": "Showroom 242 Phan Châu Trinh, Phường Tân Lợi, Thành phố Buôn Ma Thuột, - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:16.702467+00:00",
+      "html_sha256": "8fe9cd19a2b3eb818fff92944c2e9f576aa6f285f32b62ea8204cd2d4177f317",
+      "text_chars": 547,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/scan-qr-nhan-ngay-voucher",
+      "sitemap_lastmod": "2023-06-15T11:12:17.874Z",
+      "status": 200,
+      "title": "Scan QR nhận ngay VOUCHER - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:15.953002+00:00",
+      "html_sha256": "f5fe31040a11b73c01d516d59a67428d9403fba305f099ee1e330f21613845c0",
+      "text_chars": 1507,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/huong-dan-xem-hang-thanh-vien-va-uu-dai",
+      "sitemap_lastmod": "2023-09-26T03:43:59.953Z",
+      "status": 200,
+      "title": "Hướng Dẫn Xem Hạng Thành Viên Và Nhận Ưu Đãi - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:17.067180+00:00",
+      "html_sha256": "938d7353ef9f0f7bb9580db6b07e675394d5d910ee7e097c20a4cb8e83be7836",
+      "text_chars": 175,
+      "disposition": "curated_customer_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/huong-dan-phat-livestream-shopee-bang-obs-khong-bi-chan",
+      "sitemap_lastmod": "2023-12-18T04:20:55.844Z",
+      "status": 200,
+      "title": "Hướng dẫn phát livestream shopee bằng OBS không bị chặn. - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:17.289885+00:00",
+      "html_sha256": "63950d51df90feedfb0017fcd0893e1df80c51774f5d7aa377e1c193c0be5d1a",
+      "text_chars": 2038,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/giay-dong-phuc-merly",
+      "sitemap_lastmod": "2024-04-19T06:42:43.469Z",
+      "status": 200,
+      "title": "GIÀY ĐỒNG PHỤC NỮ CHO NHÂN VIÊN, NHẬN ĐẶT SẢN XUẤT GIÀY ĐỒNG PHỤC - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:17.116246+00:00",
+      "html_sha256": "2b6ca99f01a125e439c918c7d18a5a9cb51cf72278e64aa566046300d5502e35",
+      "text_chars": 1193,
+      "disposition": "curated_customer_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/chuong-trinh-hop-tac-gift-code-merly-qua-tang-thiet-thuc-nap-truoc-nhan-credit-khong-cong-no",
+      "sitemap_lastmod": "2026-01-28T08:57:11.537Z",
+      "status": 200,
+      "title": "Chương Trình Hợp Tác Gift Code Merly: Quà Tặng Thiết Thực – Nạp Trước - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:17.586962+00:00",
+      "html_sha256": "8bc9ec2dadba3499d2b2696070c1d8299f61646741b08a48200509f56c6d35ea",
+      "text_chars": 3827,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/pages/thu-giay-merly-tang-vo-da-mong-chong-tron-trong-thang-7",
+      "sitemap_lastmod": "2026-07-05T04:37:32.053Z",
+      "status": 200,
+      "title": "Thử Giày Merly Tặng Vớ Da Mỏng Chống Trơn Tháng 7 - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:17.894486+00:00",
+      "html_sha256": "c3c0fc8f13779f9c3ea9d1225b999143ad96e119873ee4abcd12bb4cf4603030",
+      "text_chars": 4671,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/merly-shoes-hop-tac-ha-dang-haute-couture",
+      "sitemap_lastmod": "2026-10-20T04:04:20.142Z",
+      "status": 200,
+      "title": "Merly Shoes × Ha Dang Haute Couture: Hợp Tác Tôn Vinh Vẻ Đẹp Cô Dâu - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:18.079515+00:00",
+      "html_sha256": "c772675661f42b8857c0ffb5474240ad48e9df53646d9cb98ea47b19c88bc4d0",
+      "text_chars": 3762,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/luat-ky-thuat-cau-long-co-ban-cho-nguoi-moi-cam-nang-merly-cup-2027",
+      "sitemap_lastmod": "2026-09-11T06:08:09.807Z",
+      "status": 200,
+      "title": "Luật & Kỹ thuật cầu lông cơ bản cho người mới – Cẩm nang Merly Cup 202 - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:18.293469+00:00",
+      "html_sha256": "31515cd0ead762e129f160d160a6fac82bed7de618b84ec1e53ad06675a19f8c",
+      "text_chars": 2984,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/thu-giay-merly-tang-vo-da-mong-chong-tron-trong-thang-7",
+      "sitemap_lastmod": "2026-07-05T04:40:33.332Z",
+      "status": 200,
+      "title": "THỬ GIÀY MERLY – TẶNG VỚ DA MỎNG CHỐNG TRƠN TRONG THÁNG 7 - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:18.876835+00:00",
+      "html_sha256": "b5163c03174b247a1e710c96e8dd55a11a56021cd0fb2ff0c2a21718bff887e9",
+      "text_chars": 4729,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/khi-nao-nen-mang-giay-cao-10cm",
+      "sitemap_lastmod": "2026-06-16T11:02:14.762Z",
+      "status": 200,
+      "title": "Khi nào nên mang giày cao 10cm? Cách chọn giày cao gót 10cm dễ đi - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:18.679730+00:00",
+      "html_sha256": "dc5810125c2b002355b67a4861348a02b993356fe753f801076c06c11e84f8ab",
+      "text_chars": 11853,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/giay-cuoi-co-dau-dep-em-chan",
+      "sitemap_lastmod": "2026-04-01T05:54:19.875Z",
+      "status": 200,
+      "title": "Giày cưới cô dâu Cách chọn đẹp, êm chân và tôn dáng trong ngày cưới - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:18.955504+00:00",
+      "html_sha256": "9d5c219107d0c92b187a54c91dee9e2db142ec32c6ab17fe1f4e5fdebc1cfdb5",
+      "text_chars": 2471,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/co-dau-nen-mang-giay-gi-1",
+      "sitemap_lastmod": "2026-04-01T05:40:11.395Z",
+      "status": 200,
+      "title": "Cô dâu nên mang giày gì? 7 tiêu chí chọn giày cưới đẹp, êm và dễ đi - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:19.168072+00:00",
+      "html_sha256": "a76cfd127029d66208a86ab4dd507dc50fd402b619c96e0d5404878a66b88831",
+      "text_chars": 3046,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/giay-nu-big-size-merly-shoes-sale-lon-2-9-giam-den-50",
+      "sitemap_lastmod": "2025-08-28T06:52:51.763Z",
+      "status": 200,
+      "title": "Giày Merly Big Size 35–43 | Sale 2/9 Giảm đến 50% - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:19.505281+00:00",
+      "html_sha256": "745b8e682d653c5b0753aa45918d06a50d33347c0292fe0a0150326582d2133d",
+      "text_chars": 1359,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cap-nhat-dia-chi-moi-cua-he-thong-cua-hang-giay-merly-tai-tp-hcm",
+      "sitemap_lastmod": "2025-07-01T13:46:36.437Z",
+      "status": 200,
+      "title": "Cập Nhật Địa Chỉ Mới của Hệ Thống Cửa Hàng Giày Merly tại TP.HCM - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:19.528437+00:00",
+      "html_sha256": "5618fdc5945198192ec20971669df2a57cfb9c4f90e697116191473d1b930fc3",
+      "text_chars": 1603,
+      "disposition": "curated_customer_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/chao-mung-den-voi-thang-tri-an-ruc-ro-tai-merly",
+      "sitemap_lastmod": "2025-03-05T08:15:12.152Z",
+      "status": 200,
+      "title": "🌟 CHÀO MỪNG ĐẾN VỚI THÁNG TRI ÂN RỰC RỠ TẠI MERLY! 🌟 - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:19.860370+00:00",
+      "html_sha256": "9e2c62319426e74be6b0729149d3579153f9564fec1a4703b297e5f68ae38376",
+      "text_chars": 1298,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/giay-cao-got-10cm-de-dup-khong-moi",
+      "sitemap_lastmod": "2024-09-04T09:06:55.723Z",
+      "status": 200,
+      "title": "giày cao gót 10cm - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:20.129778+00:00",
+      "html_sha256": "65008bd0c653ee1b2118a17dcd39fa96a6f0fbfc2babedb997d23838e5b7f738",
+      "text_chars": 6156,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/giay-cao-got-big-size-dep-nhat-shop-merly-tphcm",
+      "sitemap_lastmod": "2024-07-27T00:14:50.787Z",
+      "status": 200,
+      "title": "Giày Cao Gót Big Size Đẹp Và Gọn Chân - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:20.109893+00:00",
+      "html_sha256": "49741b8e7eb8d72f785ab1a33bfdcc62cdb8169f9e15239cc481f18307e3ca12",
+      "text_chars": 2352,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/dep-xo-ngon-di-bien-mac-vay-maxi",
+      "sitemap_lastmod": "2024-07-09T07:55:34.493Z",
+      "status": 200,
+      "title": "Gợi ý Kiểu Dép Xỏ Ngón Xinh Khi Mặc Váy Maxi Đi Biển - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:21.688065+00:00",
+      "html_sha256": "6dcd9205f9c229600f8a45b160724a506668e8569e3e3dcf370d998925fbe844",
+      "text_chars": 4180,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/nhung-mau-giay-nu-big-size-40-41-42-43-moi-nhat",
+      "sitemap_lastmod": "2024-07-29T04:31:42.414Z",
+      "status": 200,
+      "title": "Giày Nữ Big Size 40 41 42 43 - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:22.697483+00:00",
+      "html_sha256": "97d56b4ef13fe3cc62d288ad035cb973190bf360e1a78ae79ebcbfb2aa0d5eb8",
+      "text_chars": 5271,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-xu-ly-giay-cao-got-bi-rong",
+      "sitemap_lastmod": "2024-07-10T05:21:14.394Z",
+      "status": 200,
+      "title": "Cách xử lý giày cao gót bị rộng - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:20.752021+00:00",
+      "html_sha256": "1a3ed6c176ce62601bf516a7168ab73fb00e9bae0ece08ab6551ed8183fe404c",
+      "text_chars": 4389,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/dep-nu-xinh-da-cao-cap-thuong-hieu-merly-shop-giay-dep-big-size",
+      "sitemap_lastmod": "2024-05-16T13:36:31.572Z",
+      "status": 200,
+      "title": "Dép Nữ Cao Cấp, Dép Chữ H Nữ, Dép Quai Ngang Nữ, Shop Dép Nữ Big Size - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:21.347099+00:00",
+      "html_sha256": "3ad161e1b2b4822da1cf12e6f301197fe4cad07015a746fbd1ffa7ca86cfce1f",
+      "text_chars": 6617,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/10-kieu-dep-di-bien-dep-cute-cho-hoi-nhom-gia-dinh-cap-doi-2024",
+      "sitemap_lastmod": "2024-05-15T05:48:25.491Z",
+      "status": 200,
+      "title": "Dép đi biển đẹp, dép nhựa đi biển, dép nhóm, dép gia đình, dép cặp đôi - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:21.840994+00:00",
+      "html_sha256": "5add2ff8ead867cab49c7632096ac79f0520008239dbea8808f8a8cb1d46f1f4",
+      "text_chars": 2236,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/day-la-doi-dep-banh-mi-kep-ngon-xinh-cho-cac-co-gai-di-chua-lanh",
+      "sitemap_lastmod": "2024-04-19T05:29:38.139Z",
+      "status": 200,
+      "title": "Đôi Dép Bánh Mì Kẹp Ngón Lý Tưởng Cho Các Cô Gái Hay Đi Chữa Lành - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:22.198418+00:00",
+      "html_sha256": "a015713d6d206e6804a42cfb15f64ee29c2c10ccf2c2c8c31cc1da445ea4580a",
+      "text_chars": 3018,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/noi-nhan-san-xuat-giay-dong-phuc-cong-ty-nhanh-chong-chat-luong-tai-tphcm",
+      "sitemap_lastmod": "2024-05-03T04:38:15.128Z",
+      "status": 200,
+      "title": "Nơi đặt sản xuất giày đồng phục nữ nhân viên chất lượng tại TPHCM - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:22.409471+00:00",
+      "html_sha256": "29396df04e9b67dc917a30cfdefc43556f425334c2961ac24df4ac106392790b",
+      "text_chars": 2354,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/top-5-kieu-giay-cao-got-5cm-7cm-mac-ao-dai-dep-nhat",
+      "sitemap_lastmod": "2024-07-27T00:23:57.865Z",
+      "status": 200,
+      "title": "Top +5 Kiểu Giày Cao Gót Mặc Áo Dài Đẹp Nhất - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:22.724338+00:00",
+      "html_sha256": "5b78f3ce32ae3b2db7f93fdcc4d87f8765b8f68a3ece1b896749625290469368",
+      "text_chars": 4727,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/mix-do-sang-chanh-di-tiec",
+      "sitemap_lastmod": "2024-07-27T00:28:05.488Z",
+      "status": 200,
+      "title": "Mix đồ sang chảnh cho nàng khi đi dự tiệc - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:23.165997+00:00",
+      "html_sha256": "00ac545cae73d97d69388a38586bb4363439bfc66caa094584807e4db518eaa8",
+      "text_chars": 9247,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/giay-de-dup",
+      "sitemap_lastmod": "2024-12-03T08:05:44.588Z",
+      "status": 200,
+      "title": "Giày Cao Gót Đế Đúp, Giày Đế Đúp - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:23.386044+00:00",
+      "html_sha256": "386734fbbdf06445864c52015c9b22bc5f425955fc2a58f25482d23c7c70d4db",
+      "text_chars": 4180,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/huong-dan-dang-ky-thanh-vien-merlyshoes",
+      "sitemap_lastmod": "2023-09-26T03:59:49.365Z",
+      "status": 200,
+      "title": "Hướng Dẫn Đăng Ký Thành Viên Merlyshoes - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:23.280701+00:00",
+      "html_sha256": "f2edfb67d70092543b83dc32e5013c3a319b1ea219a93bdc995a6b880754aca6",
+      "text_chars": 120,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/phong-cach-va-thoai-mai-cung-giay-nu-big-size-merly-tu-chat-lieu-da-co",
+      "sitemap_lastmod": "2023-06-18T05:02:43.324Z",
+      "status": 200,
+      "title": "Phong cách và thoải mái cùng Merly từ da công nghiệp Microfiber - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:23.641919+00:00",
+      "html_sha256": "1cba9581195e7e79c83cec18547c23aaf4f5e8b0bcf4e319d65e12321f3e48ef",
+      "text_chars": 1494,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/merly-thoa-man-su-dang-cap-voi-giay-nu-da-microfiber",
+      "sitemap_lastmod": "2023-05-21T09:29:29.164Z",
+      "status": 200,
+      "title": "Merly - Thỏa mãn sự đẳng cấp với giày nữ da Microfiber! - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:23.759593+00:00",
+      "html_sha256": "5309bfc7a5fe550d049d16b0bd7c112d62ccf774281a2d4adb3b899c852260b1",
+      "text_chars": 1633,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/thong-bao-chuyen-cua-hang-tan-phu-ve-dia-chi-561-luy-ban-bich-tan-phu",
+      "sitemap_lastmod": "2023-12-26T12:54:13.568Z",
+      "status": 200,
+      "title": "Thông báo chuyển cửa hàng Merly Tân Phú về địa chỉ mới - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:23.782316+00:00",
+      "html_sha256": "16ceb723caed8ce26cb50502c9009545a49fb4e6e9f2e1e120d526e943f25446",
+      "text_chars": 1672,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-phoi-giay-voi-quan-ong-loe",
+      "sitemap_lastmod": "2023-02-07T07:07:32.785Z",
+      "status": 200,
+      "title": "Tổng hợp 10+ Cách phối giày với quần ống loe và những lưu ý - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:24.105139+00:00",
+      "html_sha256": "4e7c2904461c0a8d7cf9856f9dc51f31e8eb74d2ffc4bb63b9aafd78ccbc7070",
+      "text_chars": 6836,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-phoi-giay-voi-quan-ong-rong",
+      "sitemap_lastmod": "2025-07-17T08:57:25.452Z",
+      "status": 200,
+      "title": "Top 13 cách phối giày với quần ống rộng thời trang, cá tính - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:25.636241+00:00",
+      "html_sha256": "9fb7ed8d0b4a0bb1d9dfd717f0d67eaf2a9b6a3045354a746112b562f21764a9",
+      "text_chars": 6712,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-phoi-giay-voi-dam-maxi",
+      "sitemap_lastmod": "2024-07-09T07:54:05.899Z",
+      "status": 200,
+      "title": "TOP 9 Cách phối giày với đầm maxi thời thượng hợp thời trang - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:24.411276+00:00",
+      "html_sha256": "2c2adf4d06c1a95ec9133309405895d75eb8fdbeeb44f8b44dc14b5a9b89769b",
+      "text_chars": 4926,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-phoi-giay-voi-vay-len",
+      "sitemap_lastmod": "2023-02-07T06:58:28.007Z",
+      "status": 200,
+      "title": "Những cách phối giày với váy len được ưa chuộng hiện nay - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:24.715048+00:00",
+      "html_sha256": "3785122a7474a7cb63bb946b387ab47e5f259473e71f9fbb5fa795ad0cfcaf62",
+      "text_chars": 2738,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-phoi-giay-voi-vay-yem",
+      "sitemap_lastmod": "2023-02-07T06:43:58.738Z",
+      "status": 200,
+      "title": "Tổng hợp 10+ Cách phối giày với váy yếm giúp bạn thu hút hơn - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:25.002017+00:00",
+      "html_sha256": "e1dbc359b1496f08ffe7ad5f46d68e96d27a4ad95173c7068c5b87d26c5bd7b8",
+      "text_chars": 4593,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-phoi-giay-voi-dam-trang",
+      "sitemap_lastmod": "2023-02-07T06:44:01.019Z",
+      "status": 200,
+      "title": "Gợi ý các cách phối giày với đầm trắng bạn nên biết - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:25.492179+00:00",
+      "html_sha256": "33d0f3dd9269f41c8fba60e1537a255bd32d310b87ca6e9f2cdc3afa48047ab2",
+      "text_chars": 3256,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/phoi-do-voi-giay-cao-got-mau-xanh",
+      "sitemap_lastmod": "2023-12-12T12:04:55.695Z",
+      "status": 200,
+      "title": "Gợi ý các cách phối đồ với giày cao gót màu xanh dương - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:25.519178+00:00",
+      "html_sha256": "603a3e9fb8c70e507af1a4ed2220a300196a0f9ae340a553b85f7db34c6d8814",
+      "text_chars": 4320,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/phoi-do-voi-giay-mau-nau",
+      "sitemap_lastmod": "2023-12-18T05:47:03.516Z",
+      "status": 200,
+      "title": "Tổng hợp 4 cách phối đồ với giày cao gót màu nâu bạn nên thử - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:26.196808+00:00",
+      "html_sha256": "1c1fe3d5986af4b6dde2e9b76b3a6107c362d980a49cb9f14862a287f78e1259",
+      "text_chars": 3244,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/phoi-do-voi-giay-cao-got-mau-hong",
+      "sitemap_lastmod": "2023-12-12T12:05:18.050Z",
+      "status": 200,
+      "title": "TOP 7 cách phối đồ với giày cao gót màu hồng làm bạn thu hút - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:26.006316+00:00",
+      "html_sha256": "68fecb93828b521168327e804789b2c1bf9fe63d92f7cbce00fa6ce1ad6718f9",
+      "text_chars": 4754,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/phoi-do-voi-giay-mau-vang",
+      "sitemap_lastmod": "2023-12-18T05:45:46.912Z",
+      "status": 200,
+      "title": "Top 8+ Cách phối đồ với giày cao gót màu vàng hợp thời trang - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:26.087693+00:00",
+      "html_sha256": "628f2f82961960fbe3b0f5dafc65f8bfb8a240a6440ac7196509675af98f4aa9",
+      "text_chars": 4265,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-phoi-giay-voi-chan-vay-bo",
+      "sitemap_lastmod": "2023-02-07T04:43:34.780Z",
+      "status": 200,
+      "title": "Tổng hợp 6 cách phối giày với chân váy bò phong cách nhất - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:26.967930+00:00",
+      "html_sha256": "506bbff760223d90272e00e3d343f30179dbced10f53d7cfd63e3befe1da6667",
+      "text_chars": 4728,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-phoi-giay-voi-chan-vay",
+      "sitemap_lastmod": "2023-02-07T04:43:39.669Z",
+      "status": 200,
+      "title": "Tổng hợp 8+ cách phối giày với chân váy tạo nên phong cách - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:26.613363+00:00",
+      "html_sha256": "36c97e99f7f0837c735926104bc69e6d78eb790ed101de648f776c6fd5200453",
+      "text_chars": 5355,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/giay-cao-got-do-dep",
+      "sitemap_lastmod": "2023-12-13T03:07:04.731Z",
+      "status": 200,
+      "title": "Top 5 mẫu giày cao gót màu đỏ đẹp cho cô nàng thời thượng - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:26.825631+00:00",
+      "html_sha256": "bd5f5e43c3dc690470601e57c33a252d69eb7931bb05c224996e39c575674521",
+      "text_chars": 4196,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-phoi-giay-voi-dam-suong",
+      "sitemap_lastmod": "2023-02-07T04:37:42.318Z",
+      "status": 200,
+      "title": "Các cách phối đầm suông với giày tạo nên phong cách đa dạng - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:27.079198+00:00",
+      "html_sha256": "d71199e9521d5602436c64cd46bfca7352a9cf7eb82176f629bfb3aa6374b2ad",
+      "text_chars": 5366,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-phoi-giay-voi-dam-cong-chua",
+      "sitemap_lastmod": "2023-02-07T04:32:47.572Z",
+      "status": 200,
+      "title": "TOP 10+ Cách phối đầm công chúa với những mẫu giày hot nhất - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:27.448973+00:00",
+      "html_sha256": "97f2aae911f190f5ea060ebf9e95b471d4278f9ece5d12e946ea5d2fe418d61f",
+      "text_chars": 6516,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-phoi-giay-voi-quan-ao-nu",
+      "sitemap_lastmod": "2024-07-27T00:31:28.436Z",
+      "status": 200,
+      "title": "Cách phối giày với quần áo nữ đẹp và chất bạn nên thử - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:27.488771+00:00",
+      "html_sha256": "7e6d8195c51c9689288f64c9fd6b712ddcc17f5682ef636687bff26e89bf4df9",
+      "text_chars": 4516,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/shop-giay-cuoi-tphcm",
+      "sitemap_lastmod": "2024-07-08T08:14:53.551Z",
+      "status": 200,
+      "title": "Top 9 shop giày cưới nữ uy tín tại Thành phố Hồ Chí Minh - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:27.616960+00:00",
+      "html_sha256": "f2643f829297fd2e3cf89080fc7c4ed3626fd45d1419f1ef91e4623b782404f3",
+      "text_chars": 7241,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/chon-giay-cuoi-cho-co-dau-thap",
+      "sitemap_lastmod": "2024-07-08T08:06:00.336Z",
+      "status": 200,
+      "title": "Mẹo chọn giày cưới cho cô dâu thấp giúp kéo chân hoàn hảo - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:28.381225+00:00",
+      "html_sha256": "e4bf044820ca1f4d703b3cb357493b0aee2c5614f6ef7738a1e757017bf308e4",
+      "text_chars": 4580,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/co-dau-nen-mang-giay-gi",
+      "sitemap_lastmod": "2024-07-08T08:11:11.625Z",
+      "status": 200,
+      "title": "Cô dâu nên mang giày gì trong hôn lễ để vừa đẹp và thoải mái - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:28.144617+00:00",
+      "html_sha256": "68b1a7661fc86fac339e700307e3f73ed1de1c00bf967bcd61a127abc9922529",
+      "text_chars": 5297,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/kinh-nghiem-chon-giay-cuoi",
+      "sitemap_lastmod": "2024-07-08T08:12:16.209Z",
+      "status": 200,
+      "title": "Tất tần tật kinh nghiệm chọn giày cưới đẹp nhất cho cô dâu - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:28.374287+00:00",
+      "html_sha256": "1c70ec3a349a177e8f92964baf776b4ae9bce6f576a0731abf3eca16f4b187f3",
+      "text_chars": 5993,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/giay-cuoi-bet",
+      "sitemap_lastmod": "2023-01-12T07:14:19.511Z",
+      "status": 200,
+      "title": "Kinh nghiệm chọn giày cưới bệt tôn dáng cho cô dâu - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:29.321905+00:00",
+      "html_sha256": "8d3c9fcde60bcf1a8a3cb8a55568039bcbeced7010ae7708500faa80a1e689cb",
+      "text_chars": 5866,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-phoi-do-voi-giay-sandal-de-bet",
+      "sitemap_lastmod": "2023-01-12T07:13:22.081Z",
+      "status": 200,
+      "title": "Gợi ý 8 cách phối đồ với giày sandal đế bệt thêm sành điệu - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:29.005351+00:00",
+      "html_sha256": "b567d86b1913476702629b757f90ac53cdf75731f70ecce511b72b98465f339e",
+      "text_chars": 5604,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/de-giay-bi-tron",
+      "sitemap_lastmod": "2023-01-12T07:08:11.093Z",
+      "status": 200,
+      "title": "Bật mí 6 cách hay giúp bạn khắc phục đế giày bị trơn - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:29.154287+00:00",
+      "html_sha256": "160174d75d6026a486173fa68b4fbe1b88435ee45782393b3493bb9a4b56c519",
+      "text_chars": 3710,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/mac-vest-di-giay-gi",
+      "sitemap_lastmod": "2023-12-18T05:48:06.238Z",
+      "status": 200,
+      "title": "Mặc vest đi giày gì: 10 Cách chọn giày công sở và Giày mặc vest nam - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:29.602220+00:00",
+      "html_sha256": "85ccd3d89b3271e96ff533d21f6a1029948081a7b35385993a346d68c2d51f6f",
+      "text_chars": 5933,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/tang-giay-cho-nguoi-yeu",
+      "sitemap_lastmod": "2023-01-06T07:20:39.237Z",
+      "status": 200,
+      "title": "Tặng giày cho người yêu: Ý Nghĩa và Mẫu Giày Phù Hợp - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:29.652606+00:00",
+      "html_sha256": "304058bb0e098eb2d89b466f392a5cd184e92ee83ad87264eeb06d4a8715c117",
+      "text_chars": 5292,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/chan-vay-jean-dai-phoi-voi-giay-gi",
+      "sitemap_lastmod": "2024-07-08T08:37:36.051Z",
+      "status": 200,
+      "title": "Chân váy jean dài phối với giày gì - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:30.727945+00:00",
+      "html_sha256": "e3600b1f9812c15df8ca809560eac3e386808d8edda310f4e61dd326a9acc449",
+      "text_chars": 4614,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-khac-phuc-ban-chan-bet",
+      "sitemap_lastmod": "2023-01-06T07:10:16.971Z",
+      "status": 200,
+      "title": "Cách khắc phục bàn chân bẹt đơn giản, hiệu quả - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:30.058748+00:00",
+      "html_sha256": "0f0240cfbd9d2a247b21919ddfbf5c6be8f78b2f0a7b2a08d29bb8789852fd0e",
+      "text_chars": 5809,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/5-cach-lam-ban-chan-nho-tai-nha-bi-quyet-tu-merly-shoes",
+      "sitemap_lastmod": "2025-03-17T08:50:23.030Z",
+      "status": 200,
+      "title": "5 Cách làm bàn chân nhỏ tại nhà – Bí quyết từ Merly Shoes - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:32.801201+00:00",
+      "html_sha256": "6ded499ce064e7caad18eba4e17a29e9cb9f1a23e20e43e5a92c35c3e708512e",
+      "text_chars": 4605,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/mua-giay-nu-hang-hieu-o-dau",
+      "sitemap_lastmod": "2023-01-06T08:10:48.993Z",
+      "status": 200,
+      "title": "Mua giày nữ hàng hiệu ở đâu uy tín chất lượng nhất? - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:30.505486+00:00",
+      "html_sha256": "d56b31903c79c922838f572b07d30ca90e3ff2b8fb6432fcc6d94edd90b9bff7",
+      "text_chars": 5357,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/quan-ong-rong-mang-giay-gi",
+      "sitemap_lastmod": "2025-07-17T08:58:34.577Z",
+      "status": 200,
+      "title": "Quần ống rộng mang giày gì để hợp thời trang? - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:31.405628+00:00",
+      "html_sha256": "f6fa6ff3f165d1e5c278a26e251505746ab58e781859448eafeb88fb9486cac1",
+      "text_chars": 6663,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/quan-ong-loe-phoi-voi-giay-gi",
+      "sitemap_lastmod": "2024-07-08T08:45:39.357Z",
+      "status": 200,
+      "title": "quần ống loe mang giày gì - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:31.184625+00:00",
+      "html_sha256": "69519e90872372d4a7bd97b8542d6649e0bfa40ec5926050850e812add6429dc",
+      "text_chars": 4910,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/phoi-do-voi-giay-the-thao",
+      "sitemap_lastmod": "2023-01-06T08:07:13.543Z",
+      "status": 200,
+      "title": "TOP 9 mẹo phối đồ với giày thể thao cực xinh cho phái đẹp - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:31.999093+00:00",
+      "html_sha256": "cc9d334dc0556b6b9f44a6555411912d13a72d695425e6536f5c3ed10298c2bd",
+      "text_chars": 4043,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-lam-kho-giay-nhanh",
+      "sitemap_lastmod": "2023-01-06T08:06:01.574Z",
+      "status": 200,
+      "title": "Cách làm khô giày nhanh: 6 cách làm giày nhanh khô - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:32.030875+00:00",
+      "html_sha256": "2eda97ec40ab5c15d55237b2625e4be9964ef8cce46cf225114ce0770329353e",
+      "text_chars": 3891,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/dam-do-mang-giay-mau-gi",
+      "sitemap_lastmod": "2023-01-06T08:04:09.633Z",
+      "status": 200,
+      "title": "Đầm đỏ mang giày màu gì để cuốn hút mọi ánh nhìn xung quanh - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:32.505836+00:00",
+      "html_sha256": "97c4a0ef07d138fd0fd487a890664a3ddf9fbf1f553d85846284fd8fba9bb59c",
+      "text_chars": 3669,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/ket-hop-giay-voi-vay-xoe",
+      "sitemap_lastmod": "2025-11-04T04:39:36.072Z",
+      "status": 200,
+      "title": "Mách bạn 10 cách kết hợp giày với váy xòe đẹp nhất - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:32.608308+00:00",
+      "html_sha256": "950dfd7ee5fe2a909fd7663483611446da5677fa20fc9d14a21d3ee91c4f0adb",
+      "text_chars": 4528,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/phoi-do-voi-dep",
+      "sitemap_lastmod": "2023-01-06T08:12:55.659Z",
+      "status": 200,
+      "title": "Gợi ý 8 tips phối đồ với dép, sandal cho nữ cực sành điệu - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:32.992294+00:00",
+      "html_sha256": "199bfb283bd2dbbf575033e9d9de056238f8d8397e144f838762fa61c2f97b44",
+      "text_chars": 4431,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/dam-body-mang-giay-gi",
+      "sitemap_lastmod": "2023-01-06T08:04:17.762Z",
+      "status": 200,
+      "title": "Đầm body mang giày gì? Top 8 đôi giày dễ phối với đầm body - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:33.059546+00:00",
+      "html_sha256": "26100f37582ab0821c0df6b0f5c2b1314f60160f38ceaf628c4b66187669edf4",
+      "text_chars": 5588,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/mac-dam-da-hoi-mang-giay-gi",
+      "sitemap_lastmod": "2023-01-06T08:04:20.934Z",
+      "status": 200,
+      "title": "Mặc đầm dạ hội mang giày gì? 5 mẫu giày thời trang cao cấp - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:33.245718+00:00",
+      "html_sha256": "333f49fdd2273f9c79745420180fc232d5fc2c2110222a4917135b15160e614c",
+      "text_chars": 3585,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/giay-hoa-hau",
+      "sitemap_lastmod": "2023-01-06T08:04:22.805Z",
+      "status": 200,
+      "title": "[HOT] Top 4+ đôi giày hoa hậu được săn lùng nhiều nhất - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:33.679355+00:00",
+      "html_sha256": "26a10282076e2d94a6e48176ff33acee5a18511e663259f48ba2a0dfb5b7289a",
+      "text_chars": 3318,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/ban-chan-to-nen-di-giay-gi",
+      "sitemap_lastmod": "2023-01-06T08:04:24.684Z",
+      "status": 200,
+      "title": "Bàn chân to nên đi giày gì? 4 mẫu giày phù hợp người chân to - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:33.697892+00:00",
+      "html_sha256": "e3fc1d1f3d4e6837f1ae7e8a8a7d829817679021f1c965dd79828a634bede9fc",
+      "text_chars": 4808,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-check-giay-real",
+      "sitemap_lastmod": "2023-01-06T08:04:26.643Z",
+      "status": 200,
+      "title": "[HOT] Top 8+ cách check giày REAL với giày FAKE nhanh chóng - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:33.789845+00:00",
+      "html_sha256": "bbcf27c1a1c4cd1d7c29050e02a65a8e5285fa32e8ef821c16cba6a8736ce189",
+      "text_chars": 7047,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-lam-sach-giay-bi-moc",
+      "sitemap_lastmod": "2023-12-30T06:49:02.817Z",
+      "status": 200,
+      "title": "Cách làm sạch giày bị mốc - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:34.313629+00:00",
+      "html_sha256": "d840a3906b0ab9b9331cb1f652e37adbbf6e4795fc5d4e8dd604a17a2216149b",
+      "text_chars": 4679,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/ve-sinh-giay-bang-nuoc-rua-chen",
+      "sitemap_lastmod": "2022-11-11T10:13:59.670Z",
+      "status": 200,
+      "title": "Cách vệ sinh giày bằng nước rửa chén hiệu quả [MỚI 2022] - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:34.103649+00:00",
+      "html_sha256": "a82763f7a78305e12f7cc5c05a46ae165e7370ac22f2852c952457e6a0276460",
+      "text_chars": 4526,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/meo-chon-giay-cho-nang-chan-to",
+      "sitemap_lastmod": "2022-11-09T03:16:40.479Z",
+      "status": 200,
+      "title": "Một số tips chọn giày cho nàng chân to giúp che khuyết điểm - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:34.199757+00:00",
+      "html_sha256": "b4a3c2d782bf54f5dd76bb9a154f734d10fc0f949fe0e8f5b7cef9c4abdfd117",
+      "text_chars": 4714,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-khu-mui-hoi-giay-bup-be",
+      "sitemap_lastmod": "2022-11-09T03:17:05.350Z",
+      "status": 200,
+      "title": "Hướng dẫn cách khử mùi hôi giày búp bê hiệu quả - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:35.961927+00:00",
+      "html_sha256": "e0bcb448c90651eaf066ee88d442d312a16d9dcddcf79f00ed75880942209105",
+      "text_chars": 3706,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/keo-dai-chan-bang-giay",
+      "sitemap_lastmod": "2022-11-09T03:16:18.745Z",
+      "status": 200,
+      "title": "Mẹo chọn giày giúp kéo dài chân cho nàng nấm lùn hiệu quả - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:34.623832+00:00",
+      "html_sha256": "b77187344690853d05b051f9c4bdfaefbdb303bb94dd704fcd04ca89101ae623",
+      "text_chars": 5759,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/mac-quan-jean-mang-giay-gi-cho-nu",
+      "sitemap_lastmod": "2022-11-09T03:17:20.060Z",
+      "status": 200,
+      "title": "Khi mặc quần jean nên mang giày gì? - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:34.907614+00:00",
+      "html_sha256": "945a27d858b6829c94cec7c3ddc06db0b4a6fe62d67a4f150f19f1c1c2550a06",
+      "text_chars": 5414,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-chon-giay-cao-got-ho-mui",
+      "sitemap_lastmod": "2022-11-18T02:48:56.528Z",
+      "status": 200,
+      "title": "Cách chọn giày cao gót hở mũi sang trọng dành cho phái đẹp - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:35.329792+00:00",
+      "html_sha256": "feb44fc2b7e4e467a6117176cd9ab425a2b65caf86f8f9453361fc4eddf2b408",
+      "text_chars": 5018,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-phoi-do-voi-giay-do-cho-nu",
+      "sitemap_lastmod": "2022-11-09T03:16:11.248Z",
+      "status": 200,
+      "title": "Top những cách phối đồ với giày đỏ cho nữ đẹp nhất - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:35.347737+00:00",
+      "html_sha256": "69a998372a0988cf01c55c6dfa5edcde064a03ad209a8dc9a72a40cf290cac6b",
+      "text_chars": 2633,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-phoi-giay-voi-tat-cho-nu",
+      "sitemap_lastmod": "2022-11-09T03:16:24.244Z",
+      "status": 200,
+      "title": "8 cách phối giày với tất cho nữ hợp trend và cá tính - 2022 - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:35.823110+00:00",
+      "html_sha256": "433f5a3ba4f6117b8e5e535ea52f011ffa0c2926782da82a4c215ae179bae0d2",
+      "text_chars": 4081,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-khu-mui-hoi-giay-sandal",
+      "sitemap_lastmod": "2022-11-09T03:16:03.816Z",
+      "status": 200,
+      "title": "Hướng dẫn cách khử mùi hôi giày sandal trắng sáng, tại nhà - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:35.779507+00:00",
+      "html_sha256": "1dc73ce0f627aa6b59076cb7afd2e35ed0d890c23a8c1d11a9d9ee021c397cf9",
+      "text_chars": 3881,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cac-loai-nuoc-giat-giay-chat-luong",
+      "sitemap_lastmod": "2022-11-09T03:15:58.743Z",
+      "status": 200,
+      "title": "Top các loại nước giặt giày chất lượng nhất - 2022 - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:36.262651+00:00",
+      "html_sha256": "d6d93ddef0ecd0362cf7b12ec602722711d7270154ae37a70dcbebe03cee055a",
+      "text_chars": 4604,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/mau-giay-lam-qua-tang-me",
+      "sitemap_lastmod": "2022-12-27T07:17:57.375Z",
+      "status": 200,
+      "title": "Top 7 mẫu giày đẹp, sang trọng thích hợp làm quà tặng mẹ - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:36.380032+00:00",
+      "html_sha256": "ec88d5d42df112522ace33b185b3eec1c005c551936957c2c3353e674d55fada",
+      "text_chars": 3817,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-chon-giay-cho-nu-ban-chan-dai",
+      "sitemap_lastmod": "2022-11-09T03:15:35.787Z",
+      "status": 200,
+      "title": "Nữ có bàn chân dài nên chọn giày gì để giấu đi khuyết điểm - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:36.431111+00:00",
+      "html_sha256": "93cdc8e45bd248d6e76b860e20a42ebd18d695d4c6598705bc97d33c37a6ca46",
+      "text_chars": 3224,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/luu-y-khi-mua-giay-cho-me",
+      "sitemap_lastmod": "2022-12-27T07:36:56.912Z",
+      "status": 200,
+      "title": "5 lưu ý khi mua giày cho mẹ mà bạn nhất định phải biết - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:36.918512+00:00",
+      "html_sha256": "ec1265b0a7c4efbd96143a537e74a85b61da759c5d594d3e041add5cdc4404dd",
+      "text_chars": 4243,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/luu-y-chon-giay-cho-co-dau",
+      "sitemap_lastmod": "2022-11-02T12:25:52.204Z",
+      "status": 200,
+      "title": "Những lưu ý chọn giày cưới cho cô dâu đẹp và thoải mái - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:37.070314+00:00",
+      "html_sha256": "64c62eb82324f7cfb92fd584ba40982486c94c07071afdd174ea39c14c3f0b83",
+      "text_chars": 3481,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/xu-huong-giay-phu-nu-mua-dong",
+      "sitemap_lastmod": "2022-12-27T07:18:20.387Z",
+      "status": 200,
+      "title": "Top 7 mẫu giày xu hướng giày phụ nữ mùa thu đông 2022 - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:36.810172+00:00",
+      "html_sha256": "e9349edb902090d5e3c1408579960e48d200f5096e336e9db6e01b50d119ce71",
+      "text_chars": 2927,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-chon-giay-cho-phu-nu-trung-nien",
+      "sitemap_lastmod": "2022-11-09T03:15:23.938Z",
+      "status": 200,
+      "title": "Cách chọn giày phù hợp với phụ nữ tuổi trung niên - 2022 - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:37.381638+00:00",
+      "html_sha256": "b599341c256953312e385a6340263a5087c435ff17902321fb6d95082439d424",
+      "text_chars": 4056,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-phoi-do-voi-giay-mary-jane",
+      "sitemap_lastmod": "2024-07-29T04:32:21.424Z",
+      "status": 200,
+      "title": "10 tips phối đồ với giày Mary Jane sành điệu nhất - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:37.306082+00:00",
+      "html_sha256": "a66c526b394600db808d83fb6d57d7c360b65f8ff908837e2c05aa7ae313b837",
+      "text_chars": 4518,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/tinh-cach-the-hien-thong-qua-doi-giay",
+      "sitemap_lastmod": "2022-11-11T01:34:06.079Z",
+      "status": 200,
+      "title": "Tính cách thể hiện như thế nào thông qua đôi giày? - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:37.606277+00:00",
+      "html_sha256": "dcb056430dd4911ce2c2c807298a90e9f58b5d148fb699a1824d44957dd00aa9",
+      "text_chars": 5305,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/giay-cho-nguoi-lun",
+      "sitemap_lastmod": "2022-10-11T02:26:28.973Z",
+      "status": 200,
+      "title": "Nam thấp nên đi giày gì và phối đồ như thế nào để thu hút hơn? - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:38.282721+00:00",
+      "html_sha256": "f856d0d8c8d6457a5eb81d0351924baf35dc9e1c6fb2959f6a998c30cf52f5e1",
+      "text_chars": 4996,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/giay-sandal-nu-dang-hot",
+      "sitemap_lastmod": "2022-10-17T12:45:33.976Z",
+      "status": 200,
+      "title": "[Hot] Các mẫu giày sandal nữ được ưa chuộng nhất hiện nay - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:37.940843+00:00",
+      "html_sha256": "1efcb8b53e484dca44bc842ad777d3ae25ab9baa69cade583e7b13a8c15a8cbd",
+      "text_chars": 4567,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/di-giay-bi-nhac-got-phai-lam-sao",
+      "sitemap_lastmod": "2024-05-13T13:22:27.512Z",
+      "status": 200,
+      "title": "Đi giày bị nhấc gót phải làm sao? 8 cách xử lý đơn giản - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:37.998481+00:00",
+      "html_sha256": "0413dbe107722aec26c0e70ced74fd1f7c927ed174225ca7118c2a00323cb31c",
+      "text_chars": 4389,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/co-nen-mua-giay-lon-hon-1-size",
+      "sitemap_lastmod": "2022-10-07T02:44:33.606Z",
+      "status": 200,
+      "title": "Giải đáp thắc mắc có nên mua giày lớn hơn 1 size - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:38.496654+00:00",
+      "html_sha256": "d5b39a4fac0b428278d3937530133ef709a47508a837f9c9f5fcacb55ad9e022",
+      "text_chars": 1751,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-chon-mau-giay-nu-dep",
+      "sitemap_lastmod": "2023-12-18T05:22:30.769Z",
+      "status": 200,
+      "title": "Da ngăm đen nên đi giày cao gót màu gì thì đẹp? - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:38.457054+00:00",
+      "html_sha256": "4f35be3392ed49e87c12cadfd27d75d49952dae0486dc827ac47fec957efdfe9",
+      "text_chars": 4692,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/giay-sandal-nu-size-lon-tphcm",
+      "sitemap_lastmod": "2022-10-06T09:59:00.897Z",
+      "status": 200,
+      "title": "Địa chỉ bán giày sandal nữ size lớn tại TP. Hồ Chí Minh uy tín, giá rẻ - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:38.693783+00:00",
+      "html_sha256": "0f14dc4ebeae667e97ff9d32e30d72a124caec55cdcbbe7844c20d1a078682c3",
+      "text_chars": 4033,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-mang-giay-sandal-cao-got-nu",
+      "sitemap_lastmod": "2022-10-06T09:12:59.561Z",
+      "status": 200,
+      "title": "Cách đi giày sandal cao gót nữ không bị đau chân - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:39.072652+00:00",
+      "html_sha256": "afbd54aafe19c3128999c0ce341a6247c341e36e8d7ce9c98b476d6fd1cad142",
+      "text_chars": 2728,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-do-size-giay-bup-be",
+      "sitemap_lastmod": "2022-10-17T12:33:26.163Z",
+      "status": 200,
+      "title": "Hướng dẫn cách đo size giày búp bê đơn giản và chuẩn xác nhất - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:38.998613+00:00",
+      "html_sha256": "9cb91a11fd4a2e871d201b868be8ccc03f8ba7d55a436adc2b94ea50d362058a",
+      "text_chars": 4296,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-buoc-no-giay-bup-be",
+      "sitemap_lastmod": "2023-02-04T08:44:23.270Z",
+      "status": 200,
+      "title": "Cách buộc nơ dây giày búp bê đơn giản - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:39.219127+00:00",
+      "html_sha256": "ae8e13d0e9466bf5e75d47090d8fd256bd65188634c4f657be20f27ff9da2c8f",
+      "text_chars": 3431,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-chon-giay-bup-be-phu-hop",
+      "sitemap_lastmod": "2022-10-17T12:30:28.309Z",
+      "status": 200,
+      "title": "Cách chọn giày búp bê phù hợp với vóc dáng của bạn gái - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:39.538682+00:00",
+      "html_sha256": "1826a62b9f292fc3971ccc0249e511221febe2fe89a0f33c2bc4653a97f1e223",
+      "text_chars": 3633,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/giay-bup-be-phoi-ao-dai",
+      "sitemap_lastmod": "2024-01-19T05:16:50.057Z",
+      "status": 200,
+      "title": "Top 5 loại giày phối với áo dài siêu xinh - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:39.490319+00:00",
+      "html_sha256": "dfa5d392c71a6c446c899b5f34d6b42f1f250b336d5921c011961cd892c37188",
+      "text_chars": 4904,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cac-mau-giay-sandal-nu-dep",
+      "sitemap_lastmod": "2022-12-27T07:46:23.360Z",
+      "status": 200,
+      "title": "TOP 4 mẫu giày sandal nữđẹp hot nhất 2022 - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:39.769646+00:00",
+      "html_sha256": "ed2b9c4bd1b23a355ec45216e1ca0348c60aae4f0e943c0f07921516f0129b8c",
+      "text_chars": 2609,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/thuong-hieu-giay-sandal-nu-noi-tieng",
+      "sitemap_lastmod": "2022-10-17T12:43:49.178Z",
+      "status": 200,
+      "title": "Top 8 thương hiệu giày sandal nữ nổi tiếng nhất Việt Nam - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:40.108195+00:00",
+      "html_sha256": "b903b6d2b2a7416ec54ce6929afab92fb188d63552478c90cb70850950cb627c",
+      "text_chars": 6805,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-phoi-do-voi-giay-bup-be",
+      "sitemap_lastmod": "2023-02-04T09:09:03.246Z",
+      "status": 200,
+      "title": "Top 7 cách phối đồ với giày búp bê cực xinh - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:40.162862+00:00",
+      "html_sha256": "77fbb9115c89ba037e536335fd3bba79a170bdad27054330e5c0af3b9de4d994",
+      "text_chars": 7255,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cua-hang-giay-dep-big-size-so-1-ho-chi-minh",
+      "sitemap_lastmod": "2024-04-08T05:57:44.384Z",
+      "status": 200,
+      "title": "Shop Giày Big Size Nữ TPHCM - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:40.270317+00:00",
+      "html_sha256": "6994147ae9865f0b200a5693021f95304d265869e56ac97c7935587e4909ccb4",
+      "text_chars": 4725,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/mua-giay-bup-be-o-dau-dep-tphcm",
+      "sitemap_lastmod": "2024-04-08T06:04:11.698Z",
+      "status": 200,
+      "title": "Mua giày búp bê ở đâu đẹp tại TPHCM - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:40.629686+00:00",
+      "html_sha256": "b2b7abb76cb8dc0c81e120c7b7ad5fc7c7bcb19a04a6108cac82640af56fb7b4",
+      "text_chars": 3874,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/thuong-hieu-giay-bup-be-noi-tieng",
+      "sitemap_lastmod": "2023-02-04T08:38:27.771Z",
+      "status": 200,
+      "title": "Top 7 thương hiệu giày búp bê nổi tiếng nhất - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:40.648445+00:00",
+      "html_sha256": "f222d0b5d99e519156f83023868b3b5e784ce999f83a9bc230e8e6f7b2ee0e58",
+      "text_chars": 4343,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/meo-mang-giay-bup-be-khong-dau-chan",
+      "sitemap_lastmod": "2023-02-04T08:44:49.021Z",
+      "status": 200,
+      "title": "Một số mẹo mang giày búp bê không đau chân hay ho - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:40.708093+00:00",
+      "html_sha256": "1f4a2bd8eb80cec37dc9a9591397989ae64ec0a780c1a9d2eacca5638f3e5029",
+      "text_chars": 4231,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/mau-giay-bup-be-moi-nhat",
+      "sitemap_lastmod": "2022-10-18T02:47:08.356Z",
+      "status": 200,
+      "title": "Tổng hợp 6 mẫu giày búp bê mới nhất trên thị trường hiện nay - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:41.068617+00:00",
+      "html_sha256": "32b8ddd169e92e68a61ead5b49f0c347a3c1f4b4b728617753ea1e37fb13841f",
+      "text_chars": 3269,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/giay-sandal-nu-bmt",
+      "sitemap_lastmod": "2022-10-18T02:45:31.586Z",
+      "status": 200,
+      "title": "Top 7 cửa hàng mua giày Sandal nữ BMT chất lượng nhất - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:41.178722+00:00",
+      "html_sha256": "cf64ab7f3b3813ffdae4ab49a288a12494c0e0292676578f41b2dc8fd502e018",
+      "text_chars": 4580,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-mang-giay-cao-got-hieu-qua",
+      "sitemap_lastmod": "2022-09-01T06:22:21.104Z",
+      "status": 200,
+      "title": "Cách mang giày cao gót hiệu quả - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:41.203254+00:00",
+      "html_sha256": "40133ce9bf0bd502a016a9346db8391b95f295b1d24a619afb8416cc7a5ea2d1",
+      "text_chars": 2960,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-tay-o-vang-giay-mau-trang",
+      "sitemap_lastmod": "2022-09-22T11:36:52.049Z",
+      "status": 200,
+      "title": "Top 6 cách tẩy vết ố vàng giày màu trắng hiệu quả - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:41.453899+00:00",
+      "html_sha256": "a0aac8672208219a8d3f82c54d6b68209390e3fe8d1c5ffc9baf89a8f9b916c4",
+      "text_chars": 4284,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/giay-sandal-nu-mac-ao-dai-dep",
+      "sitemap_lastmod": "2024-01-19T05:19:01.903Z",
+      "status": 200,
+      "title": "Top 8 mẫu giày sandal nữ mặc áo dài đẹp - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:41.729434+00:00",
+      "html_sha256": "baa949fad81d9efa1b9db0d57f085a9553ca86bd22764084392efc77289e8b99",
+      "text_chars": 5621,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/tang-giay-cho-ban-gai-the-hien-tam-y-nhu-the-nao",
+      "sitemap_lastmod": "2022-08-30T08:54:09.465Z",
+      "status": 200,
+      "title": "Tặng giày cho bạn gái có ý nghĩa như thế nào? - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:41.640731+00:00",
+      "html_sha256": "dd382f336b1faf056e405a0d0b6a1789d8461cccca6ca958288c870491d85c19",
+      "text_chars": 3327,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/top-5-giay-sandal-nu-di-du-lich",
+      "sitemap_lastmod": "2022-09-28T08:00:11.905Z",
+      "status": 200,
+      "title": "Top 5 giày Sandal nữ đi du lịch đẹp nhất 2022 - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:42.001400+00:00",
+      "html_sha256": "814a10c230648c9cae2566fd3969324d9b6488da8cd12807b04a33bcad84d9bd",
+      "text_chars": 3857,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/vi-sao-nen-chon-giay-dep-nhua-thai-lan",
+      "sitemap_lastmod": "2022-08-26T06:32:11.833Z",
+      "status": 200,
+      "title": "Vì sao nên lựa chọn giày dép nhựa Thái Lan? - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:42.118747+00:00",
+      "html_sha256": "cf5f8a0efbaa8aa38c31b2b888e301be2c8e620d1e2129fed82748cb56d758ca",
+      "text_chars": 4270,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-chon-giay-big-size",
+      "sitemap_lastmod": "2022-09-28T04:32:37.014Z",
+      "status": 200,
+      "title": "Cách chọn giày big size “chuẩn không cần chỉnh” - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:42.174606+00:00",
+      "html_sha256": "eeb56bd76d6a2adca926be8300c87a293b8803038315b9e31c40c290992c0feb",
+      "text_chars": 5274,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-thanh-toan-qua-vnpay",
+      "sitemap_lastmod": "2021-12-10T10:43:44.471Z",
+      "status": 200,
+      "title": "Cách thanh toán qua VNPAY - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:42.493138+00:00",
+      "html_sha256": "3ce355507ada93e57c1824115e0cd2ad1af1f118e47cfdd06f183f619cb7a9c7",
+      "text_chars": 704,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/cach-tai-video-tiktok-khong-co-logo",
+      "sitemap_lastmod": "2022-12-27T07:45:46.421Z",
+      "status": 200,
+      "title": "Cách tải video TikTok không có logo - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:42.591058+00:00",
+      "html_sha256": "06712d6137f13227d7fe5ab689a047246996124df7c0f68f8c8164f27888cc33",
+      "text_chars": 1166,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/ngay-cua-me-2021-roi-vao-ngay-nao",
+      "sitemap_lastmod": "2021-05-09T09:14:25.676Z",
+      "status": 200,
+      "title": "Ngày của Mẹ 2021 'rơi' vào ngày nào? - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:42.684436+00:00",
+      "html_sha256": "cd066542863edc2c6f2359e2e6196c0b1f7c05f62e78af7ed8734e932b409e15",
+      "text_chars": 3376,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/caro-khuynh-dao-lang-thoi-trang-the-gioi-trong-nam-nay",
+      "sitemap_lastmod": "2024-01-02T05:18:07.076Z",
+      "status": 200,
+      "title": "Caro khuynh đảo làng thời trang thế giới trong năm nay - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:44.591986+00:00",
+      "html_sha256": "0996e0349132c1c78fd9758c7422a7fdf096c1cb61ee1ceca6dd82c6f726f315",
+      "text_chars": 3766,
+      "disposition": "quarantined_or_legacy_reference"
+    },
+    {
+      "url": "https://merlyshoes.com/blogs/news/nhung-dieu-chua-biet-ve-giay-mules",
+      "sitemap_lastmod": "2018-05-08T13:29:24.820Z",
+      "status": 200,
+      "title": "Những điều chưa biết về giày Mules - Giày Nữ Merly",
+      "fetched_at": "2026-10-23T02:25:43.025636+00:00",
+      "html_sha256": "af91a7957879ffa7b25f241803939964bee3936b9455fe2a110b48b46d647a5d",
+      "text_chars": 2253,
+      "disposition": "quarantined_or_legacy_reference"
+    }
+  ]
+}

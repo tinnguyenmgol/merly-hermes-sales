@@ -223,7 +223,7 @@
     "/tools/get_policy": {
       "post": {
         "operationId": "get_policy",
-        "summary": "Read approved customer policies: shipping, exchange, warranty, sale returns, new-customer/Gold+ benefits, company bulk discounts, TikTok exchange and support. Benefits are references, not eligibility or stacking approval. Unverified/conflicting sources require staff confirmation; never invent terms.",
+        "summary": "Read approved customer policies: shipping, exchange, warranty, sale returns, new-customer/Gold+ benefits, company bulk discounts, TikTok exchange and support. Benefits are references, not eligibility or stacking approval. Unverified/conflicting sources require staff confirmation; never invent terms. customer_support also includes curated website_reference data for public guides and channels; reference_only is not a policy override.",
         "requestBody": {
           "required": true,
           "content": {
