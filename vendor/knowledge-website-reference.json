@@ -1,0 +1,215 @@
+{
+  "revision": 1,
+  "approved": true,
+  "scope": "customer_reference",
+  "retrieved_at": "2026-10-23T02:25:44.591986+00:00",
+  "policy_precedence": "Approved customer Markdown policies remain authoritative; website references never override them. Retrieval time is not policy effective time.",
+  "sources": {
+    "pages_lien-he-1": {
+      "url": "https://merlyshoes.com/pages/lien-he-1",
+      "retrieved_at": "2026-10-23T02:25:11.888485+00:00",
+      "html_sha256": "b60428ef42cdcfc2e1939ff2b8f45cdb26819d83d8715c2dc49e31c0919bcf1f",
+      "excerpts": [
+        "kể từ năm 2012",
+        "thay thế Chi nhánh Tân Phú cũ ở 38 Tân Sơn Nhì",
+        "Kênh Fanpage Chính Thức Giày Merly",
+        "Hotline: 0908190856",
+        "Kênh chăm sóc khách hàng chính thức của Merly, hỗ trợ tư vấn và đổi trả nhanh nhất dù bạn mua hàng Merly từ bất kỳ đâu."
+      ]
+    },
+    "pages_lien-he": {
+      "url": "https://merlyshoes.com/pages/lien-he",
+      "retrieved_at": "2026-10-23T02:25:13.570710+00:00",
+      "html_sha256": "e16ec4d0b164f9270296c02a2912a4d89207578ac375fbf705d254882f8dd252",
+      "excerpts": [
+        "35 đến 39 tại Merly còn có Giày Dép Big Size Nữ đến 40 41 42 43"
+      ]
+    },
+    "pages_huong-dan-do-size-giay": {
+      "url": "https://merlyshoes.com/pages/huong-dan-do-size-giay",
+      "retrieved_at": "2026-10-23T02:25:13.450987+00:00",
+      "html_sha256": "f226a11de26cf297c9eb764093f10e329e539c6d0657b7857f8ebb34b6e42e92",
+      "excerpts": [
+        "Đặt bàn chân xuống mặt đất bằng phẳng và thực hiện đo chiều dài chân, sau đó đo vòng bàn chân vùng to nhất"
+      ]
+    },
+    "pages_huong-dan-dang-ky-thanh-vien": {
+      "url": "https://merlyshoes.com/pages/huong-dan-dang-ky-thanh-vien",
+      "retrieved_at": "2026-10-23T02:25:10.008979+00:00",
+      "html_sha256": "ddcaa7bc5db3e285e151469e9d429cdaf802a680b916d0c45063df177e22fee6",
+      "excerpts": [
+        "Link đăng ký Tại Đây"
+      ]
+    },
+    "pages_huong-dan-xem-hang-thanh-vien-va-uu-dai": {
+      "url": "https://merlyshoes.com/pages/huong-dan-xem-hang-thanh-vien-va-uu-dai",
+      "retrieved_at": "2026-10-23T02:25:17.067180+00:00",
+      "html_sha256": "938d7353ef9f0f7bb9580db6b07e675394d5d910ee7e097c20a4cb8e83be7836",
+      "excerpts": [
+        "Link Đặng Nhập Tài Khoản Trên Website Merlyshoes"
+      ]
+    },
+    "blogs_news_cap-nhat-dia-chi-moi-cua-he-thong-cua-hang-giay-merly-tai-tp-hcm": {
+      "url": "https://merlyshoes.com/blogs/news/cap-nhat-dia-chi-moi-cua-he-thong-cua-hang-giay-merly-tai-tp-hcm",
+      "retrieved_at": "2026-10-23T02:25:19.528437+00:00",
+      "html_sha256": "5618fdc5945198192ec20971669df2a57cfb9c4f90e697116191473d1b930fc3",
+      "excerpts": [
+        "876 Trường Sa, Phường Nhiêu Lộc, TP. Hồ Chí Minh.",
+        "561 Lũy Bán Bích, Phường Phú Thạnh, TP. Hồ Chí Minh."
+      ]
+    },
+    "pages_chinh-sach-bao-hanh": {
+      "url": "https://merlyshoes.com/pages/chinh-sach-bao-hanh",
+      "retrieved_at": "2026-10-23T02:25:11.468186+00:00",
+      "html_sha256": "9e2d19d51cfa0e360b62cdde4298571aa4a2d91dbcc6164d659dd3cd19ca389c",
+      "excerpts": [
+        "Khi mua hàng về, bạn đừng vứt hộp đi.",
+        "chỉ nên phơi giày ướt ở nơi râm mát"
+      ]
+    },
+    "pages_chinh-sach-thanh-toan": {
+      "url": "https://merlyshoes.com/pages/chinh-sach-thanh-toan",
+      "retrieved_at": "2026-10-23T02:25:10.845475+00:00",
+      "html_sha256": "cd7fba43d7d730fa1e67b8b198afd6127c85c9d59857bfae9a75b999feec3e41",
+      "excerpts": [
+        "Thanh toán khi nhận hàng (COD)"
+      ]
+    },
+    "pages_huong-dan-thanh-toan-bang-vnpay": {
+      "url": "https://merlyshoes.com/pages/huong-dan-thanh-toan-bang-vnpay",
+      "retrieved_at": "2026-10-23T02:25:10.965052+00:00",
+      "html_sha256": "971f1e952f17d2e4d8426bc3b9089adf3b11c70ff970827b9889e66dbe397ea8",
+      "excerpts": [
+        "HƯỚNG DẪN THANH THANH TOÁN BẰNG VNPAY-QR"
+      ]
+    },
+    "pages_chinh-sach-bao-mat": {
+      "url": "https://merlyshoes.com/pages/chinh-sach-bao-mat",
+      "retrieved_at": "2026-10-23T02:25:14.208011+00:00",
+      "html_sha256": "c061807906262f3211a53e87257e73712f5f0dd1b8cccf78666a39bd3ddb7faa",
+      "excerpts": [
+        "Trong trường hợp người dùng muốn xóa toàn bộ thông tin về tài khoản đề nghị người dùng liên hệ với chúng tôi"
+      ]
+    },
+    "pages_giay-dong-phuc-merly": {
+      "url": "https://merlyshoes.com/pages/giay-dong-phuc-merly",
+      "retrieved_at": "2026-10-23T02:25:17.116246+00:00",
+      "html_sha256": "2b6ca99f01a125e439c918c7d18a5a9cb51cf72278e64aa566046300d5502e35",
+      "excerpts": [
+        "Giày cho nhân viên ngân hàng"
+      ]
+    },
+    "pages_san-xuat-giay-dong-phuc-cong-ty-cao-cap-thuong-hieu-merly": {
+      "url": "https://merlyshoes.com/pages/san-xuat-giay-dong-phuc-cong-ty-cao-cap-thuong-hieu-merly",
+      "retrieved_at": "2026-10-23T02:25:11.376436+00:00",
+      "html_sha256": "aab72461ff034b1f7e0a7236ef0fc2f1b6e01d5dad863c61748b470e9c68d8ab",
+      "excerpts": [
+        "3. Duyệt mẫu, thử size"
+      ]
+    }
+  },
+  "items": [
+    {
+      "topic": "about_merly",
+      "status": "reference_only",
+      "text": "Merly giới thiệu là thương hiệu giày nữ từ năm 2012; có giày công sở, cao gót và giày dép big size 40–43 trong dải size 35–43. Không suy rằng mọi mẫu đều có đủ size, chất liệu hay độ êm như nhau; sản phẩm cụ thể phải tra danh mục và tồn thực tế.",
+      "source_ids": [
+        "pages_lien-he-1",
+        "pages_lien-he"
+      ]
+    },
+    {
+      "topic": "measurement_help",
+      "status": "reference_only",
+      "text": "Hướng dẫn đo: đặt bàn chân trên mặt đất bằng phẳng, đo chiều dài chân rồi đo vòng bàn chân tại vùng to nhất; đối chiếu bảng size. Vòng bàn chân không phải chiều ngang. Bảng số đo lấy từ size_guide đã duyệt; không suy số đo từ ảnh hay tự tăng size, không bảo đảm vừa khi chưa rõ mẫu và dáng chân.",
+      "source_ids": [
+        "pages_huong-dan-do-size-giay"
+      ]
+    },
+    {
+      "topic": "membership_help",
+      "status": "reference_only",
+      "text": "Website có hướng dẫn đăng ký tài khoản và đăng nhập để xem hạng, điểm và ưu đãi. Khách tự thao tác trên website chính thức; không gửi mật khẩu hoặc OTP vào chat. Hướng dẫn thao tác không xác nhận hạng/điểm hay tỷ lệ tích điểm hiện tại. Quyền lợi và điều kiện dùng chính sách loyalty đã duyệt.",
+      "source_ids": [
+        "pages_huong-dan-dang-ky-thanh-vien",
+        "pages_huong-dan-xem-hang-thanh-vien-va-uu-dai"
+      ]
+    },
+    {
+      "topic": "address_details",
+      "status": "reference_only",
+      "text": "Website thông báo cách ghi địa chỉ áp dụng từ 01/07/2025: 876 Trường Sa, Phường Nhiêu Lộc, TP. Hồ Chí Minh; 561 Lũy Bán Bích, Phường Phú Thạnh, TP. Hồ Chí Minh. Chỉ bổ sung cách ghi được nguồn nêu rõ, không suy thêm quận/phường hoặc chi nhánh. Trang giới thiệu ghi chi nhánh cũ 38 Tân Sơn Nhì được thay bằng 561 Lũy Bán Bích. Các bài khai trương lịch sử không chứng minh cửa hàng còn hoạt động.",
+      "source_ids": [
+        "blogs_news_cap-nhat-dia-chi-moi-cua-he-thong-cua-hang-giay-merly-tai-tp-hcm",
+        "blogs_news_cap-nhat-dia-chi-moi-cua-he-thong-cua-hang-giay-merly-tai-tp-hcm",
+        "pages_lien-he-1"
+      ]
+    },
+    {
+      "topic": "official_channels",
+      "status": "reference_only",
+      "text": "Website liệt kê hotline/Zalo 0908190856, hai fanpage Giày Merly và Giày Nữ Big Size Merly; TikTok @merlyshoes, Shopee merlyofficial và Lazada shop/merly. Đây là những kênh được trang giới thiệu công bố, không phải cam kết danh sách mọi gian hàng. Hỗ trợ qua Zalo OA đã duyệt; không chuyển dữ liệu khách sang nền tảng khác.",
+      "source_ids": [
+        "pages_lien-he-1",
+        "pages_lien-he-1"
+      ]
+    },
+    {
+      "topic": "shoe_care",
+      "status": "reference_only",
+      "text": "Hướng dẫn bảo quản trên website: giữ hộp và túi chống ẩm để cất giày; khi cất có thể nhét giấy để giữ dáng. Hạn chế làm ướt; giày ướt không hơ lửa hoặc phơi nắng, để khô nơi râm mát. Không suy mọi chất liệu dùng cùng hóa chất; không hướng dẫn ngâm, dùng dung môi hay tự sửa giày. Đây là chăm sóc tham khảo, không phải điều kiện bảo hành mới.",
+      "source_ids": [
+        "pages_chinh-sach-bao-hanh",
+        "pages_chinh-sach-bao-hanh"
+      ]
+    },
+    {
+      "topic": "payment_help",
+      "status": "reference_only",
+      "text": "Website có hướng dẫn COD (thanh toán khi nhận hàng), chuyển khoản và VNPAY-QR. Đây là thông tin hướng dẫn, không xác nhận mọi phương thức còn khả dụng cho mọi đơn. Phương thức thực tế và thông tin nhận tiền phải kiểm tra ở bước thanh toán chính thức hoặc với Merly. Không đưa số tài khoản, mã QR hay voucher từ bài cũ; không xác nhận thanh toán thay nhân viên, không thu mật khẩu/OTP/số thẻ.",
+      "source_ids": [
+        "pages_chinh-sach-thanh-toan",
+        "pages_huong-dan-thanh-toan-bang-vnpay"
+      ]
+    },
+    {
+      "topic": "order_help",
+      "status": "reference_only",
+      "text": "Khi cần nhân viên hỗ trợ đơn hàng, đổi hàng hoặc kiểm tra giao nhận, hướng dẫn khách liên hệ Zalo OA Merly/hotline 0908190856. Chatbot hiện không tra cứu đơn, tự hủy/sửa đơn hay xác nhận giao dịch. Không khẳng định trang Kiểm tra đơn hàng đang cung cấp tra cứu hoạt động chỉ từ tiêu đề trang.",
+      "source_ids": [
+        "pages_lien-he-1"
+      ]
+    },
+    {
+      "topic": "privacy_help",
+      "status": "reference_only",
+      "text": "Website có trang chính sách bảo mật mô tả mục đích thu thập, liên hệ và yêu cầu chỉnh sửa hoặc xóa dữ liệu. Hướng khách liên hệ Merly qua kênh hỗ trợ đã duyệt để được xác minh. Chatbot không có quyền xem/sửa/xóa tài khoản hoặc cam kết đã xử lý yêu cầu. Không yêu cầu CMND/CCCD, mật khẩu, OTP trong chat; không chọn email đang mâu thuẫn giữa các trang.",
+      "source_ids": [
+        "pages_chinh-sach-bao-mat"
+      ]
+    },
+    {
+      "topic": "uniform_orders",
+      "status": "reference_only",
+      "text": "Website có dịch vụ đặt giày đồng phục nữ cho doanh nghiệp, văn phòng, nhà hàng, ngân hàng và ngành dịch vụ. Quy trình tham khảo: chọn mẫu, chất liệu, thử mẫu/thử size, sau đó chốt số lượng từng size và nhận báo giá. Không dùng bảng giá, chiết khấu hay cam kết thời gian trong bài cũ làm báo giá hiện tại; tư vấn đơn doanh nghiệp theo business_orders đã duyệt và nhờ Merly xác nhận.",
+      "source_ids": [
+        "pages_giay-dong-phuc-merly",
+        "pages_san-xuat-giay-dong-phuc-cong-ty-cao-cap-thuong-hieu-merly"
+      ]
+    }
+  ],
+  "customer_links": [
+    "https://merlyshoes.com/account/login",
+    "https://merlyshoes.com/account/register",
+    "https://merlyshoes.com/blogs/news/cap-nhat-dia-chi-moi-cua-he-thong-cua-hang-giay-merly-tai-tp-hcm",
+    "https://merlyshoes.com/pages/huong-dan-dang-ky-thanh-vien",
+    "https://merlyshoes.com/pages/huong-dan-do-size-giay",
+    "https://merlyshoes.com/pages/huong-dan-xem-hang-thanh-vien-va-uu-dai",
+    "https://merlyshoes.com/pages/lien-he-1",
+    "https://shopee.vn/merlyofficial",
+    "https://www.facebook.com/giaysizelon",
+    "https://www.facebook.com/merlyshoes",
+    "https://www.lazada.vn/shop/merly",
+    "https://www.tiktok.com/@merlyshoes"
+  ]
+}

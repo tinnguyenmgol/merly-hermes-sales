@@ -1,13 +1,16 @@
 'use strict';
 (() => {
   const staticLinks=new Set(['https://merlyshoes.com/','https://www.merlyshoes.com/','https://care.merlyshoes.com/','https://oa.zalo.me/2969822963244380594']);
+  const reviewedProfiles=new Set(["https://www.facebook.com/merlyshoes", "https://www.facebook.com/giaysizelon", "https://www.tiktok.com/@merlyshoes", "https://shopee.vn/merlyofficial", "https://www.lazada.vn/shop/merly"]);
   function checked(raw,known){
     if(typeof raw!=='string'||/[\u0000-\u0020\u007f]/.test(raw)||raw.length>2000)return null;
     try{
       const u=new URL(raw);
       if(u.protocol!=='https:'||u.username||u.password||(u.port&&u.port!=='443'))return null;
       if(staticLinks.has(u.href))return raw;
-      if(u.hostname!=='merlyshoes.com'||u.search||u.hash||!/^\/products\/[A-Za-z0-9_-]+$/.test(u.pathname))return null;
+      if(reviewedProfiles.has(u.href))return known.has(raw)?raw:null;
+      const pathOK=/^\/(?:products|pages)\/[A-Za-z0-9_-]+$/.test(u.pathname)||/^\/blogs\/[a-z0-9_-]+\/[a-z0-9_-]+$/.test(u.pathname)||/^\/account\/(?:register|login)$/.test(u.pathname);
+      if(u.hostname!=='merlyshoes.com'||u.search||u.hash||!pathOK)return null;
       return known.has(raw)?raw:null;
     }catch{return null;}
   }

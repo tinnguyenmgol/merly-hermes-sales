@@ -46,6 +46,9 @@ try:
  messages=seen[0]['messages'];assert messages[-1]['role']=='user' and messages[-1]['content']==raw,messages[-1]
  system='\n'.join(m['content'] for m in messages if m['role']=='system' and isinstance(m.get('content'),str))
  assert 'APPROVED_CUSTOMER_KNOWLEDGE_JSON' in system and '876 Trường Sa' in system and '300.000đ' in system
+ assert all(x in system for x in ('measurement_help','membership_help','reference_only','html_sha256','customer_links'))
+ assert 'VUICUOITUAN' not in system and 'JUNO' not in system
+ print('PASS_WEBSITE_REFERENCE_AT_REAL_HERMES_PROVIDER curated_topics=10 sources=12 paid_calls=0 semantic_evaluation=NOT_RUN')
  print('PASS_PINNED_HERMES_POLICY_TRANSPORT raw_user_exact=true approved_knowledge_at_provider=true real_agent_loop=true local_http_stub=true paid_calls=0 semantic_evaluation=NOT_RUN')
 finally:
  agent.close();server.shutdown();server.server_close()
