@@ -27,7 +27,7 @@
         "GOOGLE_API_KEY": "${GOOGLE_API_KEY:-}",
         "MERLY_GEMINI_MODEL": "${MERLY_GEMINI_MODEL:-}",
         "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY:-}",
-        "MERLY_OPENROUTER_MODEL": "${MERLY_OPENROUTER_MODEL:-openai/gpt-oss-20b}",
+        "MERLY_OPENROUTER_MODEL": "${MERLY_OPENROUTER_MODEL:-deepseek/deepseek-v4.1-flash-1017}",
         "MERLY_SALES_PROVIDER": "${MERLY_SALES_PROVIDER:-}"
       },
       "volumes": [

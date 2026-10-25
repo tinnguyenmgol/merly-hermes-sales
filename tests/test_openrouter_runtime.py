@@ -18,7 +18,7 @@ def test_key_only_switches_existing_gemini_and_is_idempotent(config,monkeypatch)
     p=config/'config.yaml';before=Y.safe_load(p.read_text());monkeypatch.setenv('OPENROUTER_API_KEY',KEY)
     monkeypatch.setenv('MERLY_GEMINI_MODEL','gemini-stale-setting');monkeypatch.setenv('GEMINI_API_KEY','synthetic-stale-google-key')
     assert run_sales.ensure_sales_model(config)
-    c=Y.safe_load(p.read_text());assert c.pop('model')=={'provider':'openrouter','default':'openai/gpt-oss-20b','base_url':'https://openrouter.ai/api/v1','api_mode':'chat_completions'}
+    c=Y.safe_load(p.read_text());assert c.pop('model')=={'provider':'openrouter','default':'deepseek/deepseek-v4.1-flash-1017','base_url':'https://openrouter.ai/api/v1','api_mode':'chat_completions'}
     before.pop('model');assert c==before
     assert p.stat().st_mode&0o777==0o600
     backups=list(config.glob('config.before-openrouter-*'));assert len(backups)==1
@@ -71,7 +71,7 @@ def test_real_compose_coolify_envfile_isolation(config):
     for k in [*values,'MERLY_GATEWAY_PROVIDER_EMPTY','MERLY_OPENROUTER_MODEL']:env.pop(k,None)
     out=subprocess.run([binary,'--project-name','openrouter-offline','--env-file',str(envfile),'-f',str(p),'config','--format','json'],cwd=config,env=env,text=True,capture_output=True,check=True,timeout=20)
     services=json.loads(out.stdout)['services'];backend=services['hermes-sales']['environment'];gateway=services['sales-gateway']['environment']
-    assert backend['OPENROUTER_API_KEY']==KEY and backend['MERLY_OPENROUTER_MODEL']=='openai/gpt-oss-20b'
+    assert backend['OPENROUTER_API_KEY']==KEY and backend['MERLY_OPENROUTER_MODEL']=='deepseek/deepseek-v4.1-flash-1017'
     assert all(gateway[k]=='' for k in ('OPENROUTER_API_KEY','GOOGLE_API_KEY','GEMINI_API_KEY'))
 
 def test_explicit_gemini_choice_not_overridden(config,monkeypatch):
@@ -84,3 +84,20 @@ def test_removing_key_does_not_silently_revert_to_gemini(config,monkeypatch):
     monkeypatch.delenv('OPENROUTER_API_KEY');monkeypatch.setenv('MERLY_GEMINI_MODEL','gemini-stale')
     with pytest.raises(RuntimeError,match='openrouter_runtime_key_missing'):run_sales.ensure_sales_model(config)
     assert Y.safe_load((config/'config.yaml').read_text())['model']['provider']=='openrouter'
+
+@pytest.mark.parametrize('selected',['deepseek/deepseek-v4.1-flash-1017','openai/gpt-oss-20b'])
+def test_explicit_model_override_remains_exact(config,monkeypatch,selected):
+    monkeypatch.setenv('OPENROUTER_API_KEY',KEY)
+    monkeypatch.setenv('MERLY_OPENROUTER_MODEL',selected)
+    assert run_sales.ensure_sales_model(config)
+    assert Y.safe_load((config/'config.yaml').read_text())['model']['default']==selected
+
+def test_existing_openrouter_volume_switches_default_once(config,monkeypatch):
+    p=config/'config.yaml';data=Y.safe_load(p.read_text())
+    data['model']={'provider':'openrouter','default':'openai/gpt-oss-20b','base_url':'https://openrouter.ai/api/v1','api_mode':'chat_completions'}
+    p.write_text(Y.safe_dump(data));monkeypatch.setenv('OPENROUTER_API_KEY',KEY)
+    assert run_sales.ensure_sales_model(config)
+    after=Y.safe_load(p.read_text())
+    assert after['model']['default']=='deepseek/deepseek-v4.1-flash-1017'
+    assert {k:v for k,v in after.items() if k!='model'}=={k:v for k,v in data.items() if k!='model'}
+    assert not run_sales.ensure_sales_model(config)

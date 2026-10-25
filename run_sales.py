@@ -72,7 +72,7 @@ def ensure_openrouter_model(home):
     if not key:raise RuntimeError('openrouter_runtime_key_missing')
     if re.search(r'\s',key):raise RuntimeError('openrouter_key_whitespace')
     if not 20<=len(key)<=512:raise RuntimeError('invalid_openrouter_key_length')
-    model=os.getenv('MERLY_OPENROUTER_MODEL','openai/gpt-oss-20b')
+    model=os.getenv('MERLY_OPENROUTER_MODEL','deepseek/deepseek-v4.1-flash-1017')
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,99}/[A-Za-z0-9][A-Za-z0-9._:-]{0,149}',model):raise RuntimeError('invalid_openrouter_model_id')
     path=Path(home)/'config.yaml'
     if path.is_symlink():raise RuntimeError('sales_config_symlink_not_supported')

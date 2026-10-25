@@ -16,6 +16,7 @@ assert run_sales.ensure_sales_model(home)
 config=hermes_yaml.safe_load((home/'config.yaml').read_text())
 from hermes_cli.runtime_provider import resolve_runtime_with_fallback
 runtime,_=resolve_runtime_with_fallback(config,requested='openrouter',target_model=config['model']['default'],explicit_base_url=config['model']['base_url'])
+assert config['model']['default']=='deepseek/deepseek-v4.1-flash-1017'
 assert runtime['provider']=='openrouter'
 assert runtime['base_url']=='https://openrouter.ai/api/v1'
 assert runtime['api_mode']=='chat_completions'
@@ -25,7 +26,7 @@ client=OpenAI(api_key=runtime['api_key'],base_url=runtime['base_url'])
 assert str(client.base_url).rstrip('/')=='https://openrouter.ai/api/v1'
 assert client.auth_headers['Authorization']=='Bearer '+os.environ['OPENROUTER_API_KEY']
 client.close()
-print('PASS_PINNED_HERMES_OPENROUTER migrated_from_gemini=true provider=openrouter api_mode=chat_completions model=openai/gpt-oss-20b native_key_resolution=true inference_calls=0')
+print('PASS_PINNED_HERMES_OPENROUTER migrated_from_gemini=true provider=openrouter api_mode=chat_completions model=deepseek/deepseek-v4.1-flash-1017 native_key_resolution=true inference_calls=0')
 '''
 def main():
     with tempfile.TemporaryDirectory(prefix='verify-openrouter-') as tmp:
