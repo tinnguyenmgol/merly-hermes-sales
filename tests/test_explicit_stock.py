@@ -36,7 +36,7 @@ def test_gateway_timeout_in_model_cannot_block_literal_query(configured,monkeypa
     r=call('mẫu 1514 38 còn màu gì')
     assert r['status'].startswith('200') and r['body']['model_called'] is False
     assert scopes==[{'model_code':'1514','size':38}]
-    assert r['body']['stock_options']['resolution_path']=='direct_haravan'
+    assert 'stock_options' not in r['body'] and r['body']['listing']['shown']==0
 
 def test_generic_shopping_question_still_uses_model(configured,monkeypatch):
     seen=[]

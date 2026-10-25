@@ -29,7 +29,7 @@ def haravan(resource,params,timeout=12):
     if resource.endswith('/variants'):return {'variants':copy.deepcopy(p['variants'])}
     raise tools.h.HaravanError('fixture_unknown_resource')
 tools.h.get=haravan;tools.catalog.snapshot=lambda:[copy.deepcopy(p)];tools.catalog.status=lambda:{'ready':True,'age_seconds':1};tools.enrichment=lambda:{}
-tools.h.inventory=lambda ids,locs:[{'variant_id':int(v),'loc_id':loc,'qty_available':1 if i==0 else 0} for v in ids.split(',') for i,loc in enumerate(tools.LOCATIONS)]
+tools.h.inventory=lambda ids,locs:[{'variant_id':int(v),'loc_id':loc,'qty_available':1 if i==0 and int(v)%2 else 0} for v in ids.split(',') if int(v)%5 for i,loc in enumerate(tools.LOCATIONS)]
 client.audit=lambda:True
 turns=[]
 def native(path,payload):
@@ -67,7 +67,14 @@ with tempfile.TemporaryDirectory(prefix='catalog-image-ui-',dir='/workspace/tmp'
             page=ctx.new_page();page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:requests.append(r.url))
             page.goto('https://chat.merlyshoes.com/');expect(page.locator('#status')).to_contain_text('sẵn sàng')
             page.locator('#message').fill('Xem ảnh minh hoạ từ dữ liệu kiểm thử');page.locator('#message').press('Enter')
+            expect(page.locator('#status')).to_contain_text('Đã nhận phản hồi')
+            assert page.locator('.stock,.product-thumbnail').count()==0
+            page.locator('#message').fill('Tra nhóm kiểm thử và tồn theo điều kiện');page.locator('#message').press('Enter')
+            expect(page.locator('.stock')).to_have_count(1)
             expect(page.locator('.product-thumbnail')).to_have_count(1)
+            assert page.locator('.stock .option').count()==4
+            assert page.locator('.stock').last.locator('img').count()==1
+            assert any(r=='products' and p.get('collection_id')==99 for r,p in source_calls)
             thumb=page.locator('.product-thumbnail');thumb.scroll_into_view_if_needed()
             expect(thumb).to_have_js_property('complete',True);assert thumb.evaluate('e=>e.naturalWidth>0')
             assert thumb.bounding_box()['width']==72 and thumb.bounding_box()['height']==72
@@ -84,13 +91,6 @@ with tempfile.TemporaryDirectory(prefix='catalog-image-ui-',dir='/workspace/tmp'
                 Path(preview).mkdir(parents=True,exist_ok=True);page.screenshot(path=str(Path(preview)/'small-product-image.png'),full_page=True)
             with page.expect_popup() as event:thumb.click()
             popup=event.value;popup.wait_for_load_state();assert popup.evaluate('window.opener===null');popup.close()
-            page.locator('#message').fill('Tra nhóm kiểm thử và tồn theo điều kiện');page.locator('#message').press('Enter')
-            expect(page.locator('.stock')).to_have_count(3)
-            expect(page.locator('.product-thumbnail')).to_have_count(2)
-            expect(page.locator('.stock').last).to_contain_text('Chưa xác minh được dữ liệu')
-            assert page.locator('.stock').nth(1).locator('.option').count()==20
-            assert page.locator('.stock').nth(1).locator('img').count()==1
-            assert any(r=='products' and p.get('collection_id')==99 for r,p in source_calls)
             page.locator('#message').fill('Kiểm tra biến thể đã chọn');page.locator('#message').press('Enter')
             expect(page.locator('.quote')).to_have_count(1)
             expect(page.locator('.quote img')).to_have_count(1)
@@ -115,5 +115,5 @@ with tempfile.TemporaryDirectory(prefix='catalog-image-ui-',dir='/workspace/tmp'
             assert not any('evil.invalid' in url for url in requests)
             assert not errors,errors
             browser.close()
-        print('PASS_CATALOG_IMAGES catalog_type=true collection_source_pipeline=true thumbnail72=true image_popup=true stock_dedup20=true empty_groups_visible=true quote_image=true iframe_thumbnail=true no_referrer=true unsafe_inert=true max4=true failure_fallback=true provider_scripted=true live_stock=false')
+        print('PASS_CATALOG_IMAGES catalog_type=true collection_source_pipeline=true thumbnail72=true image_popup=true positive_stock_only=true zero_unknown_hidden=true unchecked_catalog_hidden=true empty_groups_hidden=true max_sku_cards4=true quote_image=true iframe_thumbnail=true no_referrer=true unsafe_inert=true max4=true failure_fallback=true provider_scripted=true live_stock=false')
     finally:server.shutdown();server.server_close()

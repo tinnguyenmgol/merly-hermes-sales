@@ -3,7 +3,7 @@ import hmac,json,os,time,secrets,logging,re
 from pathlib import Path
 import hermes_client,state
 import explicit_stock,fast_limits,dialogue
-import public_chat
+import public_chat,customer_listing
 LOGGER=logging.getLogger('merly.gateway')
 LOGGER.setLevel(logging.INFO)
 if not LOGGER.hasHandlers():LOGGER.addHandler(logging.StreamHandler())
@@ -69,6 +69,7 @@ def application(env,start):
             if not acquired:return limited('turn_in_progress')
             cid=state.touch(sid)
             def deliver(answer,trace=None):
+                answer=customer_listing.project(answer)
                 message=data['message'] if not probe else 'Tra tồn theo lựa chọn: '+json.dumps(data,ensure_ascii=False)
                 dialogue.record(sid,message,answer)
                 answer['diagnostic_id']=diagnostic_id
