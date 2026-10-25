@@ -2,21 +2,7 @@
 import json
 from stock_report import safe_url
 TOOLS={'mcp__merly__search_products','mcp__merly__quote_variant'}
-def unpack(value):
-    for _ in range(6):
-        if isinstance(value,str):
-            if len(value)>220000:return {}
-            value=json.loads(value);continue
-        if isinstance(value,list):
-            if len(value)!=1 or not isinstance(value[0],dict):return {}
-            value=value[0].get('text');continue
-        if isinstance(value,dict):
-            for key in ('structuredContent','result'):
-                if key in value:value=value[key];break
-            else:return value
-            continue
-        return {}
-    return {}
+from tool_payload import unpack
 def collect(items):
     calls={};duplicates=set();links=[]
     for item in items:
@@ -30,7 +16,7 @@ def collect(items):
         cid=item.get('call_id')
         if not isinstance(cid,str) or not cid:continue
         if item.get('type')=='function_call_output' and calls.get(cid) in TOOLS and cid not in duplicates and item.get('status') in (None,'completed'):
-            try:data=unpack(item.get('output'))
+            try:data=unpack(item.get('output'),calls.get(cid))
             except (TypeError,ValueError):continue
             if data.get('status') in ('invalid_arguments','source_unavailable','tool_unavailable'):continue
             report=data.get('stock_report',{})

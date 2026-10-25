@@ -6,6 +6,7 @@ import safety,audit_instance
 
 @pytest.fixture
 def approved(tmp_path,monkeypatch):
+    monkeypatch.setenv('MERLY_AGENT_REPAIR_ENABLED','0')
     for k,v in {'HERMES_SALES_API_BASE':'https://sales.example.invalid/v1','HERMES_SALES_API_KEY':'K'*40,'HERMES_SALES_ISOLATION_APPROVED':'1','HERMES_CUSTOMER_DATA_APPROVED':'1','HERMES_MODEL_COST_APPROVED':'1'}.items():monkeypatch.setenv(k,v)
     monkeypatch.setenv('HERMES_PILOT_STATE_DB',str(tmp_path/'client-sessions.db'))
     p=tmp_path/'audit.json'

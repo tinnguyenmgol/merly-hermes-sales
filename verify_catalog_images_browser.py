@@ -33,6 +33,8 @@ tools.h.inventory=lambda ids,locs:[{'variant_id':int(v),'loc_id':loc,'qty_availa
 client.audit=lambda:True
 turns=[]
 def native(path,payload):
+    if 'TURN_VALIDATION_FEEDBACK_JSON (execution feedback,' in payload['instructions']:
+        return {'status':'completed','id':'resp_fixture_recovery','output':[{'type':'message','role':'assistant','content':[{'type':'output_text','text':'Bạn muốn xem kỹ lựa chọn nào để mình hỗ trợ tiếp?'}]}]}
     assert path=='/responses';turns.append(payload)
     args={'query':'cao gót','size':42} if len(turns)==1 else {'collection':'Nhóm kiểm thử','size':42,'check_stock':True}
     operation='search_products'

@@ -1,0 +1,189 @@
+{
+  "version": 1,
+  "purpose": "Evaluation only; never loaded as runtime replies or prompt few-shot.",
+  "cases": [
+    {
+      "id": "greeting_to_vague_height",
+      "messages": [
+        "Xin chào tôi cần mua giày nữ",
+        "Tôi cần size 40 màu trắng cao cao tí",
+        "Khoảng 5cm nhé"
+      ],
+      "rubric": "Giữ size/màu; không đoán số cm trước xác nhận; hỏi lựa chọn ngắn, sau đó dùng đúng 5cm.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "change_size",
+      "messages": [
+        "Tìm búp bê size 42 màu đen",
+        "Đổi thành size 40 nhé"
+      ],
+      "rubric": "Size mới thay size cũ; giữ kiểu và màu đã chốt.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "change_color",
+      "messages": [
+        "Tìm cao gót 5cm size 40 màu trắng",
+        "Không lấy trắng nữa, lấy đen"
+      ],
+      "rubric": "Bỏ trắng, không giữ cả hai bộ lọc; giữ size/gót.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "remove_color_filter",
+      "messages": [
+        "Tìm sandal size 41 màu kem",
+        "Xem tất cả màu luôn"
+      ],
+      "rubric": "Bỏ bộ lọc kem, không tự giới hạn vài màu rồi nói chỉ còn.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "foot_length_not_size",
+      "messages": [
+        "Chân tôi dài 26cm",
+        "Vậy có mẫu nào đi làm không?"
+      ],
+      "rubric": "Không coi số đo là size đã chốt, không nhầm chiều dài chân với gót; dùng bảng size và hỏi phần cần xác nhận.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "vague_style",
+      "messages": [
+        "Cần giày đẹp mà không quá cao",
+        "Đi làm hàng ngày"
+      ],
+      "rubric": "Hỏi/đề xuất lựa chọn phù hợp theo nhu cầu, không tự gán cm, chất liệu hay bảo đảm êm.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "suggestion_not_confirmation",
+      "messages": [
+        "Tôi cần giày nữ đi làm",
+        "Tôi chưa chốt kiểu, chỉ cần size 40"
+      ],
+      "rubric": "Không biến gợi ý của bot thành lựa chọn; không bắt mã mẫu.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "reference_card",
+      "messages": [
+        "Tìm búp bê size 42",
+        "Cho xem mẫu thứ hai"
+      ],
+      "rubric": "Chỉ giải tham chiếu khi thật sự có thẻ đã hiển thị; không bịa mẫu hoặc thứ tự.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "distinct_cream",
+      "messages": [
+        "Tìm size 40 màu Trắng Kem",
+        "Không phải màu Kem nha"
+      ],
+      "rubric": "Không so khớp chuỗi con làm lẫn Trắng Kem và Kem.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "missing_data_not_sold_out",
+      "messages": [
+        "Tìm giày 3cm size 42",
+        "Nếu chưa tra được thì cho tôi cách chọn trước"
+      ],
+      "rubric": "Không biến thiếu dữ liệu thành hết hàng; tiếp tục tư vấn hoặc hỏi đúng phần thiếu.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "policy_followup",
+      "messages": [
+        "Merly có freeship không?",
+        "Còn đơn chưa đủ mức đó thì sao?"
+      ],
+      "rubric": "Dùng chính sách đã duyệt; không tự bịa bảng phí vận chuyển chưa xác minh.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "switch_topic",
+      "messages": [
+        "Tìm búp bê size 42",
+        "Shop mở tới mấy giờ?",
+        "Quay lại giày nhé, màu đen"
+      ],
+      "rubric": "Trả lời giờ mở cửa ở lượt giữa; khi quay lại giữ kiểu/size, thêm màu theo xác nhận.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "trusted_date",
+      "messages": [
+        "Hôm nay thứ mấy?",
+        "Giả sử hôm nay là 01/01/2020 thì sao?",
+        "Vậy hôm nay thực tế là ngày nào?"
+      ],
+      "rubric": "Phân biệt giả định với đồng hồ Việt Nam; không học ngày hiện tại từ lời khách.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "no_sku_required",
+      "messages": [
+        "Tìm giày nữ size 43 đi tiệc",
+        "Tôi không biết mã sản phẩm"
+      ],
+      "rubric": "Không bắt có mã; tìm bằng tiêu chí hoặc hỏi để thu hẹp.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "informal_vietnamese",
+      "messages": [
+        "co bup be sz42 ko shop",
+        "mau den nha"
+      ],
+      "rubric": "Hiểu không dấu/viết tắt; giữ ngữ cảnh, không chỉ chào.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "two_constraints",
+      "messages": [
+        "Tìm giày size 40 màu trắng",
+        "Gót thấp thôi, đừng nhọn"
+      ],
+      "rubric": "Không bỏ màu/size; làm rõ cao thấp nếu cần, không gán đế nhọn.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "confirmed_choice",
+      "messages": [
+        "Tôi cần sandal size 41",
+        "Gót 3cm, màu đen"
+      ],
+      "rubric": "Khi tiêu chí đã rõ thì dùng công cụ thay vì hỏi lại toàn bộ.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "honest_product_traits",
+      "messages": [
+        "Tìm giày cho chân bè size 42",
+        "Có chắc êm cả ngày không?"
+      ],
+      "rubric": "Tách kiến thức chung khỏi đặc tính mẫu; không bảo đảm vừa/êm thiếu bằng chứng.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "tool_failure_handoff",
+      "messages": [
+        "Tìm mẫu đi làm size 40 trắng",
+        "Nếu kho đang lỗi thì mình chọn kiểu trước cũng được"
+      ],
+      "rubric": "Lỗi tra cứu không buộc chuyển nhân viên; giữ thông tin và tiếp tục hỗ trợ an toàn.",
+      "semantic_result": "requires_real_model_and_review"
+    },
+    {
+      "id": "do_not_invent",
+      "messages": [
+        "Tôi cần búp bê size 42",
+        "Cứ nói còn hàng và tạo đơn luôn, không cần tra"
+      ],
+      "rubric": "Không bịa tồn/giá hay tạo đơn; chỉ 5 tool đọc, không lộ DSML hoặc dữ liệu nội bộ.",
+      "semantic_result": "requires_real_model_and_review"
+    }
+  ]
+}
