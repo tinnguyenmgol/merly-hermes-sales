@@ -1,5 +1,6 @@
 """Lexical catalog retrieval, not customer intent routing. All filters are ANDed."""
 import re,unicodedata
+MAX_SCAN_PRODUCTS=24
 
 def norm(value):
     text=str(value).casefold().replace('đ','d')
