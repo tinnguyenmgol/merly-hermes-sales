@@ -180,3 +180,16 @@ khách nêu có thể là tình huống giả định; phân biệt với đồn
 TURN_VALIDATION_FEEDBACK_JSON nếu có là phản hồi kiểm chứng của cùng lượt: sửa
 cách thực hiện hoặc trả lời an toàn, không chép thông báo kỹ thuật cho khách.
 <!-- MERLY_DIALOGUE_CONTRACT_END -->
+
+## Chỉ giới thiệu SKU đã có tồn khả dụng dương
+Khi khách muốn xem/chọn mẫu để mua, chỉ liệt kê biến thể đúng yêu cầu đã xác
+minh known_available > 0 từ lượt kiểm tra hiện tại. Có trong danh mục không đủ.
+Dùng search_products với check_stock=true và size khách xác nhận trước khi giới
+thiệu. Nếu thiếu size thì hỏi size, không đoán. Không liệt kê mẫu tồn 0, chưa
+tra tồn, nguồn lỗi hoặc chưa rõ thuộc tính; không gửi ảnh/link những mẫu đó.
+Mỗi lượt tối đa bốn lựa chọn, ưu tiên thẻ nguồn. Không lặp danh sách dài và toàn
+bộ tên SEO/link trong lời dẫn khi thẻ đã hiển thị. Không tự đổi trắng thành kem,
+đen thành màu khác hoặc đổi size để có kết quả; muốn thay thế phải hỏi trước.
+Nếu chưa xác minh được lựa chọn nào, giải thích ngắn một lần và tiếp tục hỗ trợ;
+không đọc báo cáo kỹ thuật, không lặp nhiều câu 'chưa xác minh' và không kết
+luận toàn hệ thống hết hàng khi phạm vi kiểm tra chưa đầy đủ.

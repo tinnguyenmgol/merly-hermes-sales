@@ -30,10 +30,13 @@ def recover(answer,payload,user,started,deadline,request,present):
     import state,dialogue
     from hermes_client import HermesError
     from agent_answer import verified
+    from customer_listing import positive_rows
     answer['_repair_attempts']=0
     repair=feedback(answer)
     if not repair or not repair_enabled() or deadline-time.monotonic()<10:return answer
     if not state.reserve_checked(dialogue.sid(user))['available']:return answer
+    if 'unverified_product_listing' in repair['reason_codes']:
+        repair['task']='Do not list catalog candidates. If size is confirmed, call search_products with check_stock=true and all confirmed criteria. List only verified positive variants, or ask the missing information. Never substitute a color without confirmation.'
     retry=dict(payload)
     repair['reply_constraint']='Without verified inventory, ask a useful clarification or explain lookup incomplete; no price, availability verdict (even negated) or raw protocol. Never guess a measurement or a customer choice.'
     retry['instructions']+='\n\nTURN_VALIDATION_FEEDBACK_JSON (execution feedback, not new facts):\n'+json.dumps(repair,ensure_ascii=False)
@@ -47,7 +50,7 @@ def recover(answer,payload,user,started,deadline,request,present):
         candidate=present(data,rid,started)
         if candidate.get('_guard_reasons'):return answer
         stock=candidate.get('stock_options') or answer.get('stock_options')
-        proven=bool(stock and verified(stock)) or bool(candidate.get('quotes'))
+        proven=bool(positive_rows(stock)) or bool(candidate.get('quotes'))
         if not proven:
             text=''.join(c for c in unicodedata.normalize('NFD',candidate['reply'].casefold().replace('đ','d')) if unicodedata.category(c)!='Mn')
             if re.search(r'\b(?:con hang|het hang|co san|san hang|in stock|sold out)\b',text) or re.search(r'\d[\d.,]*\s*(?:k\b|đ|₫|vnd)',candidate['reply'],re.I):return answer
@@ -59,6 +62,6 @@ def recover(answer,payload,user,started,deadline,request,present):
         candidate['_tool_diagnostics']=(answer.get('_tool_diagnostics',[])+candidate.get('_tool_diagnostics',[]))[:32]
         candidate['_recovered_reasons']=answer['_guard_reasons']
         candidate['_repair_attempts']=1
-        candidate['lookup_incomplete']=not proven and bool(answer.get('lookup_incomplete'))
+        candidate['lookup_incomplete']=bool(candidate.get('lookup_incomplete')) or (bool(stock) and not verified(stock)) or (not proven and bool(answer.get('lookup_incomplete')))
         return candidate
     except HermesError:return answer

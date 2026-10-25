@@ -12,7 +12,7 @@ with tempfile.TemporaryDirectory(prefix='four-ui-',dir='/workspace/tmp') as tmp:
     received=[]
     reply='[Mẫu từ nguồn]('+URL+')\n'+URL+'.\n[Chăm sóc](https://care.merlyshoes.com/)\n[x](javascript:alert(1)) https://evil.invalid/ https://merlyshoes.com/products/not-returned <img src=x onerror=alert(1)>'
     def chat(message,user,cid):
-        received.append(message);return {'reply':reply,'conversation_id':'resp_fixture','source_links':[URL]}
+        received.append(message);return {'reply':reply,'conversation_id':'resp_fixture','source_links':[URL],'quotes':[{'product_id':100,'variant_id':100001,'known_available':1,'available':True,'size':'40','color':'Đen','title':'POSITIVE STOCK FIXTURE','product_url':URL}]}
     client.chat=chat
     server=make_server('127.0.0.1',0,gateway.application,handler_class=Quiet);threading.Thread(target=server.serve_forever,daemon=True).start();base='http://127.0.0.1:'+str(server.server_port)
     try:

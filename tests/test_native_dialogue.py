@@ -68,7 +68,7 @@ def test_guard_override_not_hidden_native_text_is_replayed(source,configured,mon
     assert b['status'].startswith('200') and len(seen)==2
 
 def test_fast_stock_cards_and_isolation(configured,monkeypatch):
-    monkeypatch.setattr(c,'probe_stock',lambda scope:{'reply':'Thẻ fixture đã hiển thị','stock_options':{'mode':'all_options','variants':[{'variant_id':100,'color':'Kem'}]}})
+    monkeypatch.setattr(c,'probe_stock',lambda scope:{'reply':'Thẻ fixture đã hiển thị','stock_options':{'mode':'all_options','variants':[{'variant_id':100,'product_id':100,'size':'40','color':'Kem','known_available':1}]}})
     a=call('mẫu GN-041 size 40 còn không');seen=[]
     monkeypatch.setattr(c,'audit',lambda:True)
     monkeypatch.setattr(c,'request',lambda path,p:seen.append(p) or final('NATIVE'))
@@ -131,7 +131,7 @@ def test_malformed_policy_output_cannot_be_a_native_fact(approved,monkeypatch,ou
     out=c.chat('cho biết điều kiện giao hàng','policy')
     assert out['answer_mode']=='evidence_guard' and 'UNSUPPORTED_POLICY' not in out['reply']
 
-def test_catalog_ids_from_actual_tool_are_carried_with_visible_cards(source,configured,monkeypatch):
+def test_unverified_catalog_ids_are_not_carried_as_visible_cards(source,configured,monkeypatch):
     import mcp_server
     monkeypatch.setattr(c,'audit',lambda:True);seen=[]
     def request(path,payload):
@@ -142,9 +142,9 @@ def test_catalog_ids_from_actual_tool_are_carried_with_visible_cards(source,conf
         return data
     monkeypatch.setattr(c,'request',request)
     a=call('cho xem các mẫu phù hợp');call('xem mẫu đầu tiên',cookie=cookie(a))
-    assert a['body']['products'][0]['product_id']==100
+    assert 'products' not in a['body'] and a['body']['listing']['shown']==0
     replay=seen[1]['conversation_history'][1]['content']
-    assert 'not_checked' in replay and '100001' in replay and 'LỊCH SỬ' in replay
+    assert 'not_checked' not in replay and '100001' not in replay
 
 def test_history_byte_and_session_caps_do_not_learn_stock(configured,monkeypatch):
     monkeypatch.setattr(dialogue,'MAX_SESSIONS',2)

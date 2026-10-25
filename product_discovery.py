@@ -4,7 +4,7 @@ import catalog_query
 from media_urls import picture,safe_image
 from datetime import datetime,timezone
 KEYS=('query','collection','model_code','size','color','heel_cm','category','occasion')
-MAX_PRODUCTS=4;MAX_VARIANTS=40;BATCH=10;SECONDS=15
+MAX_PRODUCTS=catalog_query.MAX_SCAN_PRODUCTS;MAX_VARIANTS=40;BATCH=10;SECONDS=15
 
 def criteria(data):return {k:data[k] for k in KEYS if k in data}
 def matching_specs(product,data,tools,meta):
@@ -21,10 +21,15 @@ def matching_specs(product,data,tools,meta):
 
 def lookup(data,tools):
     deadline=time.monotonic()+SECONDS
+    with tools.h.request_deadline(deadline):return _lookup(data,tools,deadline)
+
+def _lookup(data,tools,deadline):
+    began=time.monotonic()
     # Color checked EXACTLY against fresh variants, not merged by substring.
-    query={k:v for k,v in data.items() if k in ('query','collection','model_code','size','heel_cm','category','occasion')}
-    query['limit']=min(data.get('limit',MAX_PRODUCTS),MAX_PRODUCTS)
-    found=tools.search_products(query,candidate_only=True);source={'ready':True,'age_seconds':0} if found.get('catalog_fresh') else tools.catalog.status();meta=tools.enrichment()
+    query={k:v for k,v in data.items() if k in ('query','collection','model_code','size','color','heel_cm','category','occasion')}
+    query['limit']=min(data.get('limit',4),6)
+    target=min(data.get('limit',4),4)
+    found=tools.search_products(query,candidate_only=True,candidate_limit=MAX_PRODUCTS);source={'ready':True,'age_seconds':0} if found.get('catalog_fresh') else tools.catalog.status();meta=tools.enrichment()
     report={'schema':'merly-product-discovery-v1','operation_id':secrets.token_hex(16),'mode':'discovery','criteria':criteria(data),'complete':False,'products':[],'variants':[],'issues':[],
       'coverage':{'catalog_matches':found.get('matched_products',0),'unknown_spec_products':found.get('unknown_spec_products',0),'omitted_products':max(0,found.get('matched_products',0)-len(found['products'])),'omitted_variants':0},
       'catalog_age_seconds':source.get('age_seconds'),'source_status':found['status'],'checked_at':datetime.now(timezone.utc).isoformat()}
@@ -32,11 +37,30 @@ def lookup(data,tools):
         report['collection_status']=found.get('collection_status','source_unavailable')
         if found.get('collection_evidence'):report['collection_evidence']=found['collection_evidence']
         report['collection_choices']=found.get('collection_choices',[])
-    records=[];seen=set()
+    records=[];pending=[];seen=set();blocked=False
+    BLOCKED={'haravan_http_401','haravan_http_403','haravan_http_429'}
+    def flush_inventory():
+        nonlocal pending,blocked
+        for start in range(0,len(pending),BATCH):
+            if time.monotonic()>=deadline:break
+            group=pending[start:start+BATCH];counts={str(r['variant_id']):{} for r in group}
+            try:
+                rows=tools.h.inventory(','.join(counts),','.join(map(str,tools.LOCATIONS)))
+                for row in rows:
+                    vid=str(row.get('variant_id'));loc=row.get('loc_id');qty=row.get('qty_available')
+                    if vid not in counts or type(loc) is not int or loc not in tools.LOCATIONS or loc in counts[vid] or type(qty) not in (int,float) or not math.isfinite(qty) or int(qty)!=qty:raise tools.h.HaravanError('invalid_batch_inventory')
+                    counts[vid][loc]=max(0,int(qty))
+                for r in group:
+                    values=counts[str(r['variant_id'])];known=sum(values.values());complete=set(values)==set(tools.LOCATIONS)
+                    r.update(known_available=known,inventory_complete=complete,available=True if known>0 else False if complete else None,locations=[{'name':name,'available':values.get(loc)} for loc,name in tools.LOCATIONS.items()])
+            except tools.h.HaravanError as exc:
+                report['issues'].append({'stage':'inventory'})
+                if str(exc) in BLOCKED:blocked=True;break
+        pending=[]
     for candidate in found['products']:
+        if time.monotonic()>=deadline or len(records)>=MAX_VARIANTS or blocked:break
         item={'product_id':candidate['product_id'],'title':candidate.get('title','')[:300],'product_url':candidate.get('product_url'),'image_url':candidate.get('image_url'),'image_scope':'product','product_type':candidate.get('product_type'),'verified_specs':candidate.get('verified_specs',{}),'status':'unchecked'}
         report['products'].append(item)
-        if time.monotonic()>=deadline:continue
         try:
             product=tools.h.get('products/'+str(item['product_id']),{}).get('product')
             if not isinstance(product,dict) or product.get('id')!=item['product_id'] or not tools.catalog.eligible(product):raise tools.h.HaravanError('product_identity_changed')
@@ -54,25 +78,24 @@ def lookup(data,tools):
                 vid=v.get('id')
                 if type(vid) is not int or not 1<=vid<10**16 or vid in seen:raise tools.h.HaravanError('invalid_variant_identity')
                 seen.add(vid)
-                selected.append({'product_id':product['id'],'variant_id':vid,'title':item['title'],'color':color,'size':size,'price_vnd':tools.variant_price(v),'available':None,'known_available':0,'inventory_complete':False,'locations':[{'name':name,'available':None} for name in tools.LOCATIONS.values()],'product_url':item['product_url'],**picture(product,v)})
+                selected.append({'product_id':product['id'],'variant_id':vid,'color':color,'size':size,'price_vnd':tools.variant_price(v),'available':None,'known_available':0,'inventory_complete':False,'locations':[{'name':name,'available':None} for name in tools.LOCATIONS.values()],'product_url':item['product_url'],**picture(product,v)})
             item['status']='metadata_unverified' if unclassified else 'matched' if selected else 'no_matching_variants'
-            room=MAX_VARIANTS-len(records);records.extend(selected[:room]);report['coverage']['omitted_variants']+=max(0,len(selected)-room)
-        except tools.h.HaravanError:
+            room=MAX_VARIANTS-len(records);records.extend(selected[:room]);pending.extend(selected[:room]);report['coverage']['omitted_variants']+=max(0,len(selected)-room)
+        except tools.h.HaravanError as exc:
+            if str(exc) in BLOCKED:blocked=True
             item['status']='source_unavailable';report['issues'].append({'stage':'product','product_id':item['product_id']})
-    for start in range(0,len(records),BATCH):
-        if time.monotonic()>=deadline:break
-        group=records[start:start+BATCH];counts={str(r['variant_id']):{} for r in group}
-        try:
-            rows=tools.h.inventory(','.join(counts),','.join(map(str,tools.LOCATIONS)))
-            for row in rows:
-                vid=str(row.get('variant_id'));loc=row.get('loc_id');qty=row.get('qty_available')
-                if vid not in counts or type(loc) is not int or loc not in tools.LOCATIONS or loc in counts[vid] or type(qty) not in (int,float) or not math.isfinite(qty) or int(qty)!=qty:raise tools.h.HaravanError('invalid_batch_inventory')
-                counts[vid][loc]=max(0,int(qty))
-            for r in group:
-                values=counts[str(r['variant_id'])];known=sum(values.values());complete=set(values)==set(tools.LOCATIONS)
-                r.update(known_available=known,inventory_complete=complete,available=True if known>0 else False if complete else None,locations=[{'name':name,'available':values.get(loc)} for loc,name in tools.LOCATIONS.items()])
-        except tools.h.HaravanError:report['issues'].append({'stage':'inventory'})
+        if not blocked:flush_inventory()
+        if sum(r['known_available']>0 for r in records)>=target:break
+    report['coverage']['omitted_products']=max(0,found.get('matched_products',0)-len(report['products']))
+    if report.get('collection_evidence'):
+        report['collection_evidence']={**report['collection_evidence'],'product_ids':[p['product_id'] for p in report['products']]}
     report['variants']=records
+    if type(report['catalog_age_seconds']) in (int,float) and math.isfinite(report['catalog_age_seconds']):
+        report['catalog_age_seconds']+=max(0,time.monotonic()-began)
+    positive=sum(r['known_available']>0 for r in records)
+    omitted=report['coverage']['omitted_products'] or report['coverage']['omitted_variants']
+    stop='source_blocked' if blocked else 'exhausted' if not omitted else 'time_limit' if time.monotonic()>=deadline else 'enough_positive' if positive>=target else 'variant_limit' if len(records)>=MAX_VARIANTS else 'product_limit'
+    report['scan']={'stop_reason':stop,'products_examined':len(report['products']),'variants_selected':len(records),'positive_variants':positive,'target':target}
     age=report['catalog_age_seconds']
     report['complete']=bool(source.get('ready') and type(age) in (int,float) and 0<=age<=300 and not report['issues'] and not report['coverage']['unknown_spec_products'] and not report['coverage']['omitted_products'] and not report['coverage']['omitted_variants'] and all(p['status'] in ('matched','no_matching_variants','changed') for p in report['products']) and all(r['inventory_complete'] for r in records))
     report['checked_at']=datetime.now(timezone.utc).isoformat()
@@ -155,6 +178,16 @@ def validate(report,args,turn_started):
     if source not in ('ok','partial_metadata','catalog_loading'):bad('invalid_source_status')
     if report['complete'] and (source=='catalog_loading' or type(age) not in (int,float) or not 0<=age<=300 or any(cov[k] for k in ('unknown_spec_products','omitted_products','omitted_variants')) or any(p['status'] not in ('matched','changed','no_matching_variants') for p in clean_products) or not all(r['inventory_complete'] for r in clean) or report.get('issues')):bad('false_complete')
     result={'mode':'discovery','criteria':criteria(args),'complete':report['complete'],'products':clean_products,'variants':clean,'coverage':dict(cov),'checked_at':report['checked_at'],'source_status':source}
+    scan=report.get('scan')
+    if scan is not None:
+        if not isinstance(scan,dict) or scan.get('stop_reason') not in ('exhausted','source_blocked','time_limit','enough_positive','variant_limit','product_limit'):bad('invalid_scan')
+        for field,value in (('products_examined',len(products)),('variants_selected',len(rows)),('positive_variants',sum(r['known_available']>0 for r in clean))):
+            if type(scan.get(field)) is not int or scan[field]!=value:bad('invalid_scan')
+        if type(scan.get('target')) is not int or not 1<=scan['target']<=4:bad('invalid_scan')
+        if report['complete'] and scan['stop_reason']!='exhausted':bad('invalid_scan')
+        if scan['stop_reason']=='enough_positive' and scan['positive_variants']<scan['target']:bad('invalid_scan')
+        if scan['stop_reason']=='exhausted' and cov['omitted_products']:bad('invalid_scan')
+        result['scan']={k:scan[k] for k in ('stop_reason','products_examined','variants_selected','positive_variants','target')}
     result.update(collection_info)
     return classify(result)
 
@@ -164,6 +197,7 @@ def classify(report):
     elif report['variants']:state='verified_zero' if report['complete'] else 'partial'
     elif report['coverage']['unknown_spec_products'] or any(p['status']=='metadata_unverified' for p in report['products']):state='metadata_missing'
     elif any(p['status'] in ('source_unavailable','unchecked') for p in report['products']):state='source_error'
+    elif not report.get('complete'):state='partial_no_match'
     else:state='no_match'
     report['operation_status']=state;return report
 
@@ -184,6 +218,7 @@ def summary(report):
         subject=', '.join(labels[k] for k in labels if k in missing) or 'size/màu của biến thể'
         return 'Merly chưa đủ dữ liệu đã xác minh về '+subject+' để chọn đúng yêu cầu. Các điều kiện bạn đã nói vẫn được giữ, mình chưa kết luận hết hàng. Bạn muốn [nhắn nhân viên Merly](https://oa.zalo.me/2969822963244380594) để được kiểm tra tiếp không?'
     if state=='source_error':return 'Đã tìm được ứng viên trong danh mục nhưng chưa kiểm tra xong dữ liệu hoặc tồn. Các mẫu chưa xác minh được ghi rõ bên dưới; không phải kết luận hết hàng.'
+    if state=='partial_no_match':return 'Chưa kiểm tra hết phạm vi tìm kiếm nên chưa xác minh được lựa chọn có tồn; không phải kết luận hết hàng.'
     if state=='verified_zero':return 'Các biến thể khớp yêu cầu đã kiểm tra có tồn 0 tại các kho trả đủ dữ liệu. Không kết luận toàn bộ website hoặc các mẫu chưa kiểm tra đều hết hàng.'
     if state=='partial':return 'Đã tìm được biến thể phù hợp nhưng tồn chưa được xác minh đầy đủ. Xem trạng thái từng mẫu bên dưới; chưa thể kết luận hết hàng.'
     return 'Chưa tìm thấy biến thể khớp yêu cầu trong danh mục và phạm vi đã kiểm tra. Không tự bỏ tiêu chí, không phải khẳng định toàn hệ thống hết hàng.'

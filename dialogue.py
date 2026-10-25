@@ -24,6 +24,7 @@ def _view(answer):
         if isinstance(value,list):return [compact(v) for v in value]
         return value
     view={k:compact(answer[k]) for k in ('stock_options','products','quotes') if k in answer}
+    if view and isinstance(answer.get('listing'),dict) and answer['listing'].get('shown',0)>0:view['listing']=compact(answer['listing'])
     if not view:return ''
     raw=json.dumps(view,ensure_ascii=False,separators=(',',':'))
     # Never cut a JSON object or invent missing card positions.

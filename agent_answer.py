@@ -75,11 +75,14 @@ def present(data,rid,started):
     reasons=[]
     if missing:reasons.append('incomplete_tool_trace')
     if invalid:reasons.append('rejected_tool_evidence')
+    from customer_listing import positive_rows,positive,scopes,matches
+    has_positive=bool(positive_rows(report))
     if requested:
         body['stock_options']=report
-        if not verified(report):reasons.append('unverified_inventory')
+        body['lookup_incomplete']=not verified(report)
+        if not verified(report) and not has_positive:reasons.append('unverified_inventory')
         if risky_stock_wording(text,report):reasons.append('unsupported_stock_claim')
-        if missing or invalid or not verified(report) or risky_stock_wording(text,report):
+        if missing or invalid or not (verified(report) or has_positive) or risky_stock_wording(text,report):
             body.update(reply=summary(report) if report.get('mode')!='unverified' else FAILURE,
                         lookup_incomplete=bool(missing or invalid or not verified(report)),answer_mode='evidence_guard')
     elif quotes and not missing and not invalid and risky_stock_wording(text,{'variants':quotes}):
@@ -87,6 +90,22 @@ def present(data,rid,started):
         body.update(reply='Mình đã gửi thông tin biến thể đã tra trong thẻ bên dưới; chưa giữ hàng.',answer_mode='evidence_guard')
     elif missing or invalid:
         body.update(reply='Mình chưa lấy được dữ liệu hợp lệ để trả lời chắc chắn lượt này. Bạn không cần nhập lại thông tin đã gửi; có thể nhờ nhân viên Merly kiểm tra tiếp.',lookup_incomplete=True,answer_mode='evidence_guard')
+    expected=scopes(report)
+    if expected and quotes:
+        accepted=[r for r in quotes if any(matches(r,s) for s in expected)]
+        if len(accepted)!=len(quotes):
+            reasons.append('wrong_selection_scope')
+            body['quotes']=accepted
+            body.update(reply='Mình chưa xác minh được lựa chọn đúng các điều kiện bạn yêu cầu; mình vẫn giữ các điều kiện đã gửi.',lookup_incomplete=True,answer_mode='evidence_guard')
+        quotes=accepted
+    urls={r.get('product_url') for r in positive_rows(report)+[r for r in quotes if positive(r)]}
+    mentioned=re.findall(r'https://(?:www\.)?merlyshoes\.com/products/[A-Za-z0-9_-]+',text)
+    if len(set(mentioned))>4:
+        reasons.append('too_many_product_listings')
+        body.update(reply='Mình sẽ giữ phần giới thiệu gọn theo các lựa chọn có tồn đã xác minh.',lookup_incomplete=body.get('lookup_incomplete',False),answer_mode='evidence_guard')
+    if any(u not in urls for u in mentioned):
+        reasons.append('unverified_product_listing')
+        body.update(reply='Mình chưa xác minh được mẫu có tồn đúng yêu cầu nên chưa gửi danh sách sản phẩm.',lookup_incomplete=True,answer_mode='evidence_guard')
     from turn_contract import PROTOCOL
     if PROTOCOL.search(text):
         reasons.append('protocol_text')

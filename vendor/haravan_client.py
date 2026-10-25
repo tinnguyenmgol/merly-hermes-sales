@@ -2,11 +2,28 @@
 import json,os,re,time,urllib.request,urllib.error
 from urllib.parse import urlencode
 class HaravanError(Exception): pass
+from contextvars import ContextVar
+from contextlib import contextmanager
+_REQUEST_DEADLINE=ContextVar('haravan_request_deadline',default=None)
+@contextmanager
+def request_deadline(deadline):
+    import math
+    if type(deadline) not in (int,float) or not math.isfinite(deadline):raise HaravanError('invalid_request_deadline')
+    previous=_REQUEST_DEADLINE.get()
+    token=_REQUEST_DEADLINE.set(min(previous,deadline) if previous is not None else deadline)
+    try:yield
+    finally:_REQUEST_DEADLINE.reset(token)
+
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self,*args,**kwargs): return None
 
 def get(resource,params,timeout=12):
     if resource not in ('products','inventory_locations','promotions','discounts','custom_collections','smart_collections') and not re.fullmatch(r'(?:(?:products|promotions|discounts|variants)/[1-9][0-9]{0,15}|products/[1-9][0-9]{0,15}/variants(?:/count)?)',resource): raise HaravanError('resource_not_allowed')
+    deadline=_REQUEST_DEADLINE.get()
+    if deadline is not None:
+        remaining=deadline-time.monotonic()
+        if remaining<=0:raise HaravanError('request_budget_exceeded')
+        timeout=min(timeout,remaining)
     token=os.getenv('HARAVAN_ACCESS_TOKEN','').strip()
     if not token: raise HaravanError('missing_access_token')
     req=urllib.request.Request('https://apis.haravan.com/com/'+resource+'.json?'+urlencode(params),headers={'Authorization':'Bearer '+token,'Accept':'application/json'},method='GET')
