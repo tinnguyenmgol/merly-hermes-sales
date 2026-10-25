@@ -60,6 +60,8 @@ def present(data,rid,started):
     quotes=quote_cards(calls,outputs,duplicates,started)
     if quotes:body['quotes']=quotes
     body['_tools_used']=list(dict.fromkeys(c['name'] for c in calls.values()))
+    from tool_payload import describe
+    body['_tool_diagnostics']=[describe(outputs.get(cid,{}).get('output'),call['name']) for cid,call in calls.items()][:32]
     body['_policy_topics']=[]
     import json,policy_knowledge
     for call in calls.values():
@@ -70,13 +72,24 @@ def present(data,rid,started):
             if topic in policy_knowledge.TOPICS:body['_policy_topics'].append(topic)
         except (ValueError,TypeError,AttributeError):pass
     missing=bool(duplicates or set(outputs)-set(calls) or set(calls)-set(outputs))
+    reasons=[]
+    if missing:reasons.append('incomplete_tool_trace')
+    if invalid:reasons.append('rejected_tool_evidence')
     if requested:
         body['stock_options']=report
+        if not verified(report):reasons.append('unverified_inventory')
+        if risky_stock_wording(text,report):reasons.append('unsupported_stock_claim')
         if missing or invalid or not verified(report) or risky_stock_wording(text,report):
             body.update(reply=summary(report) if report.get('mode')!='unverified' else FAILURE,
                         lookup_incomplete=bool(missing or invalid or not verified(report)),answer_mode='evidence_guard')
     elif quotes and not missing and not invalid and risky_stock_wording(text,{'variants':quotes}):
+        reasons.append('unsupported_stock_claim')
         body.update(reply='Mình đã gửi thông tin biến thể đã tra trong thẻ bên dưới; chưa giữ hàng.',answer_mode='evidence_guard')
     elif missing or invalid:
         body.update(reply='Mình chưa lấy được dữ liệu hợp lệ để trả lời chắc chắn lượt này. Bạn không cần nhập lại thông tin đã gửi; có thể nhờ nhân viên Merly kiểm tra tiếp.',lookup_incomplete=True,answer_mode='evidence_guard')
+    from turn_contract import PROTOCOL
+    if PROTOCOL.search(text):
+        reasons.append('protocol_text')
+        body.update(reply='Phản hồi tư vấn chưa hoàn tất nên mình chưa thể xác nhận kết quả lượt này. Bạn không cần nhập lại các điều kiện đã gửi.',answer_mode='protocol_guard',lookup_incomplete=True)
+    body['_guard_reasons']=list(dict.fromkeys(reasons))
     return body

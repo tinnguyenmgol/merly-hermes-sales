@@ -17,7 +17,7 @@ def usable(call,output,started):
         args=call.get('arguments',{})
         if isinstance(args,str):args=json.loads(args)
         if not isinstance(args,dict):return False
-        data=unpack(output.get('output'))
+        data=unpack(output.get('output'),call['name'])
         if not data:return False
         if isinstance(data.get('stock_report'),dict):return call['name']=='mcp__merly__search_products' and args.get('check_stock') is True
         name=call['name'];status=data.get('status')

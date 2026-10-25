@@ -14,7 +14,7 @@ def collect(calls,outputs,duplicates):
             if not isinstance(args,dict) or args.get('check_stock') is True:continue
             output=outputs[cid]
             if output.get('status') not in (None,'completed'):continue
-            data=unpack(output.get('output'))
+            data=unpack(output.get('output'),call['name'])
             if data.get('status') not in ('ok','partial_metadata'):continue
             products=data.get('products')
             if not isinstance(products,list):continue
@@ -44,7 +44,7 @@ def quotes(calls,outputs,duplicates,started):
     for cid,call in calls.items():
         if call['name']!='mcp__merly__quote_variant' or cid in duplicates or cid not in outputs or not usable(call,outputs[cid],started):continue
         try:
-            data=unpack(outputs[cid].get('output'))
+            data=unpack(outputs[cid].get('output'),call['name'])
             if data.get('status') not in ('ok','partial_inventory'):continue
             if not isinstance(data.get('title'),str) or len(data['title'])>500:continue
             row={k:data.get(k) for k in ('product_id','variant_id','title','size','color','price_vnd','quantity','subtotal_vnd','available','known_available','inventory_complete','locations','checked_at')}

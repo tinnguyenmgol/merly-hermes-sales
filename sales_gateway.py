@@ -4,6 +4,9 @@ from pathlib import Path
 import hermes_client,state
 import explicit_stock,fast_limits,dialogue
 import public_chat
+LOGGER=logging.getLogger('merly.gateway')
+LOGGER.setLevel(logging.INFO)
+if not LOGGER.hasHandlers():LOGGER.addHandler(logging.StreamHandler())
 WEB=Path(__file__).resolve().with_name('pilot-web')
 SECURITY=[('X-Content-Type-Options','nosniff'),('Referrer-Policy','no-referrer'),('X-Frame-Options','DENY'),('Permissions-Policy','camera=(), microphone=(), geolocation=()'),('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'")]
 ASSETS={'/operator':('index.html','text/html; charset=utf-8'),'/':('index.html','text/html; charset=utf-8'),'/pilot.js':('pilot.js','application/javascript; charset=utf-8'),'/pilot.css':('pilot.css','text/css; charset=utf-8')}
@@ -94,10 +97,10 @@ def application(env,start):
                 if 'quotes' in reply:body['quotes']=reply['quotes']
                 for key in ('knowledge_revision','approved_policy_topics'):
                     if key in reply:body[key]=reply[key]
-                return deliver(body,{'tools_used':reply.get('_tools_used',[]),'policy_topics':reply.get('_policy_topics',[])})
+                return deliver(body,{'tools_used':reply.get('_tools_used',[]),'policy_topics':reply.get('_policy_topics',[]),'guard_reasons':reply.get('_guard_reasons',[]),'recovered_reasons':reply.get('_recovered_reasons',[]),'repair_attempts':reply.get('_repair_attempts',0),'history_messages':reply.get('_history_messages',0),'tool_diagnostics':reply.get('_tool_diagnostics',[]),'dialogue_contract_version':1})
     except hermes_client.HermesError as exc:
         code=str(exc)
-        allowed={'knowledge_context_invalid','stock_probe_unavailable','hermes_timeout','hermes_unavailable','turn_not_completed','response_limit','invalid_response','invalid_response_id','missing_final_message','invalid_answer','sales_not_approved_or_configured','responses_not_supported','tool_discovery_unavailable','invalid_tool_inventory','unsafe_enabled_toolset','sales_runtime_attestation_required','invalid_sales_endpoint','https_required'}
+        allowed={'invalid_agent_settings','knowledge_context_invalid','stock_probe_unavailable','hermes_timeout','hermes_unavailable','turn_not_completed','response_limit','invalid_response','invalid_response_id','missing_final_message','invalid_answer','sales_not_approved_or_configured','responses_not_supported','tool_discovery_unavailable','invalid_tool_inventory','unsafe_enabled_toolset','sales_runtime_attestation_required','invalid_sales_endpoint','https_required'}
         if code not in allowed and not re.fullmatch(r'hermes_http_[1-5][0-9]{2}',code):code='unclassified_hermes_error'
         status=getattr(exc,'response_status','not_available')
         if status not in ('failed','cancelled','in_progress','incomplete','queued','unrecognized'):status='not_available'

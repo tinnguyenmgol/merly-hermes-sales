@@ -5,18 +5,10 @@ from urllib.parse import urlsplit
 class InvalidReport(ValueError):pass
 
 def decode(value):
-    for _ in range(5):
-        if isinstance(value,str):
-            if len(value)>220000:raise InvalidReport('too_large')
-            value=json.loads(value);continue
-        if isinstance(value,list):
-            if len(value)!=1 or not isinstance(value[0],dict):raise InvalidReport('unsupported_blocks')
-            value=value[0].get('text');continue
-        if isinstance(value,dict) and 'stock_report' in value:return value['stock_report']
-        if isinstance(value,dict) and 'structuredContent' in value:value=value['structuredContent'];continue
-        if isinstance(value,dict) and 'result' in value:value=value['result'];continue
-        raise InvalidReport('not_a_report')
-    raise InvalidReport('too_deep')
+    from tool_payload import unpack
+    data=unpack(value,'mcp__merly__search_products')
+    if isinstance(data.get('stock_report'),dict):return data['stock_report']
+    raise InvalidReport('not_a_report')
 
 def safe_url(value):
     if value is None:return None
@@ -120,7 +112,9 @@ def tool_error_code(value):
     for _ in range(8):
         if isinstance(value,str):
             if len(value)>220000:return None
-            try:value=json.loads(value)
+            try:
+                from tool_payload import parse_json
+                value=parse_json(value)
             except (ValueError,TypeError):return None
             continue
         if isinstance(value,list) and len(value)==1 and isinstance(value[0],dict):value=value[0].get('text');continue

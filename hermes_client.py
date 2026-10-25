@@ -21,11 +21,13 @@ def request(path,payload=None):
     data=None
     if payload is not None:
         payload=dict(payload);scope=payload.pop('_session_scope',None)
+        timeout=payload.pop('_request_timeout',45)
+        if type(timeout) not in (int,float) or not 0<timeout<=45:raise HermesError('invalid_response')
         if scope:headers['X-Hermes-Session-Key']=scope
         data=json.dumps(payload,ensure_ascii=False).encode();headers['Content-Type']='application/json'
     req=urllib.request.Request(base+path,data=data,headers=headers,method='POST' if data else 'GET')
     try:
-        with urllib.request.build_opener(NoRedirect).open(req,timeout=45 if data else 8) as r:raw=r.read(262145)
+        with urllib.request.build_opener(NoRedirect).open(req,timeout=timeout if data else 8) as r:raw=r.read(262145)
         if len(raw)>262144:raise HermesError('response_limit')
         value=json.loads(raw)
         if not isinstance(value,dict):raise HermesError('invalid_response')
@@ -58,7 +60,10 @@ def chat(message,user,previous_response_id=''):
     previous_response_id is a compatibility/diagnostic argument, never replayed:
     native chains can contain wording the adapter did not deliver to the customer.
     """
-    import dialogue,policy_knowledge
+    import dialogue,policy_knowledge,turn_contract
+    deadline=time.monotonic()+50
+    try:turn_contract.repair_enabled()
+    except ValueError:raise HermesError('invalid_agent_settings') from None
     turn_started=time.time()
     audit()
     payload={'input':message,'instructions':Path(__file__).with_name('SYSTEM-PROMPT.md').read_text(),
@@ -67,11 +72,12 @@ def chat(message,user,previous_response_id=''):
              '_session_scope':user+':turn:'+secrets.token_hex(8)}
     try:knowledge,revision,approved=policy_knowledge.context(Path(__file__).parent)
     except policy_knowledge.InvalidKnowledge:raise HermesError('knowledge_context_invalid') from None
-    payload['instructions']+=knowledge
+    payload['instructions']+=turn_contract.runtime_context()+knowledge
     snapshot=json.loads(knowledge.rsplit('\n',1)[-1])
     reference_links=[u for row in snapshot['policies'] for u in row.get('website_reference',{}).get('customer_links',[])]
     model=os.getenv('HERMES_SALES_MODEL_ALIAS','')
     if model:payload['model']=model
+    payload['_request_timeout']=min(45,max(1,deadline-time.monotonic()))
     data=request('/responses',payload)
     if data.get('status')!='completed':
         exc=HermesError('turn_not_completed')
@@ -81,7 +87,9 @@ def chat(message,user,previous_response_id=''):
     if not isinstance(rid,str) or not re.fullmatch(r'resp_[A-Za-z0-9_-]{1,120}',rid):raise HermesError('invalid_response_id')
     from agent_answer import present
     answer=present(data,rid,turn_started)
+    answer=turn_contract.recover(answer,payload,user,turn_started,deadline,request,present)
     answer['source_links']=list(dict.fromkeys(answer.get('source_links',[])+reference_links))[:64]
+    answer['_history_messages']=len(payload['conversation_history'])
     answer['knowledge_revision']=revision
     answer['approved_policy_topics']=approved
     return answer
