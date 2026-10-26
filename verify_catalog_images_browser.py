@@ -44,8 +44,6 @@ def native(path,payload):
     if len(turns)==2:
         output.extend([{'type':'function_call','name':'mcp__merly__search_products','call_id':'missing','arguments':'{"model_code":"TEST-NOMATCH","size":42,"check_stock":true}'},{'type':'function_call_output','call_id':'missing','output':'{"status":"source_unavailable"}'}])
     output.append({'type':'message','role':'assistant','content':[{'type':'output_text','text':'GIAO DIỆN KIỂM THỬ: ảnh công khai, dữ liệu công cụ mô phỏng; không xác nhận giá/tồn thực tế.\n![bad](https://evil.invalid/a.jpg) <img src=x onerror=alert(1)>'}]})
-    content=output[-1]['content'][0]
-    content['text']=json.dumps({'understanding':'understood','reply':content['text'],'question':'','options':[]})
     return {'id':'resp_image_'+str(len(turns)),'status':'completed','output':output}
 client.request=native
 with tempfile.TemporaryDirectory(prefix='catalog-image-ui-',dir='/workspace/tmp') as tmp:

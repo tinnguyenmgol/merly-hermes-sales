@@ -7,7 +7,6 @@ import safety,audit_instance
 @pytest.fixture
 def approved(tmp_path,monkeypatch):
     monkeypatch.setenv('MERLY_AGENT_REPAIR_ENABLED','0')
-    monkeypatch.setenv('MERLY_DIALOGUE_CONTRACT_ENABLED','0')
     for k,v in {'HERMES_SALES_API_BASE':'https://sales.example.invalid/v1','HERMES_SALES_API_KEY':'K'*40,'HERMES_SALES_ISOLATION_APPROVED':'1','HERMES_CUSTOMER_DATA_APPROVED':'1','HERMES_MODEL_COST_APPROVED':'1'}.items():monkeypatch.setenv(k,v)
     monkeypatch.setenv('HERMES_PILOT_STATE_DB',str(tmp_path/'client-sessions.db'))
     p=tmp_path/'audit.json'
@@ -15,8 +14,8 @@ def approved(tmp_path,monkeypatch):
     p.write_text(json.dumps({'record':record,'signature':safety.digest(record,'K'*40)}));monkeypatch.setenv('HERMES_SALES_ATTESTATION',str(p))
     return p
 
-def responses(status='completed',contract=False):
-    return {'id':'resp_test','status':status,'output':[{'type':'reasoning','summary':[{'text':'PRIVATE'}]},{'type':'message','phase':'commentary','content':[{'type':'output_text','text':'PROGRESS'}]},{'type':'message','role':'assistant','content':[{'type':'output_text','text':json.dumps({'understanding':'understood','reply':'FINAL','question':'','options':[]}) if contract else 'FINAL'}]}]}
+def responses(status='completed'):
+    return {'id':'resp_test','status':status,'output':[{'type':'reasoning','summary':[{'text':'PRIVATE'}]},{'type':'message','phase':'commentary','content':[{'type':'output_text','text':'PROGRESS'}]},{'type':'message','role':'assistant','content':[{'type':'output_text','text':'FINAL'}]}]}
 
 def test_response_contract_and_no_reasoning_leak(approved,monkeypatch):
     calls=[]

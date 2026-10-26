@@ -60,9 +60,9 @@ def chat(message,user,previous_response_id=''):
     previous_response_id is a compatibility/diagnostic argument, never replayed:
     native chains can contain wording the adapter did not deliver to the customer.
     """
-    import dialogue,policy_knowledge,turn_contract,dialogue_response
+    import dialogue,policy_knowledge,turn_contract
     deadline=time.monotonic()+50
-    try:turn_contract.repair_enabled();dialogue_response.enabled()
+    try:turn_contract.repair_enabled()
     except ValueError:raise HermesError('invalid_agent_settings') from None
     turn_started=time.time()
     audit()
@@ -72,7 +72,7 @@ def chat(message,user,previous_response_id=''):
              '_session_scope':user+':turn:'+secrets.token_hex(8)}
     try:knowledge,revision,approved=policy_knowledge.context(Path(__file__).parent)
     except policy_knowledge.InvalidKnowledge:raise HermesError('knowledge_context_invalid') from None
-    payload['instructions']+=turn_contract.runtime_context()+dialogue_response.instructions()+knowledge
+    payload['instructions']+=turn_contract.runtime_context()+knowledge
     snapshot=json.loads(knowledge.rsplit('\n',1)[-1])
     reference_links=[u for row in snapshot['policies'] for u in row.get('website_reference',{}).get('customer_links',[])]
     model=os.getenv('HERMES_SALES_MODEL_ALIAS','')

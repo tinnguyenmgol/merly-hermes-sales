@@ -96,9 +96,9 @@ def application(env,start):
                 if 'stock_options' in reply:body['stock_options']=reply['stock_options']
                 if 'products' in reply:body['products']=reply['products']
                 if 'quotes' in reply:body['quotes']=reply['quotes']
-                for key in ('knowledge_revision','approved_policy_topics','understanding','clarification_options'):
+                for key in ('knowledge_revision','approved_policy_topics'):
                     if key in reply:body[key]=reply[key]
-                return deliver(body,{'tools_used':reply.get('_tools_used',[]),'policy_topics':reply.get('_policy_topics',[]),'guard_reasons':reply.get('_guard_reasons',[]),'recovered_reasons':reply.get('_recovered_reasons',[]),'repair_attempts':reply.get('_repair_attempts',0),'history_messages':reply.get('_history_messages',0),'tool_diagnostics':reply.get('_tool_diagnostics',[]),'dialogue_contract_version':2,'understanding':reply.get('understanding','legacy'),'deferred_tool_reasons':reply.get('_deferred_tool_reasons',[])})
+                return deliver(body,{'tools_used':reply.get('_tools_used',[]),'policy_topics':reply.get('_policy_topics',[]),'guard_reasons':reply.get('_guard_reasons',[]),'recovered_reasons':reply.get('_recovered_reasons',[]),'repair_attempts':reply.get('_repair_attempts',0),'history_messages':reply.get('_history_messages',0),'tool_diagnostics':reply.get('_tool_diagnostics',[]),'dialogue_contract_version':1})
     except hermes_client.HermesError as exc:
         code=str(exc)
         allowed={'invalid_agent_settings','knowledge_context_invalid','stock_probe_unavailable','hermes_timeout','hermes_unavailable','turn_not_completed','response_limit','invalid_response','invalid_response_id','missing_final_message','invalid_answer','sales_not_approved_or_configured','responses_not_supported','tool_discovery_unavailable','invalid_tool_inventory','unsafe_enabled_toolset','sales_runtime_attestation_required','invalid_sales_endpoint','https_required'}

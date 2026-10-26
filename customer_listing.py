@@ -26,11 +26,6 @@ def matches(row,scope):
 def project(answer):
     """Never mutate the complete report used by the evidence gate."""
     out=copy.deepcopy(answer);out.pop('products',None)
-    if answer.get('understanding') in ('partial','unclear','invalid'):
-        for key in ('stock_options','products','quotes'):out.pop(key,None)
-        out['source_links']=[u for u in out.get('source_links',[]) if isinstance(u,str) and '/products/' not in u]
-        out['listing']={'mode':'verified_positive_only','shown':0,'verified_positive_skus':0,'has_more':False,'limit':MAX_CARDS}
-        return out
     expected=scopes(answer.get('stock_options'))
     eligible=positive_rows(answer.get('stock_options'))+[r for r in answer.get('quotes',[]) if positive(r) and (not expected or any(matches(r,s) for s in expected))]
     total=len({r.get('variant_id') for r in eligible});seen=set();shown=[]

@@ -19,7 +19,6 @@
     $('probe-check').disabled = !access || !ready || busy;
     $('send').disabled = !access || !ready || busy || !$('test-consent').checked;
     $('message').disabled = !access || !ready || busy;
-    for(const b of document.querySelectorAll('.clarification-choice'))b.disabled=busy||!ready||!access||!$('test-consent').checked;
     for (const id of ['refresh','new-chat','logout','login-button']) $(id).disabled = busy;
   }
   function secure() { return window.isSecureContext === true; }
@@ -60,12 +59,6 @@
     content.textContent = text;
     box.append(label, content); $('conversation').append(box);
     box.scrollIntoView({block:'nearest'});
-  }
-  function choices(options) {
-    if(!Array.isArray(options)||![2,3].includes(options.length)||options.some(x=>typeof x!=='string'||!x.trim()||Array.from(x).length>120))return;
-    const group=document.createElement('div');group.className='clarification-options';group.setAttribute('role','group');group.setAttribute('aria-label','Lựa chọn gợi ý; bạn vẫn có thể nhập câu khác');
-    for(const option of options){const b=document.createElement('button');b.type='button';b.className='clarification-choice';b.textContent=option;b.addEventListener('click',()=>{if(busy||!ready||!access||!$('test-consent').checked)return;$('message').value=option;$('chat-form').requestSubmit();});group.append(b);}
-    $('conversation').lastElementChild.append(group);controls();
   }
   function stockTable(report) {
     if (!report || typeof report !== 'object') return;
@@ -139,7 +132,7 @@
     try {
       const data = await api('/api/chat', 'POST', {message});
       if (typeof data.reply !== 'string' || !data.reply.trim()) throw new Error('Server không trả về nội dung hợp lệ.');
-      turn('assistant', data.reply); choices(data.clarification_options); stockTable(data.stock_options); status(data.model_called === false ? 'Đã đọc Haravan trực tiếp, không chờ AI.' : 'Đã nhận phản hồi từ hệ thống.');
+      turn('assistant', data.reply); stockTable(data.stock_options); status(data.model_called === false ? 'Đã đọc Haravan trực tiếp, không chờ AI.' : 'Đã nhận phản hồi từ hệ thống.');
     } catch (error) { status(error.message); }
     finally { busy = false; controls(); }
   });
