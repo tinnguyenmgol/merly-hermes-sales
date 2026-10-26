@@ -3,3 +3,5 @@
 .turn a{color:#164d75;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}.turn a:focus-visible{outline:2px solid #164d75;outline-offset:3px}.keyboard-hint{font-size:11px;margin-top:5px;color:#74675d}
 
 .product-visual{display:flex;align-items:center;gap:10px;margin:0 0 8px;max-width:100%;white-space:normal}.product-thumbnail{display:block;width:72px;height:72px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:9px}.product-visual a{flex:none}.product-visual figcaption{font-size:11px;line-height:1.4;color:var(--muted);max-width:220px}.product-visual a:focus-visible{outline:2px solid #164d75;outline-offset:3px}.product-type{font-size:12px;color:var(--muted)}
+
+.clarification-options{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;white-space:normal}.clarification-choice{width:auto;flex:1 1 110px;max-width:100%;margin:0;overflow-wrap:anywhere;background:#fffdfa;color:var(--brand);border-color:var(--brand);font-size:14px}.clarification-choice:focus-visible{outline:2px solid #164d75;outline-offset:3px}

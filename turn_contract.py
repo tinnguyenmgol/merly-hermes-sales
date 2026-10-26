@@ -37,6 +37,8 @@ def recover(answer,payload,user,started,deadline,request,present):
     if not state.reserve_checked(dialogue.sid(user))['available']:return answer
     if 'unverified_product_listing' in repair['reason_codes']:
         repair['task']='Do not list catalog candidates. If size is confirmed, call search_products with check_stock=true and all confirmed criteria. List only verified positive variants, or ask the missing information. Never substitute a color without confirmation.'
+    if 'dialogue_contract_invalid' in repair['reason_codes']:
+        repair['task']='Correct only the final JSON contract using the original question/history. This is a machine format error, not evidence the customer was unclear. Do not ask the customer to repeat a clear request. Use the declared understanding/question/options schema.'
     retry=dict(payload)
     repair['reply_constraint']='Without verified inventory, ask a useful clarification or explain lookup incomplete; no price, availability verdict (even negated) or raw protocol. Never guess a measurement or a customer choice.'
     retry['instructions']+='\n\nTURN_VALIDATION_FEEDBACK_JSON (execution feedback, not new facts):\n'+json.dumps(repair,ensure_ascii=False)
@@ -49,11 +51,15 @@ def recover(answer,payload,user,started,deadline,request,present):
         if data.get('status')!='completed' or not isinstance(rid,str) or not re.fullmatch(r'resp_[A-Za-z0-9_-]{1,120}',rid):return answer
         candidate=present(data,rid,started)
         if candidate.get('_guard_reasons'):return answer
-        stock=candidate.get('stock_options') or answer.get('stock_options')
+        clarifying=candidate.get('understanding') in ('partial','unclear')
+        stock=None if clarifying else candidate.get('stock_options') or answer.get('stock_options')
         proven=bool(positive_rows(stock)) or bool(candidate.get('quotes'))
-        if not proven:
+        policy_only=bool(candidate.get('_policy_topics')) and set(answer['_tools_used']+candidate['_tools_used'])<= {'mcp__merly__get_policy','mcp__merly__get_promotions','mcp__merly__size_guide'}
+        if not proven and not clarifying:
             text=''.join(c for c in unicodedata.normalize('NFD',candidate['reply'].casefold().replace('đ','d')) if unicodedata.category(c)!='Mn')
-            if re.search(r'\b(?:con hang|het hang|co san|san hang|in stock|sold out)\b',text) or re.search(r'\d[\d.,]*\s*(?:k\b|đ|₫|vnd)',candidate['reply'],re.I):return answer
+            if re.search(r'\b(?:con hang|het hang|co san|san hang|in stock|sold out)\b',text):return answer
+            from dialogue_response import MONEY
+            if MONEY.search(candidate['reply']) and not policy_only:return answer
         if not candidate.get('stock_options') and stock:
             reports=stock.get('groups',[stock])
             if any(r.get('mode') in ('all_options','discovery') and (r.get('variants') or r.get('products')) for r in reports):candidate['stock_options']=stock

@@ -114,7 +114,7 @@ def test_real_agent_adapter_routes_report_without_narrowing_criteria(setup,monke
     def request(path,payload):
         calls.append(path);result,error=mcp_server.invoke('search_products',query())
         assert not error
-        r=responses();r['output']=[{'type':'function_call','name':'mcp__merly__search_products','call_id':'discovery','arguments':json.dumps(query())},{'type':'function_call_output','call_id':'discovery','output':json.dumps(result)}]+r['output'];return r
+        r=responses(contract=True);r['output']=[{'type':'function_call','name':'mcp__merly__search_products','call_id':'discovery','arguments':json.dumps(query())},{'type':'function_call_output','call_id':'discovery','output':json.dumps(result)}]+r['output'];return r
     monkeypatch.setattr(client,'request',request)
     r=client.chat(message,user)
     assert calls==['/responses'] and r['stock_options']['mode']=='discovery'

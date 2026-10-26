@@ -25,12 +25,13 @@ def _view(answer):
         return value
     view={k:compact(answer[k]) for k in ('stock_options','products','quotes') if k in answer}
     if view and isinstance(answer.get('listing'),dict) and answer['listing'].get('shown',0)>0:view['listing']=compact(answer['listing'])
+    if answer.get('clarification_options'):view['choices_shown']=list(answer['clarification_options'])
     if not view:return ''
     raw=json.dumps(view,ensure_ascii=False,separators=(',',':'))
     # Never cut a JSON object or invent missing card positions.
     if len(raw.encode())>40000:
         return 'Thẻ của lượt này quá dài nên không được giữ lại. Nếu cần chọn mẫu, phải tra lại; không đoán thứ tự thẻ.'
-    return '\n[Thẻ đã hiển thị; dữ liệu LỊCH SỬ, không xác nhận tồn/giá hiện tại]\n'+raw
+    return '\n[Thẻ/lựa chọn đã hiển thị; dữ liệu LỊCH SỬ, không xác nhận tồn/giá hiện tại; gợi ý chưa phải khách xác nhận]\n'+raw
 
 @state.serialized
 def history(key):
