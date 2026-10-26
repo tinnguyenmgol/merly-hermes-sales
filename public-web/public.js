@@ -3,14 +3,8 @@
   const $ = id => document.getElementById(id);
   let csrf = '', busy = false, composing = false, cardsLeft = 4;
   const positive=row=>row&&Number.isSafeInteger(row.known_available)&&row.known_available>0;
-  function controls() { $('send').disabled = busy || !csrf || !$('message').value.trim();for(const b of document.querySelectorAll('.clarification-choice'))b.disabled=busy||!csrf; }
+  function controls() { $('send').disabled = busy || !csrf || !$('message').value.trim(); }
   function turn(kind,text,links=[]) { const node=document.createElement('div');node.className='turn '+kind;if(kind==='assistant'&&window.MerlyLinks)window.MerlyLinks.append(node,text,links);else node.textContent=text;$('conversation').append(node); }
-  function choices(options) {
-    if(!Array.isArray(options)||![2,3].includes(options.length)||options.some(x=>typeof x!=='string'||!x.trim()||Array.from(x).length>120))return;
-    const group=document.createElement('div');group.className='clarification-options';group.setAttribute('role','group');group.setAttribute('aria-label','Lựa chọn gợi ý; bạn vẫn có thể nhập câu khác');
-    for(const option of options){const b=document.createElement('button');b.type='button';b.className='clarification-choice';b.textContent=option;b.addEventListener('click',()=>{if(busy||!csrf)return;$('message').value=option;controls();$('chat').requestSubmit();});group.append(b);}
-    $('conversation').lastElementChild.append(group);controls();
-  }
   function stock(report) {
     if (!report || typeof report!=='object') return;
     if (report.mode==='groups') { if(Array.isArray(report.groups))for(const group of report.groups)stock(group);return; }
@@ -72,7 +66,7 @@
     const message=$('message').value;if(!message.trim()||message.length>1000)return;
     turn('user',message);$('message').value='';busy=true;controls();$('status').textContent='Đang kiểm tra, vui lòng không gửi lại.';
     const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),70000);
-    try {const r=await fetch('/api/public/chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Merly-CSRF':csrf},body:JSON.stringify({message}),signal:abort.signal});const d=await r.json();if(!r.ok)throw new Error(failure(d));if(typeof d.reply!=='string')throw new Error('Phản hồi chưa hợp lệ.');turn('assistant',d.reply,window.MerlyLinks?window.MerlyLinks.sources(d):[]);choices(d.clarification_options);if((d.lookup_incomplete||d.answer_mode==='protocol_guard')&&typeof d.diagnostic_id==='string'&&/^[a-f0-9]{16}$/.test(d.diagnostic_id)){const note=document.createElement('small');note.className='diagnostic';note.textContent='Mã hỗ trợ: '+d.diagnostic_id;$('conversation').lastElementChild.append(document.createElement('br'),note);}cardsLeft=4;if(window.MerlyMedia)window.MerlyMedia.reset();stock(d.stock_options);products(d.products);quotes(d.quotes);if(d.listing?.has_more){const more=document.createElement('small');more.textContent='Đang hiển thị '+d.listing.shown+' / '+d.listing.verified_positive_skus+' SKU đã xác minh có tồn.';$('conversation').append(more);}$('status').textContent=d.needs_clarification?'Merly đang chờ bạn xác nhận hoặc bổ sung thông tin.':d.lookup_incomplete?'Lượt tra chưa hoàn tất; bạn không cần nhập lại yêu cầu.':'Đã nhận phản hồi từ Merly.';}
+    try {const r=await fetch('/api/public/chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Merly-CSRF':csrf},body:JSON.stringify({message}),signal:abort.signal});const d=await r.json();if(!r.ok)throw new Error(failure(d));if(typeof d.reply!=='string')throw new Error('Phản hồi chưa hợp lệ.');turn('assistant',d.reply,window.MerlyLinks?window.MerlyLinks.sources(d):[]);if((d.lookup_incomplete||d.answer_mode==='protocol_guard')&&typeof d.diagnostic_id==='string'&&/^[a-f0-9]{16}$/.test(d.diagnostic_id)){const note=document.createElement('small');note.className='diagnostic';note.textContent='Mã hỗ trợ: '+d.diagnostic_id;$('conversation').lastElementChild.append(document.createElement('br'),note);}cardsLeft=4;if(window.MerlyMedia)window.MerlyMedia.reset();stock(d.stock_options);products(d.products);quotes(d.quotes);if(d.listing?.has_more){const more=document.createElement('small');more.textContent='Đang hiển thị '+d.listing.shown+' / '+d.listing.verified_positive_skus+' SKU đã xác minh có tồn.';$('conversation').append(more);}$('status').textContent=d.needs_clarification?'Merly đang chờ bạn xác nhận hoặc bổ sung thông tin.':d.lookup_incomplete?'Lượt tra chưa hoàn tất; bạn không cần nhập lại yêu cầu.':'Đã nhận phản hồi từ Merly.';}
     catch(err){$('status').textContent=err.name==='AbortError'?'Hết thời gian chờ. Tác vụ có thể vẫn đang chạy; vui lòng không gửi lại liên tục.':err.message;}
     finally{clearTimeout(timer);busy=false;controls();}
   });
