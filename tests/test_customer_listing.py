@@ -44,6 +44,8 @@ def test_unverified_product_link_in_prose_is_guarded():
     from agent_answer import present
     import time
     data={'output':[{'type':'message','role':'assistant','content':[{'type':'output_text','text':'Xem mẫu https://merlyshoes.com/products/unverified-fixture'}]}]}
+    import json
+    data['output'][-1]['content'][0]['text']=json.dumps({'understanding':'understood','reply':data['output'][-1]['content'][0]['text'],'question':'','options':[]})
     out=present(data,'resp_fixture',time.time())
     assert out['answer_mode']=='evidence_guard' and 'unverified_product_listing' in out['_guard_reasons']
     assert 'https://merlyshoes.com/products/' not in out['reply']

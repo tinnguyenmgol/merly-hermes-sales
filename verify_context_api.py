@@ -21,10 +21,14 @@ class Provider(BaseHTTPRequestHandler):
   repair=any('TURN_VALIDATION_FEEDBACK_JSON (execution feedback,' in str(m.get('content','')) for m in messages if m['role']=='system')
   if 'TRIGGER_PROTOCOL_FIXTURE' in str(last.get('content')):
    message={'role':'assistant','content':'OFFLINE_RECOVERY_ACK?' if repair else '<｜DSML｜ calls>broken fixture</｜DSML｜ calls>'}
+  elif 'TRIGGER_CLARIFY_FIXTURE' in str(last.get('content')):
+   message={'role':'assistant','content':json.dumps({'understanding':'partial','reply':'OFFLINE_PARTIAL','question':'OFFLINE_QUESTION?','options':['Fixture A','Fixture B']}),'structured':True}
   elif last['role']=='tool':message={'role':'assistant','content':'OFFLINE_MCP_RESULT_ACK'}
   elif 'TRIGGER_MCP_FIXTURE' in str(last.get('content')):
    message={'role':'assistant','content':None,'tool_calls':[{'id':'fixture_call','type':'function','function':{'name':'mcp__merly__get_policy','arguments':'{"topic":"store_hours"}'}}]}
   else:message={'role':'assistant','content':'OFFLINE_CONTEXT_ACK'}
+  if isinstance(message.get('content'),str) and 'DSML' not in message['content'] and not message.pop('structured',False):
+   message['content']=json.dumps({'understanding':'understood','reply':message['content'],'question':'','options':[]})
   if data.get('stream'):
    events=[{'id':'stub','object':'chat.completion.chunk','created':0,'model':'offline-fixture','choices':[{'index':0,'delta':message,'finish_reason':'tool_calls' if message.get('tool_calls') else 'stop'}]}]
    if message.get('tool_calls'):events[0]['choices'][0]['delta']['tool_calls'][0]['index']=0
@@ -87,6 +91,11 @@ try:
  e=chat('NEXT_AFTER_REPAIR');assert e['reply']=='OFFLINE_CONTEXT_ACK'
  assert not any('DSML' in str(m.get('content','')) for m in seen[-1]['messages'] if m['role']=='assistant')
  assert not any('TURN_VALIDATION_FEEDBACK_JSON (execution feedback,' in str(m.get('content','')) for m in seen[-1]['messages'] if m['role']=='system')
+ f=chat('TRIGGER_CLARIFY_FIXTURE');assert f['needs_clarification'] and f['clarification_options']==['Fixture A','Fixture B']
+ assert f['reply']=='OFFLINE_PARTIAL\nOFFLINE_QUESTION?' and 'stock_options' not in f
+ g=chat('Fixture B');assert g['reply']=='OFFLINE_CONTEXT_ACK'
+ assert any(m['role']=='assistant' and 'choices_shown' in str(m.get('content')) for m in seen[-1]['messages'])
+ print('PASS_REAL_HTTP_CLARIFICATION final_json_decoded=true question_preserved=true choices_history=true free_text_followup=true provider_scripted=true semantic_evaluation=NOT_RUN',flush=True)
  cases=json.loads((root/'eval/dialogue-cases.json').read_text())['cases'];turns=0
  for case in cases:
   cookie='';expected=[]

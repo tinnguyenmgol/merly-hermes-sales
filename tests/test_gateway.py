@@ -12,6 +12,7 @@ def call(message,key='P'*40,cookie='',extra=None):
 @pytest.fixture
 def configured(tmp_path,monkeypatch):
     monkeypatch.setenv('MERLY_AGENT_REPAIR_ENABLED','0')
+    monkeypatch.setenv('MERLY_DIALOGUE_CONTRACT_ENABLED','0')
     for k,v in {'PILOT_ACCESS_KEY':'P'*40,'PILOT_SESSION_SECRET':'S'*40,'HERMES_PILOT_STATE_DB':str(tmp_path/'sessions.db'),'HERMES_SALES_API_BASE':'https://sales.example.invalid/v1','HERMES_SALES_API_KEY':'T'*40,'HERMES_SALES_ISOLATION_APPROVED':'1','HERMES_CUSTOMER_DATA_APPROVED':'1','HERMES_MODEL_COST_APPROVED':'1'}.items():monkeypatch.setenv(k,v)
 
 def test_context_isolation_raw_input(configured,monkeypatch):

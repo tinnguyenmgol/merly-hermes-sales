@@ -47,6 +47,15 @@ def present(data,rid,started):
     if not isinstance(content,list):raise HermesError('invalid_answer')
     text=''.join(p['text'] for p in content if isinstance(p,dict) and p.get('type')=='output_text' and isinstance(p.get('text'),str))
     if not text.strip() or len(text)>12000:raise HermesError('invalid_answer')
+    import dialogue_response
+    contract_error=False
+    try:dialogue=dialogue_response.parse(text)
+    except dialogue_response.InvalidDialogue:
+        contract_error=True
+        dialogue={'understanding':'invalid','reply':'Mình chưa xử lý trọn vẹn lượt này. Các điều kiện bạn đã gửi vẫn được giữ; mình chưa thể xác nhận kết quả.','question':'','options':[]}
+    raw_text=text
+    text=dialogue_response.text(dialogue)
+    visible_text=text+'\n'+'\n'.join(dialogue['options'])
     from tool_evidence import repaired_rejections,usable
     repaired=repaired_rejections(calls,outputs,started)
     execution=[item for item in items if item.get('call_id') not in repaired]
@@ -81,11 +90,11 @@ def present(data,rid,started):
         body['stock_options']=report
         body['lookup_incomplete']=not verified(report)
         if not verified(report) and not has_positive:reasons.append('unverified_inventory')
-        if risky_stock_wording(text,report):reasons.append('unsupported_stock_claim')
-        if missing or invalid or not (verified(report) or has_positive) or risky_stock_wording(text,report):
+        if risky_stock_wording(visible_text,report):reasons.append('unsupported_stock_claim')
+        if missing or invalid or not (verified(report) or has_positive) or risky_stock_wording(visible_text,report):
             body.update(reply=summary(report) if report.get('mode')!='unverified' else FAILURE,
                         lookup_incomplete=bool(missing or invalid or not verified(report)),answer_mode='evidence_guard')
-    elif quotes and not missing and not invalid and risky_stock_wording(text,{'variants':quotes}):
+    elif quotes and not missing and not invalid and risky_stock_wording(visible_text,{'variants':quotes}):
         reasons.append('unsupported_stock_claim')
         body.update(reply='Mình đã gửi thông tin biến thể đã tra trong thẻ bên dưới; chưa giữ hàng.',answer_mode='evidence_guard')
     elif missing or invalid:
@@ -99,7 +108,7 @@ def present(data,rid,started):
             body.update(reply='Mình chưa xác minh được lựa chọn đúng các điều kiện bạn yêu cầu; mình vẫn giữ các điều kiện đã gửi.',lookup_incomplete=True,answer_mode='evidence_guard')
         quotes=accepted
     urls={r.get('product_url') for r in positive_rows(report)+[r for r in quotes if positive(r)]}
-    mentioned=re.findall(r'https://(?:www\.)?merlyshoes\.com/products/[A-Za-z0-9_-]+',text)
+    mentioned=re.findall(r'https://(?:www\.)?merlyshoes\.com/products/[A-Za-z0-9_-]+',visible_text)
     if len(set(mentioned))>4:
         reasons.append('too_many_product_listings')
         body.update(reply='Mình sẽ giữ phần giới thiệu gọn theo các lựa chọn có tồn đã xác minh.',lookup_incomplete=body.get('lookup_incomplete',False),answer_mode='evidence_guard')
@@ -107,8 +116,22 @@ def present(data,rid,started):
         reasons.append('unverified_product_listing')
         body.update(reply='Mình chưa xác minh được mẫu có tồn đúng yêu cầu nên chưa gửi danh sách sản phẩm.',lookup_incomplete=True,answer_mode='evidence_guard')
     from turn_contract import PROTOCOL
-    if PROTOCOL.search(text):
+    if PROTOCOL.search(visible_text) or PROTOCOL.search(raw_text):
         reasons.append('protocol_text')
         body.update(reply='Phản hồi tư vấn chưa hoàn tất nên mình chưa thể xác nhận kết quả lượt này. Bạn không cần nhập lại các điều kiện đã gửi.',answer_mode='protocol_guard',lookup_incomplete=True)
+    body['understanding']=dialogue['understanding']
+    if contract_error:
+        if 'protocol_text' not in reasons:reasons.append('dialogue_contract_invalid')
+        if 'protocol_text' not in reasons:body.update(reply=dialogue['reply'],answer_mode='dialogue_guard')
+        body['needs_clarification']=False
+    elif dialogue['understanding'] in ('partial','unclear'):
+        if dialogue_response.safe_clarification(dialogue):
+            body['_deferred_tool_reasons']=list(dict.fromkeys(reasons));reasons=[]
+            body.update(reply=text,answer_mode='clarification',needs_clarification=True,clarification_options=dialogue['options'])
+        else:
+            reasons.append('unsafe_clarification')
+            body.update(reply='Phản hồi tư vấn chưa hoàn tất; mình chưa thể xác nhận kết quả lượt này.',answer_mode='dialogue_guard',needs_clarification=False,understanding='invalid')
+    elif not reasons and dialogue['understanding']=='understood':
+        body.update(needs_clarification=False,clarification_options=dialogue['options'])
     body['_guard_reasons']=list(dict.fromkeys(reasons))
     return body

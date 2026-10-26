@@ -39,7 +39,7 @@ def test_actual_stock_envelope_survives_evidence_gate(source):
     items=wire(fresh())[:2]
     raw=json.loads(items[1]['output'])
     items[1]['output']=wrapped(raw,'mcp__merly__search_products')
-    data=responses();data['output']=items+data['output']
+    data=responses(contract=True);data['output']=items+data['output']
     body=present(data,'resp_enveloped_fixture',time.time())
     assert body['answer_mode']=='native' and body['stock_options']['complete']
     assert len(body['stock_options']['variants'])==20
