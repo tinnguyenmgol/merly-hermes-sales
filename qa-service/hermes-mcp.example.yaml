@@ -1,0 +1,12 @@
+# Merge ONLY into the technical Hermes that chats on Telegram, NOT hermes_sales.
+mcp_servers:
+  merly_chat_qa:
+    url: ${MERLY_QA_MCP_URL}
+    headers:
+      Authorization: "Bearer ${MERLY_QA_AUTH_TOKEN}"
+    trust: untrusted
+    timeout: 30
+    tools:
+      include:
+        - qa_start_chat
+        - qa_get_result

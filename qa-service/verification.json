@@ -1,0 +1,13 @@
+{
+  "status": "prepared_not_installed",
+  "qa_tests_passed": 42,
+  "real_mcp_http_test": true,
+  "real_hermes_discovery_in_temporary_profile": true,
+  "public_cookie_csrf_contract_with_synthetic_model": true,
+  "compose_config_validated": true,
+  "docker_image_built": false,
+  "connected_to_live_hermes": false,
+  "live_chat_tested": false,
+  "live_model_calls": 0,
+  "requires_owner": "Create separate Coolify QA service and merge MCP entry into technical Hermes only"
+}
