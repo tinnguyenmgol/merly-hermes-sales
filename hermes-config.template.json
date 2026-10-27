@@ -17,7 +17,7 @@
     "prefetch_spill_enabled": false
   },
   "agent": {
-    "max_turns": 4,
+    "max_turns": 8,
     "run_budget_seconds": 40,
     "disabled_toolsets": [
       "terminal",
