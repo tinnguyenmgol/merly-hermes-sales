@@ -30,7 +30,7 @@ def recover(answer,payload,user,started,deadline,request,present):
     import state,dialogue
     from hermes_client import HermesError
     from agent_answer import verified
-    from customer_listing import positive_rows
+    from customer_listing import positive_rows,scopes,matches
     answer['_repair_attempts']=0
     repair=feedback(answer)
     if not repair or not repair_enabled() or deadline-time.monotonic()<10:return answer
@@ -50,6 +50,8 @@ def recover(answer,payload,user,started,deadline,request,present):
         candidate=present(data,rid,started)
         if candidate.get('_guard_reasons'):return answer
         stock=candidate.get('stock_options') or answer.get('stock_options')
+        expected=scopes(stock)
+        if expected and any(not any(matches(row,scope) for scope in expected) for row in candidate.get('quotes',[])):return answer
         proven=bool(positive_rows(stock)) or bool(candidate.get('quotes'))
         if not proven:
             text=''.join(c for c in unicodedata.normalize('NFD',candidate['reply'].casefold().replace('đ','d')) if unicodedata.category(c)!='Mn')
@@ -59,6 +61,7 @@ def recover(answer,payload,user,started,deadline,request,present):
             if any(r.get('mode') in ('all_options','discovery') and (r.get('variants') or r.get('products')) for r in reports):candidate['stock_options']=stock
         candidate['_tools_used']=list(dict.fromkeys(answer['_tools_used']+candidate['_tools_used']))
         candidate['source_links']=list(dict.fromkeys(answer.get('source_links',[])+candidate.get('source_links',[])))
+        candidate['_lookup_diagnostics']=(answer.get('_lookup_diagnostics',[])+candidate.get('_lookup_diagnostics',[]))[-8:]
         candidate['_tool_diagnostics']=(answer.get('_tool_diagnostics',[])+candidate.get('_tool_diagnostics',[]))[:32]
         candidate['_recovered_reasons']=answer['_guard_reasons']
         candidate['_repair_attempts']=1

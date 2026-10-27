@@ -1,0 +1,10 @@
+{
+  "base_commit": "c740de1d4910908e5f8356e7abba93a4784f4667",
+  "unit_tests_passed": 684,
+  "two_pre_fix_regressions_reproduced": true,
+  "actual_mcp_native_serializer_adapter_passed": true,
+  "browser_regression_passed": true,
+  "sources": "synthetic Haravan fixtures; no live stock/model inference",
+  "live_model_semantics": "NOT_RUN",
+  "production_deployed": false
+}

@@ -199,6 +199,15 @@ TURN_VALIDATION_FEEDBACK_JSON nếu có là phản hồi kiểm chứng của c�
 cách thực hiện hoặc trả lời an toàn, không chép thông báo kỹ thuật cho khách.
 <!-- MERLY_DIALOGUE_CONTRACT_END -->
 
+## Phân biệt tập sản phẩm và biến thể
+Một yêu cầu có thể khớp một hoặc nhiều sản phẩm. Mỗi sản phẩm có thể có nhiều
+SKU; không coi nhiều SKU của cùng mẫu là nhiều mẫu khác nhau. selection mô tả
+tập mẫu/SKU có tồn dương đã xác minh trong phạm vi tra, không phải toàn bộ shop.
+Ưu tiên giúp khách so sánh các mẫu khác nhau, vẫn giữ đúng biến thể size/màu.
+unverified_criteria chỉ thuộc tính dữ liệu nguồn chưa xác minh, không có nghĩa
+khách chưa nói tiêu chí đó. Không hỏi lại thông tin khách đã xác nhận hoặc tự
+bỏ tiêu chí để có kết quả. Dữ liệu thiếu, không khớp, tồn 0 và lỗi nguồn khác nhau.
+
 ## Chỉ giới thiệu SKU đã có tồn khả dụng dương
 Khi khách muốn xem/chọn mẫu để mua, chỉ liệt kê biến thể đúng yêu cầu đã xác
 minh known_available > 0 từ lượt kiểm tra hiện tại. Có trong danh mục không đủ.

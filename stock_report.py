@@ -173,6 +173,30 @@ def extract(items,request_id,turn_started=None):
     values=list(grouped.values())
     return (values[0] if len(values)==1 else {'mode':'groups','groups':values}),True
 
+def lookup_diagnostics(report):
+    """Bounded execution metadata only; never user text, SKU, title, URL or tokens."""
+    if not isinstance(report,dict):return []
+    reports=report.get('groups',[]) if report.get('mode')=='groups' else [report]
+    if not isinstance(reports,list):return []
+    states={'complete','available','partial_available','verified_zero','partial','metadata_missing','source_error','catalog_loading','no_match','partial_no_match'}
+    allowed=('query','collection','model_code','size','color','heel_cm','category','occasion')
+    output=[]
+    for item in reports[:8]:
+        if not isinstance(item,dict):continue
+        mode=item.get('mode');state=item.get('operation_status');criteria=item.get('criteria',{})
+        criteria=criteria if isinstance(criteria,dict) else {}
+        fields=[k for k in allowed if k in criteria or k in ('model_code','size') and k in item or k=='color' and item.get('color_filter')]
+        rows=item.get('variants',[]);rows=rows if isinstance(rows,list) else []
+        positive=[r for r in rows if isinstance(r,dict) and type(r.get('known_available')) is int and r['known_available']>0 and type(r.get('product_id')) is int and type(r.get('variant_id')) is int]
+        coverage=item.get('coverage',{});coverage=coverage if isinstance(coverage,dict) else {}
+        missing=item.get('unverified_criteria',[]);missing=missing if isinstance(missing,list) else []
+        entry={'mode':mode if isinstance(mode,str) and mode in ('discovery','all_options','unverified') else 'unknown','operation_status':state if isinstance(state,str) and state in states else 'unknown','criteria_fields':fields,'unverified_criteria':[k for k in allowed if k in missing],'verified_positive_products':len({r['product_id'] for r in positive}),'verified_positive_skus':len({r['variant_id'] for r in positive})}
+        for name in ('catalog_matches','unknown_spec_products','omitted_products','omitted_variants'):
+            value=coverage.get(name)
+            if type(value) is int and 0<=value<=100000:entry[name]=value
+        output.append(entry)
+    return output
+
 def summary(report):
     if report.get('mode')=='discovery':
         import product_discovery
