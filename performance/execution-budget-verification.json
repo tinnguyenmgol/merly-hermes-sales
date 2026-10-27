@@ -1,0 +1,62 @@
+{
+  "scope": "offline pinned Hermes execution, not real-model semantic evaluation",
+  "base_commit": "2cb05fe8ae7aedac41180eedb6af9fa0d254fa83",
+  "unit_tests_passed": 666,
+  "iteration_suite": [
+    {
+      "mode": "legacy",
+      "max_iterations": 4,
+      "run_budget_seconds": 40,
+      "provider_calls": 5,
+      "http_status": 503,
+      "real_agent": true,
+      "real_mcp": true,
+      "model_preserved": true,
+      "provider_scripted": true,
+      "paid_calls": 0,
+      "semantic_evaluation": "NOT_RUN"
+    },
+    {
+      "mode": "fixed",
+      "max_iterations": 8,
+      "run_budget_seconds": 40,
+      "provider_calls": 6,
+      "http_status": 200,
+      "real_agent": true,
+      "real_mcp": true,
+      "model_preserved": true,
+      "provider_scripted": true,
+      "paid_calls": 0,
+      "semantic_evaluation": "NOT_RUN"
+    },
+    {
+      "mode": "boundary",
+      "max_iterations": 8,
+      "run_budget_seconds": 40,
+      "provider_calls": 8,
+      "http_status": 200,
+      "real_agent": true,
+      "real_mcp": true,
+      "model_preserved": true,
+      "provider_scripted": true,
+      "paid_calls": 0,
+      "semantic_evaluation": "NOT_RUN"
+    },
+    {
+      "mode": "exhausted",
+      "max_iterations": 8,
+      "run_budget_seconds": 40,
+      "provider_calls": 9,
+      "http_status": 503,
+      "real_agent": true,
+      "real_mcp": true,
+      "model_preserved": true,
+      "provider_scripted": true,
+      "paid_calls": 0,
+      "semantic_evaluation": "NOT_RUN"
+    }
+  ],
+  "iteration_suite_exit_code": 0,
+  "production_deployed": false,
+  "live_model_evaluation": "NOT_RUN"
+}

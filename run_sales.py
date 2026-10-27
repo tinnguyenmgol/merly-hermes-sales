@@ -109,6 +109,61 @@ def ensure_sales_auxiliary(home):
     save_sales_config(path,before,config,'sales-auxiliary')
     return True
 
+def sales_execution_budget():
+    """Single source of truth; keep the wall budget inside the 45s API timeout."""
+    import json,math
+    agent=json.loads((ROOT/'hermes-config.template.json').read_text())['agent']
+    turns=agent['max_turns'];seconds=agent['run_budget_seconds']
+    if type(turns) is not int or not 1<=turns<=16:raise RuntimeError('invalid_sales_iteration_budget')
+    if type(seconds) not in (int,float) or not math.isfinite(seconds) or not 0<seconds<45:raise RuntimeError('invalid_sales_time_budget')
+    return {'max_turns':turns,'run_budget_seconds':seconds}
+
+def ensure_sales_execution_budget(home):
+    """Sync only two owned execution fields in the dedicated sales volume."""
+    import hermes_yaml
+    from audit_instance import check_config
+    path=Path(home)/'config.yaml'
+    if path.is_symlink():raise RuntimeError('sales_config_symlink_not_supported')
+    before=path.read_bytes();config=hermes_yaml.safe_load(before.decode());check_config(config)
+    agent=config.get('agent',{})
+    if not isinstance(agent,dict):raise RuntimeError('invalid_sales_agent_config')
+    model=config.get('model',{})
+    if isinstance(model,dict) and model.get('api_key'):raise RuntimeError('model_inline_key_requires_review')
+    desired=sales_execution_budget()
+    if all(type(agent.get(k)) is type(v) and agent.get(k)==v for k,v in desired.items()):return False
+    config['agent']={**agent,**desired}
+    save_sales_config(path,before,config,'sales-execution-budget')
+    return True
+
+def ensure_sales_execution_prompt(home):
+    """Replace only the managed execution block/legacy cap, not custom SOUL text."""
+    begin='<!-- MERLY_EXECUTION_POLICY_BEGIN -->';end='<!-- MERLY_EXECUTION_POLICY_END -->'
+    def span(text):
+        if text.count(begin)!=1 or text.count(end)!=1:raise RuntimeError('invalid_execution_policy_markers')
+        start=text.index(begin);stop=text.index(end)
+        if stop<start:raise RuntimeError('invalid_execution_policy_markers')
+        return start,stop+len(end)
+    source=(ROOT/'SYSTEM-PROMPT.md').read_text();a,b=span(source);block=source[a:b]
+    path=Path(home)/'SOUL.md'
+    if path.is_symlink():raise RuntimeError('sales_soul_symlink_not_supported')
+    before=path.read_bytes();text=before.decode()
+    if begin in text or end in text:
+        a,b=span(text);after=(text[:a]+block+text[b:]).encode()
+    else:
+        # This is a previous app-owned prompt setting, NOT customer-phrase routing.
+        legacy='Tối đa ba vòng công cụ/lượt. '
+        if text.count(legacy)>1:raise RuntimeError('ambiguous_legacy_execution_policy')
+        after=(text.replace(legacy,block+'\n\n',1) if legacy in text else text+'\n\n'+block+'\n').encode()
+    if after==before:return False
+    fd,name=tempfile.mkstemp(prefix='.merly-execution-',dir=path.parent)
+    try:
+        with os.fdopen(fd,'wb') as stream:stream.write(after);stream.flush();os.fsync(stream.fileno())
+        if path.read_bytes()!=before:raise RuntimeError('sales_soul_changed_during_migration')
+        os.replace(name,path)
+    finally:Path(name).unlink(missing_ok=True)
+    if path.read_bytes()!=after:raise RuntimeError('sales_soul_readback_failed')
+    return True
+
 def ensure_sales_model(home):
     provider=os.getenv('MERLY_SALES_PROVIDER','')
     if provider not in ('','gemini','openrouter'):raise RuntimeError('invalid_sales_provider')
@@ -169,6 +224,10 @@ def main():
     ensure_merly_child_env(home)
     ensure_sales_model(home)
     ensure_sales_auxiliary(home)
+    budget_changed=ensure_sales_execution_budget(home)
+    prompt_changed=ensure_sales_execution_prompt(home)
+    import json
+    print(json.dumps({'status':'sales_execution_policy_ready',**sales_execution_budget(),'config_migrated':budget_changed,'prompt_migrated':prompt_changed}),flush=True)
     os.environ.setdefault('MERLY_MCP_PYTHON',sys.executable)
     def audit():
         return subprocess.run([sys.executable,str(ROOT/'audit_instance.py')],cwd=home).returncode==0
