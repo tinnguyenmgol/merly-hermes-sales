@@ -7,6 +7,18 @@ from pathlib import Path
 COOKIE='__Host-merly_public_session'
 ROOT=Path(__file__).with_name('public-web')
 
+# Public categories are fixed enums, never raw model/provider messages.
+_ERROR_CATEGORIES={
+    **dict.fromkeys(('hermes_timeout','hermes_http_408','hermes_http_504'),'timeout'),
+    **dict.fromkeys(('invalid_response','invalid_response_id','missing_final_message','invalid_answer','turn_not_completed','response_limit'),'response_incomplete'),
+    **dict.fromkeys(('invalid_agent_settings','knowledge_context_invalid','sales_not_approved_or_configured','responses_not_supported','tool_discovery_unavailable','invalid_tool_inventory','unsafe_enabled_toolset','sales_runtime_attestation_required','invalid_sales_endpoint','https_required','hermes_http_401','hermes_http_403'),'configuration'),
+    'hermes_http_429':'upstream_limit',
+}
+def error_category(details):
+    code=details.get('reason_code')
+    if code is None:code=details.get('error')
+    return _ERROR_CATEGORIES.get(code,'request_failed') if isinstance(code,str) else 'request_failed'
+
 def enabled():return os.getenv('MERLY_PUBLIC_CHAT_ENABLED','0')=='1'
 def csrf(token):return hmac.new(os.environ['PILOT_SESSION_SECRET'].encode(),('public-csrf:'+token).encode(),hashlib.sha256).hexdigest()
 def visitor(env):
@@ -63,10 +75,11 @@ def handle(env,start,forward):
     if not captured['status'].startswith('200'):
         try:details=json.loads(body)
         except Exception:details={}
+        if not isinstance(details,dict):details={}
         trace=details.get('diagnostic_id')
         allowed={'turn_in_progress','daily_budget_limit','ai_minute_limit','stock_rate_limit','ai_capacity','stock_capacity'}
         code=details.get('error')
-        error={'error':code if code in allowed else 'request_limited' if captured['status'].startswith('429') else 'unavailable','retry_automatically':False}
+        error={'error':code if isinstance(code,str) and code in allowed else 'request_limited' if captured['status'].startswith('429') else 'unavailable','retry_automatically':False,'error_category':error_category(details)}
         retry=details.get('retry_after')
         if type(retry) is int and 1<=retry<=86400:error['retry_after']=retry
         if isinstance(trace,str) and re.fullmatch(r'[0-9a-f]{16}',trace):error['diagnostic_id']=trace
