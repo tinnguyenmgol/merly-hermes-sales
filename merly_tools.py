@@ -93,7 +93,7 @@ def search_products(data,candidate_only=False,candidate_limit=None):
         rows=group['products']
     else:rows=catalog.snapshot()
     if rows is None:return {'status':'catalog_loading','retryable':True,'products':[]}
-    metadata=enrichment();results=[];unknown=0
+    metadata=enrichment();results=[];unknown=0;unverified=set()
     for p in rows:
         if not catalog.eligible(p):continue
         code=data.get('model_code')
@@ -101,16 +101,19 @@ def search_products(data,candidate_only=False,candidate_limit=None):
         if 'query' in data and not catalog_query.name_matches(p,data['query']):continue
         approved=metadata.get(str(p['id']),{})
         meta=catalog_query.specs(p,approved,data,verified_product_specs)
-        failed=False
+        missing=set();mismatch=False
         for field in ('heel_cm','category','occasion'):
             if field not in data:continue
             actual=meta.get(field)
             if actual is None:
-                if field!='category' or not (p.get('product_type') or approved.get('category')):unknown+=1
-                failed=True;break
+                if field=='category' and (p.get('product_type') or approved.get('category')):mismatch=True
+                else:missing.add(field)
+                continue
             match=actual==data[field] if field=='heel_cm' else catalog.norm(actual)==catalog.norm(data[field])
-            if not match:failed=True;break
-        if failed:continue
+            if not match:mismatch=True
+        if mismatch:continue
+        if missing:
+            unknown+=1;unverified.update(missing);continue
         variants=[]
         for v in p['variants']:
             size=variant_size(p,v);color=variant_color(p,v)
@@ -127,7 +130,7 @@ def search_products(data,candidate_only=False,candidate_limit=None):
     if candidate_only:results.sort(key=lambda p:p['_candidate_rank'])
     for p in results:p.pop('_candidate_rank',None)
     limit=candidate_limit if candidate_limit is not None else data.get('limit',4)
-    result={'status':'partial_metadata' if unknown else 'ok','products':results[:limit],'unknown_spec_products':unknown,'stock_checked':False,'matched_products':len(results),'products_truncated':len(results)>limit,'note':'Names/types are retrieval evidence, not stock, fit or comfort. Fetch fresh inventory before claiming availability.'}
+    result={'status':'partial_metadata' if unknown else 'ok','products':results[:limit],'unknown_spec_products':unknown,'unverified_criteria':sorted(unverified),'stock_checked':False,'matched_products':len(results),'products_truncated':len(results)>limit,'note':'Names/types are retrieval evidence, not stock, fit or comfort. Fetch fresh inventory before claiming availability.'}
     types=sorted({p['product_type'] for p in rows if isinstance(p.get('product_type'),str) and 1<=len(p['product_type'])<=255 and catalog.eligible(p)})
     result.update(available_product_types=types[:30],product_types_truncated=len(types)>30)
     if group:

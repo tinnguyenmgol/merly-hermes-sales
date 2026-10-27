@@ -32,7 +32,7 @@ def _lookup(data,tools,deadline):
     found=tools.search_products(query,candidate_only=True,candidate_limit=MAX_PRODUCTS);source={'ready':True,'age_seconds':0} if found.get('catalog_fresh') else tools.catalog.status();meta=tools.enrichment()
     report={'schema':'merly-product-discovery-v1','operation_id':secrets.token_hex(16),'mode':'discovery','criteria':criteria(data),'complete':False,'products':[],'variants':[],'issues':[],
       'coverage':{'catalog_matches':found.get('matched_products',0),'unknown_spec_products':found.get('unknown_spec_products',0),'omitted_products':max(0,found.get('matched_products',0)-len(found['products'])),'omitted_variants':0},
-      'catalog_age_seconds':source.get('age_seconds'),'source_status':found['status'],'checked_at':datetime.now(timezone.utc).isoformat()}
+      'unverified_criteria':list(found.get('unverified_criteria',[])),'catalog_age_seconds':source.get('age_seconds'),'source_status':found['status'],'checked_at':datetime.now(timezone.utc).isoformat()}
     if 'collection' in data:
         report['collection_status']=found.get('collection_status','source_unavailable')
         if found.get('collection_evidence'):report['collection_evidence']=found['collection_evidence']
@@ -66,15 +66,19 @@ def _lookup(data,tools,deadline):
             if not isinstance(product,dict) or product.get('id')!=item['product_id'] or not tools.catalog.eligible(product):raise tools.h.HaravanError('product_identity_changed')
             item.update(title=product.get('title','')[:300],product_url=tools.product_url(product),image_url=tools.image(product),product_type=product.get('product_type'))
             specs,error=matching_specs(product,data,tools,meta);item['verified_specs']={k:specs[k] for k in ('heel_cm','category','occasion') if k in specs}
-            if error:item['status']=error;continue
+            if error:
+                item['status']=error
+                if error=='metadata_unverified':report['unverified_criteria']=sorted(set(report['unverified_criteria'])|{k for k in ('heel_cm','category','occasion') if k in data and k not in specs})
+                continue
             variants=tools.haravan_variants.all_variants(tools.h,product['id'],deadline)
             selected=[];unclassified=False
             for v in variants:
                 size=tools.variant_size(product,v);color=tools.variant_color(product,v)
-                if size is None:unclassified=True;continue
-                if size!=str(data['size']):continue
-                if data.get('color') and color is None:unclassified=True;continue
-                if data.get('color') and tools.catalog.norm(color)!=tools.catalog.norm(data['color']):continue
+                if size is not None and size!=str(data['size']):continue
+                if data.get('color') and color is not None and tools.catalog.norm(color)!=tools.catalog.norm(data['color']):continue
+                absent=({'size'} if size is None else set())|({'color'} if data.get('color') and color is None else set())
+                if absent:
+                    unclassified=True;report['unverified_criteria']=sorted(set(report['unverified_criteria'])|absent);continue
                 vid=v.get('id')
                 if type(vid) is not int or not 1<=vid<10**16 or vid in seen:raise tools.h.HaravanError('invalid_variant_identity')
                 seen.add(vid)
@@ -85,7 +89,7 @@ def _lookup(data,tools,deadline):
             if str(exc) in BLOCKED:blocked=True
             item['status']='source_unavailable';report['issues'].append({'stage':'product','product_id':item['product_id']})
         if not blocked:flush_inventory()
-        if sum(r['known_available']>0 for r in records)>=target:break
+        if len({r['product_id'] for r in records if r['known_available']>0})>=target:break
     report['coverage']['omitted_products']=max(0,found.get('matched_products',0)-len(report['products']))
     if report.get('collection_evidence'):
         report['collection_evidence']={**report['collection_evidence'],'product_ids':[p['product_id'] for p in report['products']]}
@@ -93,9 +97,10 @@ def _lookup(data,tools,deadline):
     if type(report['catalog_age_seconds']) in (int,float) and math.isfinite(report['catalog_age_seconds']):
         report['catalog_age_seconds']+=max(0,time.monotonic()-began)
     positive=sum(r['known_available']>0 for r in records)
+    positive_products=len({r['product_id'] for r in records if r['known_available']>0})
     omitted=report['coverage']['omitted_products'] or report['coverage']['omitted_variants']
-    stop='source_blocked' if blocked else 'exhausted' if not omitted else 'time_limit' if time.monotonic()>=deadline else 'enough_positive' if positive>=target else 'variant_limit' if len(records)>=MAX_VARIANTS else 'product_limit'
-    report['scan']={'stop_reason':stop,'products_examined':len(report['products']),'variants_selected':len(records),'positive_variants':positive,'target':target}
+    stop='source_blocked' if blocked else 'exhausted' if not omitted else 'time_limit' if time.monotonic()>=deadline else 'enough_positive' if positive_products>=target else 'variant_limit' if len(records)>=MAX_VARIANTS else 'product_limit'
+    report['scan']={'stop_reason':stop,'products_examined':len(report['products']),'variants_selected':len(records),'positive_variants':positive,'positive_products':positive_products,'target':target,'target_kind':'products'}
     age=report['catalog_age_seconds']
     report['complete']=bool(source.get('ready') and type(age) in (int,float) and 0<=age<=300 and not report['issues'] and not report['coverage']['unknown_spec_products'] and not report['coverage']['omitted_products'] and not report['coverage']['omitted_variants'] and all(p['status'] in ('matched','no_matching_variants','changed') for p in report['products']) and all(r['inventory_complete'] for r in records))
     report['checked_at']=datetime.now(timezone.utc).isoformat()
@@ -187,7 +192,18 @@ def validate(report,args,turn_started):
         if report['complete'] and scan['stop_reason']!='exhausted':bad('invalid_scan')
         if scan['stop_reason']=='enough_positive' and scan['positive_variants']<scan['target']:bad('invalid_scan')
         if scan['stop_reason']=='exhausted' and cov['omitted_products']:bad('invalid_scan')
+        if 'target_kind' in scan:
+            if scan['target_kind']!='products':bad('invalid_scan')
+            count=len({r['product_id'] for r in clean if r['known_available']>0})
+            if type(scan.get('positive_products')) is not int or scan['positive_products']!=count:bad('invalid_scan')
+            if scan['stop_reason']=='enough_positive' and count<scan['target']:bad('invalid_scan')
         result['scan']={k:scan[k] for k in ('stop_reason','products_examined','variants_selected','positive_variants','target')}
+        if 'target_kind' in scan:result['scan'].update(target_kind='products',positive_products=scan['positive_products'])
+    if 'unverified_criteria' in report:
+        missing=report['unverified_criteria']
+        if not isinstance(missing,list) or len(missing)>5 or any(not isinstance(k,str) or k not in ('size','color','heel_cm','category','occasion') or k not in args for k in missing) or len(set(missing))!=len(missing):bad('invalid_metadata_diagnostics')
+        if missing and not (cov['unknown_spec_products'] or any(p['status']=='metadata_unverified' for p in products)):bad('invalid_metadata_diagnostics')
+        result['unverified_criteria']=list(missing)
     result.update(collection_info)
     return classify(result)
 
@@ -199,7 +215,11 @@ def classify(report):
     elif any(p['status'] in ('source_unavailable','unchecked') for p in report['products']):state='source_error'
     elif not report.get('complete'):state='partial_no_match'
     else:state='no_match'
-    report['operation_status']=state;return report
+    report['operation_status']=state
+    rows=[r for r in report['variants'] if r.get('known_available',0)>0]
+    count=len({r['product_id'] for r in rows})
+    report['selection']={'scope':'verified_positive_subset','kind':'multiple_products' if count>1 else 'single_product' if count else 'none_verified','products':count,'skus':len(rows)}
+    return report
 
 def summary(report):
     state=report['operation_status']
@@ -211,14 +231,17 @@ def summary(report):
         return 'Đã kiểm tra theo tiêu chí bạn hỏi: có '+str(n)+' mẫu còn hàng đã xác minh ở bên dưới. '+('Phạm vi tra chưa đầy đủ; không kết luận các mẫu khác hết hàng. ' if not report['complete'] else '')+'Chưa giữ hàng.'
     if state=='catalog_loading':return 'Danh mục đang đồng bộ. Chưa có kết quả tìm mẫu và tồn; không phải thông báo hết hàng.'
     if state=='metadata_missing':
-        labels={'collection':'nhóm sản phẩm','heel_cm':'chiều cao gót','category':'kiểu giày','occasion':'dịp sử dụng'}
-        missing={k for p in report['products'] if p['status']=='metadata_unverified' for k in labels if k in report['criteria'] and k not in p['verified_specs']}
-        if report['coverage']['unknown_spec_products']:missing.update(k for k in labels if k in report['criteria'])
+        labels={'collection':'nhóm sản phẩm','heel_cm':'chiều cao gót','category':'kiểu giày','occasion':'dịp sử dụng','size':'size của biến thể','color':'màu của biến thể'}
+        if 'unverified_criteria' in report:missing=set(report['unverified_criteria'])
+        else:
+            missing={k for p in report['products'] if p['status']=='metadata_unverified' for k in labels if k in report['criteria'] and k not in p['verified_specs']}
+            if report['coverage']['unknown_spec_products']:missing.update(k for k in labels if k in report['criteria'])
         if report.get('collection_status')=='resolved':missing.discard('collection')
-        subject=', '.join(labels[k] for k in labels if k in missing) or 'size/màu của biến thể'
-        return 'Merly chưa đủ dữ liệu đã xác minh về '+subject+' để chọn đúng yêu cầu. Các điều kiện bạn đã nói vẫn được giữ, mình chưa kết luận hết hàng. Bạn muốn [nhắn nhân viên Merly](https://oa.zalo.me/2969822963244380594) để được kiểm tra tiếp không?'
-    if state=='source_error':return 'Đã tìm được ứng viên trong danh mục nhưng chưa kiểm tra xong dữ liệu hoặc tồn. Các mẫu chưa xác minh được ghi rõ bên dưới; không phải kết luận hết hàng.'
+        elif 'collection' in report.get('criteria',{}):missing.add('collection')
+        subject=', '.join(labels[k] for k in labels if k in missing) or 'thuộc tính của biến thể'
+        return 'Dữ liệu sản phẩm chưa đủ để xác minh '+subject+' theo yêu cầu. Mình chưa thể giới thiệu mẫu đã xác minh phù hợp; đây không phải kết luận hết hàng.'
+    if state=='source_error':return 'Đã tìm được ứng viên trong danh mục nhưng chưa kiểm tra xong dữ liệu hoặc tồn. Mình chưa gửi những mẫu chưa xác minh; đây không phải kết luận hết hàng.'
     if state=='partial_no_match':return 'Chưa kiểm tra hết phạm vi tìm kiếm nên chưa xác minh được lựa chọn có tồn; không phải kết luận hết hàng.'
     if state=='verified_zero':return 'Các biến thể khớp yêu cầu đã kiểm tra có tồn 0 tại các kho trả đủ dữ liệu. Không kết luận toàn bộ website hoặc các mẫu chưa kiểm tra đều hết hàng.'
-    if state=='partial':return 'Đã tìm được biến thể phù hợp nhưng tồn chưa được xác minh đầy đủ. Xem trạng thái từng mẫu bên dưới; chưa thể kết luận hết hàng.'
+    if state=='partial':return 'Đã tìm được biến thể phù hợp nhưng tồn chưa được xác minh đầy đủ. Mình chưa gửi những lựa chọn chưa xác minh; không thể kết luận hết hàng.'
     return 'Chưa tìm thấy biến thể khớp yêu cầu trong danh mục và phạm vi đã kiểm tra. Không tự bỏ tiêu chí, không phải khẳng định toàn hệ thống hết hàng.'

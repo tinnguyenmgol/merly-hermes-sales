@@ -1,5 +1,5 @@
 """Preserve native language; gate evidence, not intent. No hidden lookup/rewrite."""
-from stock_report import extract,summary
+from stock_report import extract,summary,lookup_diagnostics
 from source_links import collect
 import re,unicodedata
 from decimal import Decimal,InvalidOperation
@@ -59,6 +59,7 @@ def present(data,rid,started):
     if products:body['products']=products
     quotes=quote_cards(calls,outputs,duplicates,started)
     if quotes:body['quotes']=quotes
+    body['_lookup_diagnostics']=lookup_diagnostics(report) if requested else []
     body['_tools_used']=list(dict.fromkeys(c['name'] for c in calls.values()))
     from tool_payload import describe
     body['_tool_diagnostics']=[describe(outputs.get(cid,{}).get('output'),call['name']) for cid,call in calls.items()][:32]
@@ -90,7 +91,7 @@ def present(data,rid,started):
         body.update(reply='Mình đã gửi thông tin biến thể đã tra trong thẻ bên dưới; chưa giữ hàng.',answer_mode='evidence_guard')
     elif missing or invalid:
         body.update(reply='Mình chưa lấy được dữ liệu hợp lệ để trả lời chắc chắn lượt này. Bạn không cần nhập lại thông tin đã gửi; có thể nhờ nhân viên Merly kiểm tra tiếp.',lookup_incomplete=True,answer_mode='evidence_guard')
-    expected=scopes(report)
+    expected=scopes(report) if requested else []
     if expected and quotes:
         accepted=[r for r in quotes if any(matches(r,s) for s in expected)]
         if len(accepted)!=len(quotes):
