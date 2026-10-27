@@ -27,12 +27,18 @@
     }
     $('conversation').append(panel);
   }
-  function failure(d) {
+  function failure(d,status) {
+    d=d&&typeof d==='object'&&!Array.isArray(d)?d:{};
     const messages={daily_budget_limit:'Phần tư vấn AI đã đạt hạn mức hiện tại. Bạn vẫn có thể tra tồn trực tiếp khi có mã mẫu và size.',ai_minute_limit:'Phần tư vấn AI đang giới hạn lượt. Bạn vẫn có thể tra tồn trực tiếp khi có mã mẫu và size.',ai_capacity:'Các lượt tư vấn AI đang được xử lý. Bạn vẫn có thể tra tồn trực tiếp khi có mã mẫu và size.',turn_in_progress:'Câu hỏi trước vẫn đang xử lý. Vui lòng chờ, không gửi lại.',stock_capacity:'Đang có lượt tra cứu hàng. Vui lòng chờ một chút rồi thử lại.',stock_rate_limit:'Tra cứu hàng đang tạm giới hạn lượt. Vui lòng thử lại sau.',visitor_rate_limit:'Bạn gửi tin nhắn hơi nhanh. Vui lòng chờ trước khi gửi tiếp.',public_rate_limit:'Có nhiều lượt gửi cùng lúc. Vui lòng thử lại sau.'};
-    let text=messages[d.error]||'Chưa xử lý được. Vui lòng không gửi lại liên tục.';
+    const categories={timeout:'Dịch vụ trợ lý đã hết thời gian chờ. Tác vụ có thể vẫn đang chạy; vui lòng không gửi lại liên tục.',response_incomplete:'Dịch vụ trợ lý chưa trả về câu trả lời hoàn chỉnh. Đây là lỗi xử lý, không phải do bạn diễn đạt sai.',configuration:'Dịch vụ trợ lý chưa sẵn sàng do lỗi cấu hình hoặc quyền kết nối. Merly cần kiểm tra hệ thống.',upstream_limit:'Dịch vụ trợ lý đang giới hạn lượt xử lý. Vui lòng không gửi lại liên tục.'};
+    const local={session:'Phiên chat đã hết hạn hoặc không hợp lệ. Vui lòng tải lại khung chat.',origin:'Yêu cầu từ trang này chưa được chấp nhận. Vui lòng mở khung chat chính thức của Merly.',invalid_message:'Tin nhắn cần có từ 1 đến 1000 ký tự.'};
+    let text=[messages[d.error],local[d.error],categories[d.error_category]].find(value=>typeof value==='string')||'Hệ thống chưa hoàn tất yêu cầu. Merly cần kiểm tra lỗi; vui lòng không gửi lại liên tục.';
+    if(Number.isInteger(status)&&status>=400&&status<=599)text+=' (HTTP '+status+')';
+    if(typeof d.diagnostic_id==='string'&&/^[0-9a-f]{16}$/.test(d.diagnostic_id))text+=' Mã hỗ trợ: '+d.diagnostic_id+'.';
     if(Number.isInteger(d.retry_after)&&d.retry_after>1&&d.retry_after<=60)text+=' Có thể thử sau khoảng '+d.retry_after+' giây.';
     return text;
   }
+  function publicError(text){const error=new Error(text);error.safeForPublic=true;return error;}
   function products(rows) { /* Catalog-only candidates are never customer listings. */ }
   function quotes(rows) {
     if(!Array.isArray(rows))return;
@@ -66,8 +72,8 @@
     const message=$('message').value;if(!message.trim()||message.length>1000)return;
     turn('user',message);$('message').value='';busy=true;controls();$('status').textContent='Đang kiểm tra, vui lòng không gửi lại.';
     const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),70000);
-    try {const r=await fetch('/api/public/chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Merly-CSRF':csrf},body:JSON.stringify({message}),signal:abort.signal});const d=await r.json();if(!r.ok)throw new Error(failure(d));if(typeof d.reply!=='string')throw new Error('Phản hồi chưa hợp lệ.');turn('assistant',d.reply,window.MerlyLinks?window.MerlyLinks.sources(d):[]);if((d.lookup_incomplete||d.answer_mode==='protocol_guard')&&typeof d.diagnostic_id==='string'&&/^[a-f0-9]{16}$/.test(d.diagnostic_id)){const note=document.createElement('small');note.className='diagnostic';note.textContent='Mã hỗ trợ: '+d.diagnostic_id;$('conversation').lastElementChild.append(document.createElement('br'),note);}cardsLeft=4;if(window.MerlyMedia)window.MerlyMedia.reset();stock(d.stock_options);products(d.products);quotes(d.quotes);if(d.listing?.has_more){const more=document.createElement('small');more.textContent='Đang hiển thị '+d.listing.shown+' / '+d.listing.verified_positive_skus+' SKU đã xác minh có tồn.';$('conversation').append(more);}$('status').textContent=d.needs_clarification?'Merly đang chờ bạn xác nhận hoặc bổ sung thông tin.':d.lookup_incomplete?'Lượt tra chưa hoàn tất; bạn không cần nhập lại yêu cầu.':'Đã nhận phản hồi từ Merly.';}
-    catch(err){$('status').textContent=err.name==='AbortError'?'Hết thời gian chờ. Tác vụ có thể vẫn đang chạy; vui lòng không gửi lại liên tục.':err.message;}
+    try {const r=await fetch('/api/public/chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Merly-CSRF':csrf},body:JSON.stringify({message}),signal:abort.signal});let d;try{d=await r.json();}catch(_){throw publicError('Máy chủ trả về phản hồi không hợp lệ (HTTP '+r.status+'). Vui lòng không gửi lại liên tục.');}if(!r.ok)throw publicError(failure(d,r.status));if(!d||typeof d.reply!=='string'||!d.reply.trim())throw publicError('Máy chủ chưa trả về nội dung hợp lệ (HTTP '+r.status+').');turn('assistant',d.reply,window.MerlyLinks?window.MerlyLinks.sources(d):[]);if((d.lookup_incomplete||d.answer_mode==='protocol_guard')&&typeof d.diagnostic_id==='string'&&/^[a-f0-9]{16}$/.test(d.diagnostic_id)){const note=document.createElement('small');note.className='diagnostic';note.textContent='Mã hỗ trợ: '+d.diagnostic_id;$('conversation').lastElementChild.append(document.createElement('br'),note);}cardsLeft=4;if(window.MerlyMedia)window.MerlyMedia.reset();stock(d.stock_options);products(d.products);quotes(d.quotes);if(d.listing?.has_more){const more=document.createElement('small');more.textContent='Đang hiển thị '+d.listing.shown+' / '+d.listing.verified_positive_skus+' SKU đã xác minh có tồn.';$('conversation').append(more);}$('status').textContent=d.needs_clarification?'Merly đang chờ bạn xác nhận hoặc bổ sung thông tin.':d.lookup_incomplete?'Lượt tra chưa hoàn tất; bạn không cần nhập lại yêu cầu.':'Đã nhận phản hồi từ Merly.';}
+    catch(err){$('status').textContent=err.name==='AbortError'?'Hết thời gian chờ. Tác vụ có thể vẫn đang chạy; vui lòng không gửi lại liên tục.':err.safeForPublic?err.message:'Không nhận được phản hồi hoàn chỉnh từ hệ thống. Vui lòng kiểm tra kết nối; không gửi lại liên tục.';}
     finally{clearTimeout(timer);busy=false;controls();}
   });
   session();
