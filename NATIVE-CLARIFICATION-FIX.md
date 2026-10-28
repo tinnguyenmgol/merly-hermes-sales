@@ -50,3 +50,25 @@ Not deployed. Requires owner-approved production rollout followed by live QA:
    stock, silent criteria relaxation or repeated failed source requests.
 5. Correction/unclear intent -> ask only what is actually missing.
 Do not reset QA quotas. Production code, volume, DB and tokens are unchanged.
+
+## Packaging follow-up after first rollout
+Live run `dd011c028ff1749d9e07cbac472ce78c` failed on its first message:
+HTTP 503, diagnostic `2b65c8eac3e8ca0c`, request_failed. No automatic retry.
+
+The original fix omitted clarification.py from BOTH Dockerfile COPY lists and
+from the .dockerignore allowlist. Repository tests could import the source file,
+but assembled deployment files could not. This is a packaging error introduced
+by this change, not evidence that the customer's wording is wrong.
+
+New isolated-interpreter smoke tests assemble the runtime COPY files, honor the
+build allowlist and prevent repository-path fallback. Before the packaging fix,
+both image contexts fail the inclusion test; removing the helper reproduces
+ModuleNotFoundError: No module named 'clarification'. After the fix, both staged
+contexts execute an ordinary first AI answer and a missing-size clarification.
+The entire suite now returns **741 passed**, no skips. These are copied-runtime
+smoke tests with synthetic model outputs, NOT Docker image builds or live-model
+acceptance. The deployed traceback is unavailable through the log MCP (401).
+
+Rollout must include an actual image rebuild, not only restarting the old image.
+Do not redeploy or reset QA to bypass retained failure cooldown/daily quotas.
+Live acceptance remains pending rollout of the packaging fix.

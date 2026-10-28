@@ -4,7 +4,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 COPY website_knowledge.py policy_knowledge.py customer_listing.py turn_contract.py tool_payload.py media_urls.py catalog_query.py collection_catalog.py product_discovery.py haravan_variants.py stock_options.py stock_report.py merly_tools.py mcp_server.py tool-schema.json catalog-enrichment.json ./
-COPY dialogue.py agent_answer.py catalog_view.py tool_evidence.py source_links.py fast_limits.py public_chat.py explicit_stock.py sales_gateway.py hermes_client.py state.py safety.py SYSTEM-PROMPT.md ./
+COPY dialogue.py agent_answer.py clarification.py catalog_view.py tool_evidence.py source_links.py fast_limits.py public_chat.py explicit_stock.py sales_gateway.py hermes_client.py state.py safety.py SYSTEM-PROMPT.md ./
 COPY vendor/ ./vendor/
 COPY evaluate_dialogue.py ./
 COPY eval/ ./eval/
