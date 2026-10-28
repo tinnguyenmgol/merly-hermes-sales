@@ -27,6 +27,9 @@ def argument_error(name,arguments,reason):
       'repair_hint':'Correct the arguments using input_schema. Omit unused optional fields, not null/empty placeholders. Do not repeat identical failing arguments. Never guess product/variant IDs or infer zero stock from this error.'}
     if name=='search_products':
         result['stock_requirements']={'when':'check_stock=true','required':['size'],'model_code':'optional exact string; do not invent for criteria search','size':'integer 35-43, not a quoted string','criteria':['query','collection','heel_cm','category','occasion','color']}
+    if name=='search_products' and code=='stock_scope_required' and isinstance(arguments,dict) and arguments.get('check_stock') is True and 'size' not in arguments:
+        result['needs_clarification']={'fields':['size'],'source_read_attempted':False}
+        result['repair_hint']='Ask the customer for the missing confirmed size. Preserve their other criteria. Do not invent a size or repeat the same call; no source lookup has run.'
     diagnostic('MERLY_TOOL_ARGUMENT_ERROR',json.dumps({'tool':name if definition else 'unknown_tool','reason':code,'received_field_types':received}))
     return result,True
 

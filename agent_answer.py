@@ -1,7 +1,7 @@
 """Preserve native language; gate evidence, not intent. No hidden lookup/rewrite."""
 from stock_report import extract,summary,lookup_diagnostics
 from source_links import collect
-import re,unicodedata
+import re
 from decimal import Decimal,InvalidOperation
 FAILURE='Mình chưa xác minh được dữ liệu cho lượt này nên chưa thể kết luận còn hay hết hàng. Bạn không cần nhập lại các điều kiện đã gửi; mình có thể hướng dẫn liên hệ nhân viên Merly để kiểm tra tiếp.'
 
@@ -12,7 +12,8 @@ def verified(report):
 def risky_stock_wording(text,report):
     # Output evidence guard, never customer-phrase routing. Exhaustive/global
     # claims are intentionally left to the bounded deterministic evidence view.
-    n=''.join(c for c in unicodedata.normalize('NFD',text.casefold().replace('đ','d')) if unicodedata.category(c)!='Mn')
+    from clarification import folded
+    n=folded(text)
     if re.search(r'\b(?:only|sole|chi|duy nhat|toan he thong|toan bo|tat ca|het hang|sold out|out of stock)\b',n):return True
     reports=report.get('groups',[report])
     prices={row.get('price_vnd') for r in reports for row in r.get('variants',[]) if type(row.get('price_vnd')) is int}
@@ -111,5 +112,16 @@ def present(data,rid,started):
     if PROTOCOL.search(text):
         reasons.append('protocol_text')
         body.update(reply='Phản hồi tư vấn chưa hoàn tất nên mình chưa thể xác nhận kết quả lượt này. Bạn không cần nhập lại các điều kiện đã gửi.',answer_mode='protocol_guard',lookup_incomplete=True)
+    # Asking a data-free question is not an inventory assertion. Invalid tool
+    # calls/source failures remain in diagnostics, but cannot erase the useful
+    # native question or force an extra model call. No unverified cards escape.
+    from clarification import only_question
+    inventory_tools_only=all(c['name']=='mcp__merly__search_products' for c in calls.values())
+    if inventory_tools_only and not has_positive and not any(positive(q) for q in quotes) and only_question(text):
+        body.update(reply=text,answer_mode='native',needs_clarification=True)
+        for key in ('stock_options','products','quotes'):body.pop(key,None)
+        body['source_links']=[u for u in body['source_links'] if '/products/' not in u]
+        body['_deferred_guard_reasons']=list(dict.fromkeys(reasons))
+        reasons=[]
     body['_guard_reasons']=list(dict.fromkeys(reasons))
     return body
