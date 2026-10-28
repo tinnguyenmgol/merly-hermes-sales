@@ -27,7 +27,7 @@
     "/tools/search_products": {
       "post": {
         "operationId": "search_products",
-        "summary": "Search source product names/types/collections and all supplied criteria; check_stock=true then validates fresh variants and inventory. No fabricated model_code; size required for stock, not browsing.",
+        "summary": "Customer product selection: without confirmed size returns needs_clarification and no catalog data; with size checks fresh stock. Catalog-only browsing is not available to this sales tool. Never invent size, IDs or model_code.",
         "requestBody": {
           "required": true,
           "content": {
@@ -80,7 +80,11 @@
                   },
                   "check_stock": {
                     "type": "boolean",
-                    "description": "With size: find candidates matching all supplied criteria, then fetch fresh variants and inventory. model_code is optional; never invent one."
+                    "description": "Customer selection always checks stock. Omit or pass true; false is not supported. Missing confirmed size returns a clarification request without source reads.",
+                    "default": true,
+                    "enum": [
+                      true
+                    ]
                   },
                   "query": {
                     "type": "string",

@@ -36,7 +36,7 @@ def unpack(value,expected_tool=None):
 
 def describe(value,name):
     """Fixed diagnostic enums only, never payload text/arguments/customer data."""
-    allowed={'approved','reference_only','ok','partial_metadata','partial_inventory','needs_staff_review','needs_staff_confirmation','invalid_arguments','source_unavailable','tool_unavailable','unverified','publication_not_configured'}
+    allowed={'approved','reference_only','ok','partial_metadata','partial_inventory','needs_staff_review','needs_staff_confirmation','needs_clarification','invalid_arguments','source_unavailable','tool_unavailable','unverified','publication_not_configured'}
     try:
         data=unpack(value,name)
         return {'tool':name,'decode':'ok','source_status':data.get('status') if data.get('status') in allowed else 'unknown','has_stock_report':isinstance(data.get('stock_report'),dict)}

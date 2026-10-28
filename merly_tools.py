@@ -70,8 +70,10 @@ def verified_product_specs(product,approved):
     elif len(values)>1:meta.pop('heel_cm',None)
     return meta
 
+SEARCH_FIELDS={'model_code':(str,1,32),'query':(str,1,120),'collection':(str,1,120),'color':(str,1,40),'size':(int,35,43),'heel_cm':(float,0,15),'category':(str,1,60),'occasion':(str,1,60),'limit':(int,1,6),'check_stock':(bool,0,0),'stock_request_id':(str,32,32)}
+
 def search_products(data,candidate_only=False,candidate_limit=None):
-    validate(data,{'model_code':(str,1,32),'query':(str,1,120),'collection':(str,1,120),'color':(str,1,40),'size':(int,35,43),'heel_cm':(float,0,15),'category':(str,1,60),'occasion':(str,1,60),'limit':(int,1,6),'check_stock':(bool,0,0),'stock_request_id':(str,32,32)})
+    validate(data,SEARCH_FIELDS)
     if candidate_limit is not None and (not candidate_only or type(candidate_limit) is not int or not 1<=candidate_limit<=catalog_query.MAX_SCAN_PRODUCTS):raise Invalid('invalid_internal_candidate_limit')
     if data.get('check_stock'):
         if 'size' not in data:raise Invalid('stock_scope_required')

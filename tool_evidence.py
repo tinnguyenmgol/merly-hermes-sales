@@ -2,7 +2,7 @@
 import json,time
 from datetime import datetime
 from source_links import unpack
-from stock_report import tool_error_code
+from stock_report import tool_error_code,clarification_request
 
 STATUSES={
  'mcp__merly__search_products':{'ok','partial_metadata'},
@@ -19,7 +19,8 @@ def usable(call,output,started):
         if not isinstance(args,dict):return False
         data=unpack(output.get('output'),call['name'])
         if not data:return False
-        if isinstance(data.get('stock_report'),dict):return call['name']=='mcp__merly__search_products' and args.get('check_stock') is True
+        if call['name']=='mcp__merly__search_products' and (data.get('status')=='needs_clarification' or 'missing_fields' in data):return clarification_request(data,args)
+        if isinstance(data.get('stock_report'),dict):return call['name']=='mcp__merly__search_products' and args.get('check_stock',True) is True
         name=call['name'];status=data.get('status')
         if status not in STATUSES[name]:return False
         if name=='mcp__merly__search_products' and status in ('ok','partial_metadata'):
