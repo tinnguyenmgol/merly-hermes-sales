@@ -104,7 +104,8 @@ def test_client_semantic_contract_one_model_turn_and_no_unsafe_report(configured
     monkeypatch.setattr(client,'request',request)
     monkeypatch.setattr(client,'discover_products',lambda *a:(_ for _ in ()).throw(client.HermesError('synthetic offline')))
     r=client.chat('tìm giày gót5cm size41 màu đen',user,'resp_prior')
-    assert r['lookup_incomplete'] and 'stock_options' not in r
+    assert r['lookup_incomplete'] and r['stock_options']['mode']=='unverified'
+    assert r['stock_options']['variants']==[]  # default stock attempt without output is never evidence
     assert 'không cần nhập lại' in r['reply']
     assert len(seen)==1 and 'previous_response_id' not in seen[0][1]
     assert 'LATEST_STRUCTURED_CUSTOMER_CONTEXT' not in seen[0][1]['instructions']

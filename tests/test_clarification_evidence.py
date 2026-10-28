@@ -86,8 +86,8 @@ def test_missing_size_is_actionable_not_a_source_failure(monkeypatch):
     import mcp_server as m
     monkeypatch.setattr(m.merly_tools.h,'get',lambda *a,**k:pytest.fail('must not read source'))
     result,error=m.invoke('search_products',{'check_stock':True,'color':'Đen','heel_cm':5})
-    assert error and result['needs_clarification']=={'fields':['size'],'source_read_attempted':False}
-    assert result['status']=='invalid_arguments' and result['do_not_infer_no_stock']
+    assert not error and result['missing_fields']==['size']
+    assert result['status']=='needs_clarification' and result['source_read_attempted'] is False
 
 @pytest.mark.parametrize('args',[{'check_stock':True,'size':'42'},{'check_stock':True,'size':True},{'check_stock':True,'size':99}])
 def test_invalid_type_is_not_mislabeled_customer_missing_information(args):

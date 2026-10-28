@@ -128,6 +128,14 @@ def tool_error_code(value):
         return None
     return None
 
+def clarification_request(data,args):
+    """Trusted business outcome, not a failed source read or stock evidence."""
+    from merly_tools import validate,SEARCH_FIELDS,Invalid
+    try:validate(args,SEARCH_FIELDS)
+    except (Invalid,TypeError,ValueError):return False
+    expected={'status':'needs_clarification','missing_fields':['size'],'next_action':'ask_missing_customer_fields','source_read_attempted':False,'stock_checked':False,'products':[]}
+    return (isinstance(data,dict) and data==expected and data.get('source_read_attempted') is False and data.get('stock_checked') is False and 'size' not in args and args.get('check_stock',True) is True)
+
 def extract(items,request_id,turn_started=None):
     calls={};reports={};failures={};duplicates=set()
     for item in items:
@@ -137,12 +145,15 @@ def extract(items,request_id,turn_started=None):
         if item.get('type')=='function_call' and item.get('name')=='mcp__merly__search_products':
             try:args=json.loads(item.get('arguments','{}')) if isinstance(item.get('arguments'),str) else item.get('arguments')
             except (ValueError,TypeError):continue
-            if isinstance(args,dict) and args.get('check_stock') is True:
+            if isinstance(args,dict) and (args.get('check_stock') is True or 'size' in args and args.get('check_stock',True) is True):
                 if cid in calls:duplicates.add(cid)
                 calls[cid]=args
         elif item.get('type')=='function_call_output' and cid in calls:
             try:
                 if item.get('status') not in (None,'completed'):raise InvalidReport('tool_not_completed')
+                from tool_payload import unpack
+                if cid not in duplicates and clarification_request(unpack(item.get('output'),'mcp__merly__search_products'),calls[cid]):
+                    calls.pop(cid);continue
                 report=decode(item.get('output'))
                 if report.get('schema')=='merly-stock-options-v1' and turn_started is None and calls[cid].get('stock_request_id')!=request_id:raise InvalidReport('wrong_turn')
                 reports[cid]=validate(report,request_id,calls[cid],turn_started)

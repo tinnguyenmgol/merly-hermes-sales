@@ -123,5 +123,15 @@ def present(data,rid,started):
         body['source_links']=[u for u in body['source_links'] if '/products/' not in u]
         body['_deferred_guard_reasons']=list(dict.fromkeys(reasons))
         reasons=[]
+    # A size request is a successful business outcome, not an inventory report.
+    # Do not attach an empty stock panel or force a stock-summary fallback.
+    from stock_report import clarification_request
+    from tool_payload import unpack
+    for cid,call in calls.items():
+        if call['name']!='mcp__merly__search_products' or cid in duplicates:continue
+        try:
+            args=json.loads(call.get('arguments','{}')) if isinstance(call.get('arguments'),str) else call.get('arguments')
+            if clarification_request(unpack(outputs.get(cid,{}).get('output'),call['name']),args) and not reasons:body['needs_clarification']=True
+        except (ValueError,TypeError,KeyError):pass
     body['_guard_reasons']=list(dict.fromkeys(reasons))
     return body

@@ -43,7 +43,7 @@ def response(text,items=()):
 a=customer_listing.project(agent_answer.present(response(q),'resp_copied',time.time()))
 assert a['reply']==q and a['needs_clarification'] and a['listing']['shown']==0
 result,error=mcp_server.invoke('search_products',{'check_stock':True,'heel_cm':5,'color':'Đen'})
-assert error and result['needs_clarification']['source_read_attempted'] is False
+assert not error and result['status']=='needs_clarification' and result['source_read_attempted'] is False
 items=[{'type':'function_call','name':'mcp__merly__search_products','call_id':'missing','arguments':'{"check_stock":true}'},{'type':'function_call_output','call_id':'missing','output':json.dumps(result)}]
 a=customer_listing.project(agent_answer.present(response(q,items),'resp_missing',time.time()))
 assert a['reply']==q and a['listing']['shown']==0

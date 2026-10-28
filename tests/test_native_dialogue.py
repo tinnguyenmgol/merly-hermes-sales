@@ -137,7 +137,7 @@ def test_unverified_catalog_ids_are_not_carried_as_visible_cards(source,configur
     def request(path,payload):
         seen.append(copy.deepcopy(payload));data=final('Bạn muốn xem mẫu nào?')
         if len(seen)==1:
-            args={'model_code':'1514','size':38};body,error=mcp_server.invoke('search_products',args);assert not error
+            args={'model_code':'1514','size':38};body=mcp_server.merly_tools.search_products(args)  # deliberately legacy catalog-only output
             data['output']=[{'type':'function_call','name':'mcp__merly__search_products','call_id':'catalog','arguments':json.dumps(args)},{'type':'function_call_output','call_id':'catalog','output':json.dumps(body)}]+data['output']
         return data
     monkeypatch.setattr(c,'request',request)
