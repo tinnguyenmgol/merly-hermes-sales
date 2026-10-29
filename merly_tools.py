@@ -70,7 +70,7 @@ def verified_product_specs(product,approved):
     elif len(values)>1:meta.pop('heel_cm',None)
     return meta
 
-SEARCH_FIELDS={'model_code':(str,1,32),'query':(str,1,120),'collection':(str,1,120),'color':(str,1,40),'size':(int,35,43),'heel_cm':(float,0,15),'category':(str,1,60),'occasion':(str,1,60),'limit':(int,1,6),'check_stock':(bool,0,0),'stock_request_id':(str,32,32)}
+SEARCH_FIELDS={'model_code':(str,1,32),'query':(str,1,120),'collection':(str,1,120),'collection_hint':(str,1,120),'color':(str,1,40),'size':(int,35,43),'heel_cm':(float,0,15),'category':(str,1,60),'occasion':(str,1,60),'limit':(int,1,6),'check_stock':(bool,0,0),'stock_request_id':(str,32,32)}
 
 def search_products(data,candidate_only=False,candidate_limit=None):
     validate(data,SEARCH_FIELDS)
@@ -78,7 +78,7 @@ def search_products(data,candidate_only=False,candidate_limit=None):
     if data.get('check_stock'):
         if 'size' not in data:raise Invalid('stock_scope_required')
         if 'stock_request_id' in data and not re.fullmatch(r'[0-9a-f]{32}',data['stock_request_id']):raise Invalid('stock_scope_required')
-        if 'model_code' not in data or any(k in data for k in ('query','collection','heel_cm','category','occasion')):
+        if 'model_code' not in data or any(k in data for k in ('query','collection','collection_hint','heel_cm','category','occasion')):
             import product_discovery
             return product_discovery.lookup(data,sys.modules[__name__])
         import stock_options
@@ -87,13 +87,15 @@ def search_products(data,candidate_only=False,candidate_limit=None):
             data=dict(data,stock_request_id=secrets.token_hex(16),_stock_schema='merly-stock-options-v2')
         return stock_options.lookup(data,sys.modules[__name__])
     import collection_catalog
-    group=None
+    group=None;preferred_ids=set();routing=None
     if 'collection' in data:
         group=collection_catalog.resolve(data['collection'],h,catalog.FIELDS)
         if group['status']!='resolved':
             return {'status':'partial_metadata','products':[],'unknown_spec_products':1,'matched_products':0,'stock_checked':False,'collection_status':group['status'],'collection_choices':group.get('choices',[])}
         rows=group['products']
-    else:rows=catalog.snapshot()
+    else:
+        rows=catalog.snapshot()
+        if rows is not None:preferred_ids,routing=collection_catalog.preferred(data,h,catalog.FIELDS)
     if rows is None:return {'status':'catalog_loading','retryable':True,'products':[]}
     metadata=enrichment();results=[];unknown=0;unverified=set()
     for p in rows:
@@ -129,12 +131,13 @@ def search_products(data,candidate_only=False,candidate_limit=None):
             hint=any(('size' not in data or v['size']==str(data['size'])) and ('color' not in data or v['color'] is not None and catalog.norm(v['color'])==catalog.norm(data['color'])) for v in variants)
             unknown_hint=any(v['size'] is None or ('color' in data and v['color'] is None) for v in variants)
             results.append({'_candidate_rank':0 if hint else 1 if unknown_hint else 2,'product_id':p['id'],'title':p.get('title',''),'product_type':p.get('product_type'),'image_url':image(p),'image_scope':'product','product_url':product_url(p),'variants':variants[:12],'variants_total':len(variants),'variants_truncated':len(variants)>12,'verified_specs':{k:meta[k] for k in ('heel_cm','category','occasion') if k in meta},'match_evidence':evidence,'availability':'not_checked'})
-    if candidate_only:results.sort(key=lambda p:p['_candidate_rank'])
+    if candidate_only:results=collection_catalog.prioritize(results,preferred_ids,candidate_limit or catalog_query.MAX_SCAN_PRODUCTS)
     for p in results:p.pop('_candidate_rank',None)
     limit=candidate_limit if candidate_limit is not None else data.get('limit',4)
     result={'status':'partial_metadata' if unknown else 'ok','products':results[:limit],'unknown_spec_products':unknown,'unverified_criteria':sorted(unverified),'stock_checked':False,'matched_products':len(results),'products_truncated':len(results)>limit,'note':'Names/types are retrieval evidence, not stock, fit or comfort. Fetch fresh inventory before claiming availability.'}
     types=sorted({p['product_type'] for p in rows if isinstance(p.get('product_type'),str) and 1<=len(p['product_type'])<=255 and catalog.eligible(p)})
     result.update(available_product_types=types[:30],product_types_truncated=len(types)>30)
+    if routing:result['routing']=routing
     if group:
         result.update(collection_status='resolved',collection_evidence={**group['collection'],'product_ids':[p['product_id'] for p in results[:limit]]},catalog_fresh=True)
     return result

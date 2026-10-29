@@ -96,7 +96,13 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 120,
-                    "description": "Public Haravan custom/smart collection title or handle. Resolves source membership using collection_id. Ambiguous/missing/error is not no stock; inspect collection_choices/status."
+                    "description": "Required collection scope ONLY when the customer explicitly restricts to that named group. Never invent a group. Use collection_hint for a preference that may fall back to catalog filters."
+                  },
+                  "collection_hint": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "description": "Optional preferred group name, not a required scope. Prioritize its members then keep all structured filters over the full catalog. Missing/ambiguous/unavailable group falls back to catalog filters. Collection membership is not proof of heel/size/color/stock."
                   }
                 },
                 "required": []
