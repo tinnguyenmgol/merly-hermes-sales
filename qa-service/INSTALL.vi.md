@@ -22,7 +22,7 @@ Không clone nguyên app sales vì có thể mang theo secret/volume không cầ
   - MERLY_QA_PUBLIC_HOST: hostname QA vừa gán, chữ thường, không https://,
     không /mcp và không port.
   - MERLY_QA_LIVE_TESTS_APPROVED: mặc định 0. Đặt 1 khi owner đồng ý phí model
-    và lưu lượng thử bằng dữ liệu giả; phạm vi tối đa 3 phiên/15 tin khách/ngày.
+    và lưu lượng thử bằng dữ liệu giả; phạm vi tối đa 10 phiên/50 tin khách/ngày.
 - Deploy app QA. Health check /health chỉ xác nhận service sống, không chứng
   minh đã được duyệt gọi live hoặc bot đích hoạt động.
 

@@ -46,11 +46,11 @@ def test_failure_stops_without_retry_and_cooldown_survives_restart(tmp_path):
 
 def test_daily_reservation_survives_service_restart(tmp_path):
     async def case():
-        for i in range(3):
+        for i in range(10):
             manager=Manager(Ledger(tmp_path),True,FakeSession)
             await manager.start(['ONE'],True);await settled(manager)
         manager=Manager(Ledger(tmp_path),True,FakeSession)
-        with pytest.raises(Rejected) as e:await manager.start(['FOURTH'],True)
+        with pytest.raises(Rejected) as e:await manager.start(['ELEVENTH'],True)
         assert e.value.code=='qa_daily_budget'
     run(case())
 
@@ -97,3 +97,24 @@ def test_no_symlink_to_another_service_database(tmp_path):
     (tmp_path/'qa-limits.sqlite3').symlink_to(other)
     with pytest.raises(Rejected):Ledger(tmp_path)
     assert other.read_bytes()==b'UNTOUCHED'
+
+
+def test_raise_daily_limit_preserves_old_usage_and_allows_only_remaining_slots(tmp_path,monkeypatch):
+    import qa_core as core
+    assert core.MAX_RUNS_DAY==10 and core.MAX_MESSAGES==5 and core.MAX_MESSAGES_DAY==50
+    ledger=Ledger(tmp_path)
+    # Existing day's three full runs under the old deployed limit.
+    with monkeypatch.context() as old:
+        old.setattr(core,'MAX_RUNS_DAY',3);old.setattr(core,'MAX_MESSAGES_DAY',15)
+        for i in range(3):
+            job=f'{i:032x}';ledger.reserve(5,job);ledger.release(job)
+        with pytest.raises(Rejected,match='qa_daily_budget'):ledger.reserve(1,'f'*32)
+    # Reopening the SAME volume under the raised limit does not reset counters.
+    restarted=Ledger(tmp_path)
+    for i in range(3,10):
+        job=f'{i:032x}';restarted.reserve(5,job);restarted.release(job)
+    with restarted.db() as db:
+        assert db.execute('SELECT runs,turns FROM usage').fetchall()==[(10,50)]
+    with pytest.raises(Rejected,match='qa_daily_budget'):restarted.reserve(1,'e'*32)
+    with restarted.db() as db:
+        assert db.execute('SELECT runs,turns FROM usage').fetchall()==[(10,50)]

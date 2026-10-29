@@ -19,7 +19,7 @@ không phải bản sửa chatbot, không thêm công cụ cho hermes_sales.
   /api/public/chat trên host cố định. Không redirect/proxy env; chặn địa chỉ
   private/loopback/link-local và pin IP đã kiểm tra khi kết nối TLS, SNI đúng host.
 - MCP cần một secret QA mới. Không cần key model, Haravan hay Coolify.
-- Chỉ một phiên đang chạy; tối đa 3 phiên và 15 tin khách/ngày UTC. Quota lưu
+- Chỉ một phiên đang chạy; tối đa 10 phiên và 50 tin khách/ngày UTC. Quota lưu
   riêng qua restart; đặt trước lượt, không hoàn quota khi lỗi. Lỗi giữ cooldown
   tối đa khoảng 6 phút để tránh gọi lại lượt chưa rõ kết quả.
 - Đây là số tin khách, KHÔNG phải số API call model: bot có thể gọi model nhiều
