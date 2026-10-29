@@ -26,18 +26,20 @@ def lookup(data,tools):
 def _lookup(data,tools,deadline):
     began=time.monotonic()
     # Color checked EXACTLY against fresh variants, not merged by substring.
-    query={k:v for k,v in data.items() if k in ('query','collection','model_code','size','color','heel_cm','category','occasion')}
+    query={k:v for k,v in data.items() if k in ('query','collection','collection_hint','model_code','size','color','heel_cm','category','occasion')}
     query['limit']=min(data.get('limit',4),6)
     target=min(data.get('limit',4),4)
     found=tools.search_products(query,candidate_only=True,candidate_limit=MAX_PRODUCTS);source={'ready':True,'age_seconds':0} if found.get('catalog_fresh') else tools.catalog.status();meta=tools.enrichment()
     report={'schema':'merly-product-discovery-v1','operation_id':secrets.token_hex(16),'mode':'discovery','criteria':criteria(data),'complete':False,'products':[],'variants':[],'issues':[],
       'coverage':{'catalog_matches':found.get('matched_products',0),'unknown_spec_products':found.get('unknown_spec_products',0),'omitted_products':max(0,found.get('matched_products',0)-len(found['products'])),'omitted_variants':0},
       'unverified_criteria':list(found.get('unverified_criteria',[])),'catalog_age_seconds':source.get('age_seconds'),'source_status':found['status'],'checked_at':datetime.now(timezone.utc).isoformat()}
+    if found.get('routing'):report['routing']=dict(found['routing'])
     if 'collection' in data:
         report['collection_status']=found.get('collection_status','source_unavailable')
         if found.get('collection_evidence'):report['collection_evidence']=found['collection_evidence']
         report['collection_choices']=found.get('collection_choices',[])
-    records=[];pending=[];seen=set();blocked=False
+    records=[];pending=[];seen=set();blocked=found.get('routing',{}).get('collection_status')=='rate_limited'
+    if blocked:report['issues'].append({'stage':'collection'})
     BLOCKED={'haravan_http_401','haravan_http_403','haravan_http_429'}
     def flush_inventory():
         nonlocal pending,blocked
@@ -204,6 +206,13 @@ def validate(report,args,turn_started):
         if not isinstance(missing,list) or len(missing)>5 or any(not isinstance(k,str) or k not in ('size','color','heel_cm','category','occasion') or k not in args for k in missing) or len(set(missing))!=len(missing):bad('invalid_metadata_diagnostics')
         if missing and not (cov['unknown_spec_products'] or any(p['status']=='metadata_unverified' for p in products)):bad('invalid_metadata_diagnostics')
         result['unverified_criteria']=list(missing)
+    routing=report.get('routing')
+    if routing is not None:
+        if not isinstance(routing,dict) or set(routing)!={'strategy','collection_status','preferred_products'}:bad('invalid_routing')
+        if routing['strategy'] not in ('filters','collection_first_filters') or routing['collection_status'] not in ('not_attempted','resolved','ambiguous','not_found','source_unavailable','rate_limited'):bad('invalid_routing')
+        if type(routing['preferred_products']) is not int or not 0<=routing['preferred_products']<=3000:bad('invalid_routing')
+        if (routing['strategy']=='collection_first_filters')!=(routing['collection_status']=='resolved'):bad('invalid_routing')
+        result['routing']=dict(routing)
     result.update(collection_info)
     return classify(result)
 
@@ -211,6 +220,7 @@ def classify(report):
     if report.get('source_status')=='catalog_loading':state='catalog_loading'
     elif any(r.get('available') is True for r in report['variants']):state='available' if report['complete'] else 'partial_available'
     elif report['variants']:state='verified_zero' if report['complete'] else 'partial'
+    elif report.get('scan',{}).get('stop_reason')=='source_blocked':state='source_error'
     elif report['coverage']['unknown_spec_products'] or any(p['status']=='metadata_unverified' for p in report['products']):state='metadata_missing'
     elif any(p['status'] in ('source_unavailable','unchecked') for p in report['products']):state='source_error'
     elif not report.get('complete'):state='partial_no_match'

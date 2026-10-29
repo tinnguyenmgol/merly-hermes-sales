@@ -205,6 +205,12 @@ def lookup_diagnostics(report):
         for name in ('catalog_matches','unknown_spec_products','omitted_products','omitted_variants'):
             value=coverage.get(name)
             if type(value) is int and 0<=value<=100000:entry[name]=value
+        routing=item.get('routing',{})
+        if isinstance(routing,dict):
+            if routing.get('strategy') in ('filters','collection_first_filters'):entry['retrieval_strategy']=routing['strategy']
+            if routing.get('collection_status') in ('not_attempted','resolved','ambiguous','not_found','source_unavailable','rate_limited'):entry['preferred_collection_status']=routing['collection_status']
+            value=routing.get('preferred_products')
+            if type(value) is int and 0<=value<=3000:entry['preferred_collection_products']=value
         output.append(entry)
     return output
 
