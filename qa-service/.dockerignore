@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!requirements.txt
+!qa_transport.py
+!qa_core.py
+!qa_server.py
