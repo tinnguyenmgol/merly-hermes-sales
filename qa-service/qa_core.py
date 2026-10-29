@@ -4,7 +4,7 @@ from contextlib import closing
 from datetime import datetime,timezone
 from pathlib import Path
 from qa_transport import ChatSession,TransportError
-MAX_MESSAGES=5;MAX_RUNS_DAY=3;MAX_MESSAGES_DAY=15;RUN_SECONDS=300;RETENTION=900
+MAX_MESSAGES=5;MAX_RUNS_DAY=10;MAX_MESSAGES_DAY=MAX_MESSAGES*MAX_RUNS_DAY;RUN_SECONDS=300;RETENTION=900
 class Rejected(Exception):
     def __init__(self,code):self.code=code
 
