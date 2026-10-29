@@ -6,8 +6,8 @@
     "size_exchange": "Đổi hàng trong 30 ngày, thông thường 01 lần đổi/đơn. Sản phẩm phải còn mới, đủ hộp, đủ phụ kiện và đáp ứng điều kiện đổi. Hàng giảm giá từ 30% trở lên không áp dụng đổi trả, trừ chương trình hoặc ngoại lệ được phê duyệt khác. Đổi online: phí 20.000đ/đơn, nhận voucher 20.000đ; giao đôi mới đồng thời thu hồi đôi cũ (cross-ship). Cần kiểm tra đơn, ngày mua, tình trạng sản phẩm, ảnh mặt đế và tồn size/màu mới. Đổi tại cửa hàng: phí 0đ, vẫn phải kiểm tra điều kiện. Không tự thêm thời hạn hay điều kiện dùng voucher chưa được nêu. Hỗ trợ đổi hàng: https://care.merlyshoes.com",
     "warranty": "Bảo hành 365 ngày. Cần xác minh đơn hàng, ngày mua và tình trạng sản phẩm để đối chiếu điều kiện. Không mặc định đổi mới, hoàn tiền hoặc bồi thường. Hỗ trợ bảo hành: https://care.merlyshoes.com",
     "sale_returns": "Hàng sale từ 30% trở lên không áp dụng đổi trả, trừ chương trình hoặc ngoại lệ được xác nhận. Trường hợp bảo hành cần kiểm tra theo hồ sơ và chính sách bảo hành; không tự hứa đổi mới hoặc hoàn tiền.",
-    "new_customer": "Khách mới: giảm 5%, tối đa 30.000đ. Cần xác minh đủ điều kiện khách mới và điều kiện đơn trước khi áp dụng. Không tự tạo mã giảm, áp dụng giảm hoặc mặc định cộng dồn ưu đãi.",
-    "loyalty": "Member+: chi tiêu từ 0 đến dưới 1.500.000đ; ưu đãi thường 5%, tối đa 30.000đ; sinh nhật 15%. Silver+: chi tiêu từ 1.500.000đ; ưu đãi thường 5%; sinh nhật 15%. Gold+: chi tiêu từ 3.000.000đ; ưu đãi thường 10%; sinh nhật 30%. Diamond+: chi tiêu từ 6.000.000đ; ưu đãi thường 15%; sinh nhật 30%. Platinum+: chi tiêu từ 12.000.000đ; ưu đãi thường 20%; sinh nhật 30%. Ưu tiên dữ liệu loyalty thực tế; không tự nâng hạng, suy đoán hạng hay xác nhận điều kiện khách chỉ từ lời kể. Không mặc định cộng dồn với voucher hoặc chương trình khác.",
+    "new_customer": "Khách chưa từng mua hàng ở Merly: tạo tài khoản sẽ được giảm ngay 5%, tối đa 30.000đ. Khách đã từng mua không được coi là khách mới chỉ vì tạo tài khoản khác; tài khoản áp dụng ưu đãi theo lịch sử mua hàng. Có thể giải thích rõ chính sách này mà không cần tra hồ sơ trước; nhưng chatbot không tự xác nhận tình trạng khách mới, đã áp dụng giảm hay tạo mã khi chưa có dữ liệu hệ thống. Không mặc định cộng dồn ưu đãi.",
+    "loyalty": "Member+: chi tiêu từ 0 đến dưới 1.500.000đ; ưu đãi thường 5%, tối đa 30.000đ; sinh nhật 15%. Silver+: chi tiêu từ 1.500.000đ; ưu đãi thường 5%; sinh nhật 15%. Gold+: chi tiêu từ 3.000.000đ; ưu đãi thường 10%; sinh nhật 30%. Diamond+: chi tiêu từ 6.000.000đ; ưu đãi thường 15%; sinh nhật 30%. Platinum+: chi tiêu từ 12.000.000đ; ưu đãi thường 20%; sinh nhật 30%. Ưu tiên dữ liệu loyalty thực tế; không tự nâng hạng, suy đoán hạng hay xác nhận điều kiện khách chỉ từ lời kể. Không mặc định cộng dồn với voucher hoặc chương trình khác. Khách đã mua tại Merly: tài khoản áp dụng theo lịch sử mua hàng, mức giảm thường từ 5% đến 20% theo hạng tương ứng; không mặc định chỉ được 5% khi tạo tài khoản. Không suy đoán hạng hoặc mức giảm cá nhân khi chưa có dữ liệu tài khoản.",
     "business_orders": "Khách công ty từ 100 đôi: chiết khấu 20%. Dưới 100 đôi: tính theo giá trị chính đơn đó, dưới 6.000.000đ là 10%; từ 6.000.000đ đến dưới 12.000.000đ là 15%; từ 12.000.000đ trở lên là 20%. Ví dụ 80 đôi có giá trị đơn trên 12 triệu thuộc mức 20%. Không dùng lịch sử tích lũy cá nhân của người liên hệ. Không mặc định cộng voucher bán lẻ, loyalty hoặc sinh nhật. Merly cần xác nhận cơ sở giá trị đơn, sản phẩm, điều kiện và báo giá; chatbot không tạo hợp đồng hoặc đơn hàng.",
     "tiktok_exchange": "Đổi size trên TikTok có thể chủ động book ship theo quy trình Merly; không mặc định yêu cầu hoàn tiền trên sàn chỉ vì đổi size. Nếu quy định TikTok hiện hành khác, ưu tiên quy định mới hơn sau khi kiểm tra. Cần xác nhận điều kiện đổi cụ thể.",
     "product_links": "Gửi đúng link sản phẩm trên https://merlyshoes.com do công cụ sản phẩm trả về. Không chỉ yêu cầu khách tự tìm, không đoán đường dẫn từ tên/ID và không thay bằng trang nội bộ.",
@@ -15,7 +15,7 @@
     "store_hours": "Giờ hoạt động: 09:30 – 21:30, Thứ Hai đến Chủ Nhật. Nếu có thông báo vận hành mới hơn đã được xác minh thì ưu tiên thông báo mới.",
     "store_address": "Địa chỉ cửa hàng được cung cấp: 876 Trường Sa, TP.HCM; 561 Lũy Bán Bích, TP.HCM. Tài liệu không nêu phường/quận; không tự bổ sung địa giới hoặc suy đoán chi nhánh ở một khu vực khác."
   },
-  "revision": 2,
+  "revision": 3,
   "sources": [
     {
       "file": "01_MERLY_CHINH_SACH_BAN_HANG.md",
@@ -87,6 +87,11 @@
         "file": "07_MERLY_FAQ.md",
         "version": "1.1",
         "updated_date": "2026-09-21"
+      },
+      {
+        "file": "POLICY-ACCOUNT-DISCOUNTS-OWNER.md",
+        "version": "1.0",
+        "updated_date": "2026-10-29"
       }
     ],
     "loyalty": [
@@ -99,6 +104,11 @@
         "file": "07_MERLY_FAQ.md",
         "version": "1.1",
         "updated_date": "2026-09-21"
+      },
+      {
+        "file": "POLICY-ACCOUNT-DISCOUNTS-OWNER.md",
+        "version": "1.0",
+        "updated_date": "2026-10-29"
       }
     ],
     "business_orders": [
