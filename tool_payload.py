@@ -34,10 +34,22 @@ def unpack(value,expected_tool=None):
         return {}
     raise ValueError('tool_payload_too_deep')
 
-def describe(value,name):
-    """Fixed diagnostic enums only, never payload text/arguments/customer data."""
+def describe(value,name,arguments=None):
+    """Fixed diagnostics only: no argument values, payload text or secrets."""
     allowed={'approved','reference_only','ok','partial_metadata','partial_inventory','needs_staff_review','needs_staff_confirmation','needs_clarification','invalid_arguments','source_unavailable','tool_unavailable','unverified','publication_not_configured'}
+    result={'tool':name,'decode':'rejected','source_status':'unknown','has_stock_report':False}
     try:
         data=unpack(value,name)
-        return {'tool':name,'decode':'ok','source_status':data.get('status') if data.get('status') in allowed else 'unknown','has_stock_report':isinstance(data.get('stock_report'),dict)}
-    except (ValueError,TypeError,KeyError):return {'tool':name,'decode':'rejected','source_status':'unknown','has_stock_report':False}
+        result.update(decode='ok',source_status=data.get('status') if data.get('status') in allowed else 'unknown',has_stock_report=isinstance(data.get('stock_report'),dict))
+    except (ValueError,TypeError,KeyError) as exc:
+        reasons={'duplicate_json_key','invalid_tool_payload','tool_envelope_source_mismatch','invalid_tool_envelope','invalid_tool_blocks','tool_payload_too_deep'}
+        result['decode_reason']=str(exc) if str(exc) in reasons else 'invalid_json' if isinstance(exc,json.JSONDecodeError) else 'invalid_shape'
+    if arguments is not None:
+        try:
+            args=parse_json(arguments) if isinstance(arguments,str) else arguments
+            if not isinstance(args,dict):raise ValueError()
+            fields=('query','collection','collection_hint','model_code','size','color','heel_cm','category','occasion','check_stock','limit')
+            result['argument_fields']=[k for k in fields if k in args]
+            result['size_argument']='missing' if 'size' not in args else 'valid_integer' if type(args['size']) is int and 35<=args['size']<=43 else 'invalid_type_or_range'
+        except (ValueError,TypeError,KeyError):result['size_argument']='unreadable_arguments'
+    return result

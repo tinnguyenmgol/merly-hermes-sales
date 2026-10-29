@@ -27,7 +27,7 @@
     "/tools/search_products": {
       "post": {
         "operationId": "search_products",
-        "summary": "Customer product selection: without confirmed size returns needs_clarification and no catalog data; with size checks fresh stock. Catalog-only browsing is not available to this sales tool. Never invent size, IDs or model_code.",
+        "summary": "Find verified-positive customer choices using fresh stock. REQUIRED: size explicitly confirmed by customer. If size is unknown, ask the customer BEFORE calling; never invent size or repeat missing-size calls. Catalog-only browsing is unavailable.",
         "requestBody": {
           "required": true,
           "content": {
@@ -105,7 +105,9 @@
                     "description": "Optional preferred group name, not a required scope. Prioritize its members then keep all structured filters over the full catalog. Missing/ambiguous/unavailable group falls back to catalog filters. Collection membership is not proof of heel/size/color/stock."
                   }
                 },
-                "required": []
+                "required": [
+                  "size"
+                ]
               }
             }
           }

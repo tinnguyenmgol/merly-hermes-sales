@@ -63,7 +63,7 @@ def present(data,rid,started):
     body['_lookup_diagnostics']=lookup_diagnostics(report) if requested else []
     body['_tools_used']=list(dict.fromkeys(c['name'] for c in calls.values()))
     from tool_payload import describe
-    body['_tool_diagnostics']=[describe(outputs.get(cid,{}).get('output'),call['name']) for cid,call in calls.items()][:32]
+    body['_tool_diagnostics']=[describe(outputs.get(cid,{}).get('output'),call['name'],call.get('arguments')) for cid,call in calls.items()][:32]
     body['_policy_topics']=[]
     import json,policy_knowledge
     for call in calls.values():
