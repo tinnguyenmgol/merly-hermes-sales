@@ -75,3 +75,12 @@
 !customer_listing.py
 
 !clarification.py
+
+!learning_contract.py
+!learning_events.py
+!learning-service/
+!learning-service/learning_store.py
+!learning-service/learning_server.py
+!learning-service/learning_cli.py
+!learning-service/recipes.py
+!learning-service/requirements.txt

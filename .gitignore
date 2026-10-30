@@ -9,3 +9,7 @@ exports/
 sales-audit/
 *.env
 !*.env.example
+
+# Private learning evidence and approved bundles are operator-exported only.
+learning-data/
+approved-exports/
