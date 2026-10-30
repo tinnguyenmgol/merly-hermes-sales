@@ -49,6 +49,10 @@ def quotes(calls,outputs,duplicates,started):
             if not isinstance(data.get('title'),str) or len(data['title'])>500:continue
             row={k:data.get(k) for k in ('product_id','variant_id','title','size','color','price_vnd','quantity','subtotal_vnd','available','known_available','inventory_complete','locations','checked_at')}
             row.update(product_url=safe_url(data.get('product_url')),image_url=safe_image(data.get('image_url')),image_scope='variant' if data.get('image_scope')=='variant' else 'product')
+            from math import isfinite
+            spec=data.get('verified_specs',{})
+            heel=spec.get('heel_cm') if isinstance(spec,dict) else None
+            if type(heel) in (int,float) and isfinite(heel) and 0<=heel<=15:row['verified_specs']={'heel_cm':heel}
             rows.append(row)
             if len(rows)>=4:return rows
         except (TypeError,ValueError):continue

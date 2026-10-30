@@ -103,10 +103,19 @@
                     "minLength": 1,
                     "maxLength": 120,
                     "description": "Optional preferred group name, not a required scope. Prioritize its members then keep all structured filters over the full catalog. Missing/ambiguous/unavailable group falls back to catalog filters. Collection membership is not proof of heel/size/color/stock."
+                  },
+                  "heel_mode": {
+                    "type": "string",
+                    "enum": [
+                      "exact",
+                      "unspecified"
+                    ],
+                    "description": "Explicit height decision for THIS request. exact requires heel_cm from the latest confirmed customer requirement; unspecified omits heel_cm when no height was selected. Never infer heel height from foot length. Keep confirmed height across follow-ups; a newly selected height replaces the old one. Ask for clarification before searching if ambiguous."
                   }
                 },
                 "required": [
-                  "size"
+                  "size",
+                  "heel_mode"
                 ]
               }
             }

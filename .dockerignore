@@ -84,3 +84,5 @@
 !learning-service/learning_cli.py
 !learning-service/recipes.py
 !learning-service/requirements.txt
+
+!product_measurements.py

@@ -38,6 +38,8 @@ def recover(answer,payload,user,started,deadline,request,present):
     if 'unverified_product_listing' in repair['reason_codes']:
         repair['task']='Do not list catalog candidates. If size is confirmed, call search_products with check_stock=true and all confirmed criteria. List only verified positive variants, or ask the missing information. Never substitute a color without confirmation.'
     retry=dict(payload)
+    if 'unsupported_spec_claim' in repair['reason_codes']:
+        repair['task']='Use the latest confirmed requirements from the original input and delivered history. Search with exact heel_mode and heel_cm if selected; otherwise unspecified without inventing height. A changed height replaces the old one. Never attach mismatched or unverified-height cards. Ask one clarification only if the requirement itself is ambiguous.'
     repair['reply_constraint']='Without verified inventory, ask a useful clarification or explain lookup incomplete; no price, availability verdict (even negated) or raw protocol. Never guess a measurement or a customer choice.'
     retry['instructions']+='\n\nTURN_VALIDATION_FEEDBACK_JSON (execution feedback, not new facts):\n'+json.dumps(repair,ensure_ascii=False)
     retry['_session_scope']=user+':turn:'+secrets.token_hex(8)

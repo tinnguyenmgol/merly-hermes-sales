@@ -20,7 +20,7 @@ def argument_error(name,arguments,reason):
     definition=DEFINITIONS.get(name)
     schema=definition['requestBody']['content']['application/json']['schema'] if definition else {'type':'object','additionalProperties':False}
     fields=set(schema.get('properties',{}))
-    known={'unknown_fields','unknown_tool','required_ids','stock_scope_required','stock_check_required','verify_specs_before_stock_scope','unknown_topic'}|{'invalid_'+field for field in fields}
+    known={'unknown_fields','unknown_tool','required_ids','stock_scope_required','stock_check_required','inconsistent_heel_requirement','verify_specs_before_stock_scope','unknown_topic'}|{'invalid_'+field for field in fields}
     code=reason if reason in known else 'validation_failed'
     received={field:type(arguments[field]).__name__ for field in sorted(fields&set(arguments))} if isinstance(arguments,dict) else {}
     result={'status':'invalid_arguments','reason':code,'received_field_types':received,'input_schema':schema,'do_not_infer_no_stock':True,
@@ -30,6 +30,7 @@ def argument_error(name,arguments,reason):
     if name=='search_products' and code=='stock_scope_required' and isinstance(arguments,dict) and arguments.get('check_stock') is True and 'size' not in arguments:
         result['needs_clarification']={'fields':['size'],'source_read_attempted':False}
         result['repair_hint']='Ask the customer for the missing confirmed size. Preserve their other criteria. Do not invent a size or repeat the same call; no source lookup has run.'
+    if code=='inconsistent_heel_requirement':result['repair_hint']='Declare heel_mode=exact together with the confirmed numeric heel_cm, or unspecified with no heel_cm. Never guess height; foot length is not heel height. Preserve the latest customer selection.'
     if code=='stock_check_required':result['repair_hint']='Customer search requires check_stock=true and confirmed size. Without size ask the customer. Catalog-only results cannot be listed.'
     diagnostic('MERLY_TOOL_ARGUMENT_ERROR',json.dumps({'tool':name if definition else 'unknown_tool','reason':code,'received_field_types':received}))
     return result,True
