@@ -1,0 +1,154 @@
+{
+  "name": "merly-hermes-sales",
+  "services": {
+    "hermes-sales": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile.hermes"
+      },
+      "restart": "unless-stopped",
+      "mem_limit": "1g",
+      "cpus": 1.0,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "environment": {
+        "PILOT_ROLE": "hermes",
+        "HERMES_HOME": "/data/hermes-sales",
+        "API_SERVER_KEY": "${MERLY_SALES_API_KEY:?new dedicated key required}",
+        "HERMES_SALES_API_BASE": "http://hermes-sales:8643/v1",
+        "HERMES_SALES_ATTESTATION": "/data/sales-audit/inventory.json",
+        "HARAVAN_ACCESS_TOKEN": "${HARAVAN_ACCESS_TOKEN:-}",
+        "CATALOG_CACHE_PATH": "/data/hermes-sales/catalog.json",
+        "GEMINI_API_KEY": "${GEMINI_API_KEY:-}",
+        "GOOGLE_API_KEY": "${GOOGLE_API_KEY:-}",
+        "MERLY_GEMINI_MODEL": "${MERLY_GEMINI_MODEL:-}",
+        "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY:-}",
+        "MERLY_OPENROUTER_MODEL": "${MERLY_OPENROUTER_MODEL:-openai/gpt-oss-20b}",
+        "MERLY_SALES_PROVIDER": "${MERLY_SALES_PROVIDER:-}"
+      },
+      "volumes": [
+        "sales-home:/data/hermes-sales",
+        "sales-audit:/data/sales-audit"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8643/health',timeout=3)"
+        ],
+        "interval": "30s",
+        "timeout": "5s",
+        "start_period": "90s",
+        "retries": 3
+      }
+    },
+    "sales-gateway": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile.hermes"
+      },
+      "restart": "unless-stopped",
+      "mem_limit": "256m",
+      "cpus": 0.5,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "ports": [
+        "127.0.0.1:8789:8080"
+      ],
+      "depends_on": {
+        "hermes-sales": {
+          "condition": "service_healthy"
+        }
+      },
+      "environment": {
+        "PILOT_ROLE": "gateway",
+        "PILOT_ACCESS_KEY": "${PILOT_ACCESS_KEY:?pilot gateway key required}",
+        "PILOT_SESSION_SECRET": "${PILOT_SESSION_SECRET:?session secret required}",
+        "HERMES_SALES_API_BASE": "http://hermes-sales:8643/v1",
+        "HERMES_SALES_API_KEY": "${MERLY_SALES_API_KEY:?new dedicated key required}",
+        "HERMES_SALES_ISOLATION_APPROVED": "${HERMES_SALES_ISOLATION_APPROVED:-0}",
+        "HERMES_CUSTOMER_DATA_APPROVED": "${HERMES_CUSTOMER_DATA_APPROVED:-0}",
+        "HERMES_MODEL_COST_APPROVED": "${HERMES_MODEL_COST_APPROVED:-0}",
+        "HERMES_ALLOW_HTTP": "1",
+        "HERMES_SALES_ATTESTATION": "/data/sales-audit/inventory.json",
+        "HERMES_PILOT_STATE_DB": "/data/pilot-gateway/sessions.sqlite3",
+        "HARAVAN_ACCESS_TOKEN": "${MERLY_GATEWAY_HARAVAN_EMPTY:-}",
+        "GEMINI_API_KEY": "${MERLY_GATEWAY_PROVIDER_EMPTY:-}",
+        "GOOGLE_API_KEY": "${MERLY_GATEWAY_PROVIDER_EMPTY:-}",
+        "OPENROUTER_API_KEY": "${MERLY_GATEWAY_PROVIDER_EMPTY:-}",
+        "MERLY_PUBLIC_CHAT_ENABLED": "${MERLY_PUBLIC_CHAT_ENABLED:-0}",
+        "MERLY_PUBLIC_ORIGIN": "${MERLY_PUBLIC_ORIGIN:-https://chat.merlyshoes.com}",
+        "MERLY_AI_PER_MINUTE": "${MERLY_AI_PER_MINUTE:-6}",
+        "MERLY_AI_PER_DAY": "${MERLY_AI_PER_DAY:-100}",
+        "MERLY_PUBLIC_PER_MINUTE": "${MERLY_PUBLIC_PER_MINUTE:-120}",
+        "MERLY_VISITOR_PER_MINUTE": "${MERLY_VISITOR_PER_MINUTE:-12}",
+        "MERLY_STOCK_PER_MINUTE": "${MERLY_STOCK_PER_MINUTE:-30}",
+        "MERLY_AI_CONCURRENT": "${MERLY_AI_CONCURRENT:-2}",
+        "MERLY_STOCK_CONCURRENT": "${MERLY_STOCK_CONCURRENT:-1}",
+        "MERLY_LEARNING_ENABLED": "1",
+        "MERLY_LEARNING_INGEST_TOKEN": "${MERLY_LEARNING_INGEST_TOKEN:?Create a NEW metadata-ingest-only secret}"
+      },
+      "volumes": [
+        "sales-audit:/data/sales-audit:ro",
+        "gateway-data:/data/pilot-gateway"
+      ]
+    },
+    "learning-review": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile.learning"
+      },
+      "restart": "unless-stopped",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "pids_limit": 32,
+      "mem_limit": "128m",
+      "cpus": 0.25,
+      "expose": [
+        "8090"
+      ],
+      "environment": {
+        "MERLY_LEARNING_INGEST_TOKEN": "${MERLY_LEARNING_INGEST_TOKEN:?Create a NEW metadata-ingest-only secret}",
+        "MERLY_LEARNING_STATE_DIR": "/data"
+      },
+      "volumes": [
+        "learning-review-data:/data"
+      ],
+      "tmpfs": [
+        "/tmp:rw,nosuid,nodev,noexec,size=8m,uid=10001,gid=10001"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8090/health',timeout=2).read()"
+        ],
+        "interval": "30s",
+        "timeout": "3s",
+        "retries": 3
+      },
+      "user": "10001:10001"
+    }
+  },
+  "volumes": {
+    "sales-home": {},
+    "sales-audit": {},
+    "gateway-data": {},
+    "learning-review-data": {}
+  }
+}

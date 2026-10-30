@@ -1,0 +1,16 @@
+{
+  "mode": "offline_verification_not_production_acceptance",
+  "full_suite_passed": 868,
+  "real_loopback_http": true,
+  "real_cli_review_export_cycle": true,
+  "retention_janitor_exercised": true,
+  "approved_content_snapshot_exercised": true,
+  "known_fixed_schema_and_negative_countercase_exercised": true,
+  "real_gunicorn_factory_check": true,
+  "real_compose_config_no_daemon": true,
+  "copied_runtime_imports_checked": true,
+  "docker_image_built": false,
+  "live_learning_service_deployed": false,
+  "model_training_performed": false,
+  "production_runtime_modified": false
+}

@@ -3,7 +3,7 @@ import hmac,json,os,time,secrets,logging,re
 from pathlib import Path
 import hermes_client,state
 import explicit_stock,fast_limits,dialogue
-import public_chat,customer_listing
+import public_chat,customer_listing,learning_events
 LOGGER=logging.getLogger('merly.gateway')
 LOGGER.setLevel(logging.INFO)
 if not LOGGER.hasHandlers():LOGGER.addHandler(logging.StreamHandler())
@@ -73,6 +73,7 @@ def application(env,start):
                 message=data['message'] if not probe else 'Tra tồn theo lựa chọn: '+json.dumps(data,ensure_ascii=False)
                 dialogue.record(sid,message,answer)
                 answer['diagnostic_id']=diagnostic_id
+                learning_events.emit(diagnostic_id,answer,trace)
                 logging.getLogger('merly.gateway').info('MERLY_CHAT_COMPLETED %s',json.dumps({'diagnostic_id':diagnostic_id,'engine':answer.get('engine'),'answer_mode':answer.get('answer_mode'),'knowledge_revision':answer.get('knowledge_revision'),'elapsed_ms':round((time.monotonic()-turn_started)*1000),**(trace or {})}))
                 return result('200 OK',answer,token)
             # All policy/free-form language reaches Hermes, never phrase lookup.
@@ -106,7 +107,9 @@ def application(env,start):
         status=getattr(exc,'response_status','not_available')
         if status not in ('failed','cancelled','in_progress','incomplete','queued','unrecognized'):status='not_available'
         logging.getLogger('merly.gateway').error('MERLY_CHAT_FAILED %s',json.dumps({'diagnostic_id':diagnostic_id,'reason_code':code,'response_status':status,'elapsed_ms':round((time.monotonic()-turn_started)*1000)}))
+        learning_events.emit(diagnostic_id,failure=code)
         return result('503 Service Unavailable',{'error':'hermes_unavailable','reason_code':code,'diagnostic_id':diagnostic_id,'retry_automatically':False})
     except Exception:
         logging.getLogger('merly.gateway').error('MERLY_CHAT_FAILED %s',json.dumps({'diagnostic_id':diagnostic_id,'reason_code':'pilot_unavailable','elapsed_ms':round((time.monotonic()-turn_started)*1000)}))
+        learning_events.emit(diagnostic_id,failure='pilot_unavailable')
         return result('503 Service Unavailable',{'error':'pilot_unavailable','diagnostic_id':diagnostic_id,'retry_automatically':False})
