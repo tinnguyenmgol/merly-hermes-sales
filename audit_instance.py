@@ -22,6 +22,8 @@ def check_model_definitions(definitions):
     size=schema.get('properties',{}).get('size',{})
     if size.get('type')!='integer' or size.get('minimum')!=35 or size.get('maximum')!=43:raise ValueError('model_size_schema_invalid')
     if 'size' not in schema.get('required',[]):raise ValueError('model_size_must_be_required')
+    heel=schema.get('properties',{}).get('heel_mode',{})
+    if 'heel_mode' not in schema.get('required',[]) or heel.get('type')!='string' or heel.get('enum')!=['exact','unspecified']:raise ValueError('model_heel_decision_required')
 
 def main():
     home=Path(os.environ['HERMES_HOME']).resolve()

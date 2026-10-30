@@ -14,7 +14,7 @@ def visible():
 def test_size_required_survives_real_pinned_hermes_schema_conversion():
     defs=visible();audit_instance.check_model_definitions(defs)
     search=next(d['function'] for d in defs if d['function']['name']=='mcp__merly__search_products')
-    assert search['parameters']['required']==['size']
+    assert search['parameters']['required']==['size','heel_mode']
     assert search['parameters']['properties']['size']['type']=='integer'
 
 @pytest.mark.parametrize('change',['optional','missing_property','wrong_type','wrong_min','wrong_max'])

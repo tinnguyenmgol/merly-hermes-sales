@@ -11,6 +11,7 @@ RECIPES={
 
 def suggest(event):
     reasons=event['reason_codes']
+    if 'unsupported_spec_claim' in reasons:return 'constraint_preservation'
     if 'unsupported_stock_claim' in reasons:return 'money_roles'
     if 'rejected_tool_evidence' in reasons:return 'transport_shape'
     if 'unverified_inventory' in reasons:return 'source_metadata'

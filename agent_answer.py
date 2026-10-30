@@ -25,6 +25,21 @@ def risky_stock_wording(text,report):
         if value not in prices:return True
     return False
 
+def unsupported_heel_listing(text,report,quotes):
+    """Cross-check assistant claims against fresh source cards, not customer text."""
+    from product_measurements import measurement_specs
+    from customer_listing import positive_rows,positive
+    claim=measurement_specs({'title':text},{}).get('heel_cm')
+    if claim is None:return False
+    def matches_height(row,specs):
+        actual=measurement_specs({'title':row.get('title','')},specs).get('heel_cm')
+        return type(actual) in (int,float) and actual==claim
+    groups=report.get('groups',[report]) if isinstance(report,dict) else []
+    for group in groups:
+        parents={p['product_id']:p.get('verified_specs',{}) for p in group.get('products',[])}
+        if any(not matches_height(row,parents.get(row['product_id'],{})) for row in positive_rows(group)):return True
+    return any(not matches_height(row,row.get('verified_specs',{})) for row in quotes if positive(row))
+
 def present(data,rid,started):
     from hermes_client import HermesError,EXPECTED
     items=data.get('output')
@@ -133,5 +148,10 @@ def present(data,rid,started):
             args=json.loads(call.get('arguments','{}')) if isinstance(call.get('arguments'),str) else call.get('arguments')
             if clarification_request(unpack(outputs.get(cid,{}).get('output'),call['name']),args) and not reasons:body['needs_clarification']=True
         except (ValueError,TypeError,KeyError):pass
+    if unsupported_heel_listing(text,body.get('stock_options',{}),body.get('quotes',[])):
+        reasons.append('unsupported_spec_claim')
+        for key in ('stock_options','quotes','products'):body.pop(key,None)
+        body['source_links']=[u for u in body['source_links'] if '/products/' not in u]
+        body.update(reply='Thông tin chiều cao chưa được đối chiếu khớp nên mình chưa gửi danh sách mẫu. Mình vẫn giữ các điều kiện bạn đã gửi.',lookup_incomplete=True,answer_mode='evidence_guard')
     body['_guard_reasons']=list(dict.fromkeys(reasons))
     return body

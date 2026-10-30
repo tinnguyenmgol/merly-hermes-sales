@@ -2,7 +2,7 @@
 import re,json
 FIELDS=('query','collection','collection_hint','model_code','size','color','heel_cm','category','occasion','check_stock','limit')
 TOOLS=tuple('mcp__merly__'+n for n in ('search_products','quote_variant','get_policy','get_promotions','size_guide'))
-REASONS=('incomplete_tool_trace','rejected_tool_evidence','unverified_inventory','unsupported_stock_claim','wrong_selection_scope','too_many_product_listings','unverified_product_listing','protocol_text','invalid_dialogue_contract','staff_reported','hermes_timeout','hermes_unavailable','turn_not_completed','pilot_unavailable','other_failure')
+REASONS=('incomplete_tool_trace','rejected_tool_evidence','unverified_inventory','unsupported_stock_claim','unsupported_spec_claim','wrong_selection_scope','too_many_product_listings','unverified_product_listing','protocol_text','invalid_dialogue_contract','staff_reported','hermes_timeout','hermes_unavailable','turn_not_completed','pilot_unavailable','other_failure')
 STATUSES=('approved','reference_only','ok','partial_metadata','partial_inventory','needs_staff_review','needs_staff_confirmation','needs_clarification','invalid_arguments','source_unavailable','tool_unavailable','unverified','publication_not_configured','unknown')
 OUTCOMES=('guarded','failed','staff_marked')
 KEYS={'diagnostic_id','outcome','reason_codes','criterion_fields','tools','tool_statuses'}

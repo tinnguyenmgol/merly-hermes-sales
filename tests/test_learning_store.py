@@ -143,3 +143,10 @@ def test_staff_mark_preserves_existing_automatic_evidence(store):
     mark=store.mark('0123456789abcdef')
     assert mark['case_id']==cid and mark['existing_evidence_preserved']
     assert store.case(cid)['event']==event()
+
+
+def test_spec_mismatch_routes_to_constraint_recipe_not_generic_guidance(store):
+    e=event();e['reason_codes']=['unsupported_spec_claim']
+    cid=store.ingest(e)['case_id'];proposal=store.propose(cid)
+    assert proposal['recipe_id']=='constraint_preservation'
+    assert proposal['state']=='draft' and proposal['deployment_authorized'] is False
