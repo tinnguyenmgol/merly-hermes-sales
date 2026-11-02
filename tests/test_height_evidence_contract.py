@@ -29,8 +29,9 @@ def presented(args,text):
 def test_model_must_explicitly_declare_height_without_nullable_provider_schema():
     defs=visible();audit_instance.check_model_definitions(defs)
     s=next(d['function']['parameters'] for d in defs if d['function']['name']=='mcp__merly__search_products')
-    assert 'heel_mode' in s['required'] and s['properties']['heel_mode']['enum']==['exact','unspecified']
-    s['required'].remove('heel_mode')
+    assert 'heel_selection' in s['required'] and s['properties']['heel_selection']['type']=='string'
+    assert not {'heel_mode','heel_cm'}&set(s['properties'])
+    s['required'].remove('heel_selection')
     with pytest.raises(ValueError,match='model_heel'):audit_instance.check_model_definitions(defs)
 
 @pytest.mark.parametrize('args',[{'heel_mode':'exact'},{'heel_mode':'unspecified','heel_cm':7},{'heel_mode':'unknown'}])
@@ -41,14 +42,14 @@ def test_contradictory_declaration_never_reads_source(monkeypatch,args):
 
 @pytest.mark.parametrize('cm',[5,7,10])
 def test_exact_search_and_positive_cards_match_each_selected_height(heels,cm):
-    out=presented({'size':42,'heel_mode':'exact','heel_cm':cm},f'Các mẫu gót {cm}cm đã tra ở bên dưới.')
+    out=presented({'size':42,'heel_selection':str(cm)},f'Các mẫu gót {cm}cm đã tra ở bên dưới.')
     assert out['answer_mode']=='native' and not out['_guard_reasons']
     view=customer_listing.project(out)
     assert view['listing']['shown']==1
     assert all(p['verified_specs']['heel_cm']==cm for p in view['stock_options']['products'])
 
 def test_unselected_height_keeps_all_available_heights(heels):
-    out=presented({'size':42,'heel_mode':'unspecified'},'Đây là các lựa chọn mình đã tra.')
+    out=presented({'size':42,'heel_selection':'unspecified'},'Đây là các lựa chọn mình đã tra.')
     assert out['answer_mode']=='native'
     assert customer_listing.project(out)['listing']['shown']==3
     assert 'heel_cm' not in out['stock_options']['criteria']
@@ -80,7 +81,7 @@ def test_scripted_height_change_keeps_raw_message_and_delivered_history(heels,ap
             assert payload['conversation_history'][0]['content']==messages[0]
             assert '5cm' in payload['conversation_history'][1]['content']
         cm=(5,7)[n]
-        return native({'size':42,'heel_mode':'exact','heel_cm':cm},f'Các mẫu gót {cm}cm ở bên dưới.')
+        return native({'size':42,'heel_selection':str(cm)},f'Các mẫu gót {cm}cm ở bên dưới.')
     monkeypatch.setattr(client,'request',request)
     for message,cm in zip(messages,(5,7)):
         out=customer_listing.project(client.chat(message,user))
@@ -97,7 +98,7 @@ def test_bad_cards_allow_only_one_existing_bounded_repair(heels,approved,monkeyp
     def request(path,payload):
         seen.append(copy.deepcopy(payload))
         assert payload['input']=='Đổi sang gót 7cm, size 42.'
-        args={'size':42} if len(seen)==1 else {'size':42,'heel_mode':'exact','heel_cm':7}
+        args={'size':42} if len(seen)==1 else {'size':42,'heel_selection':'7'}
         return native(args,'Các mẫu gót 7cm ở bên dưới.')
     monkeypatch.setattr(client,'request',request)
     out=customer_listing.project(client.chat('Đổi sang gót 7cm, size 42.','merly-sales:web:height-repair'))

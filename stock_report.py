@@ -166,7 +166,8 @@ def extract(items,request_id,turn_started=None):
         failed=unverified(args)
         if good and good.get('mode')=='discovery' or 'model_code' not in args or any(k in args for k in ('query','collection','heel_cm','category','occasion')):
             import product_discovery
-            key=('discovery',json.dumps(product_discovery.criteria(args),sort_keys=True))
+            try:key=('discovery',json.dumps(product_discovery.criteria(args),sort_keys=True))
+            except ValueError:key=('invalid_discovery',cid);good=None
         else:key=(failed.get('model_code'),failed.get('size'),failed.get('color_filter'))
         if good:
             classify(good)
@@ -205,6 +206,12 @@ def lookup_diagnostics(report):
         for name in ('catalog_matches','unknown_spec_products','omitted_products','omitted_variants'):
             value=coverage.get(name)
             if type(value) is int and 0<=value<=100000:entry[name]=value
+        scan=item.get('scan',{})
+        if isinstance(scan,dict):
+            if scan.get('stop_reason') in ('exhausted','source_blocked','time_limit','enough_positive','variant_limit','product_limit'):entry['scan_stop_reason']=scan['stop_reason']
+            for name in ('products_examined','variants_selected','positive_variants','positive_products','target'):
+                value=scan.get(name)
+                if type(value) is int and 0<=value<=100000:entry['scan_'+name]=value
         routing=item.get('routing',{})
         if isinstance(routing,dict):
             if routing.get('strategy') in ('filters','collection_first_filters'):entry['retrieval_strategy']=routing['strategy']

@@ -54,12 +54,6 @@
                     "minimum": 35,
                     "maximum": 43
                   },
-                  "heel_cm": {
-                    "type": "number",
-                    "description": "Heel height in cm, never foot length.",
-                    "minimum": 0,
-                    "maximum": 15
-                  },
                   "category": {
                     "type": "string",
                     "description": "Product class/style phrase supported by source product_type/title or approved metadata. Does not prove comfort, fit or occasion.",
@@ -104,18 +98,17 @@
                     "maxLength": 120,
                     "description": "Optional preferred group name, not a required scope. Prioritize its members then keep all structured filters over the full catalog. Missing/ambiguous/unavailable group falls back to catalog filters. Collection membership is not proof of heel/size/color/stock."
                   },
-                  "heel_mode": {
+                  "heel_selection": {
                     "type": "string",
-                    "enum": [
-                      "exact",
-                      "unspecified"
-                    ],
-                    "description": "Explicit height decision for THIS request. exact requires heel_cm from the latest confirmed customer requirement; unspecified omits heel_cm when no height was selected. Never infer heel height from foot length. Keep confirmed height across follow-ups; a newly selected height replaces the old one. Ask for clarification before searching if ambiguous."
+                    "minLength": 1,
+                    "maxLength": 24,
+                    "pattern": "^(?:unspecified|(?:[0-9]|1[0-4])(?:\\.[0-9]+)?|15(?:\\.0+)?)$",
+                    "description": "ONE atomic heel choice: numeric string in cm from 0 to 15, e.g. \"7\" or \"5.5\", or \"unspecified\" if customer has not selected a height. Keep the latest confirmed height; a new height replaces the old. Never use foot length. No cm suffix, comma, null, heel_mode or separate heel_cm. Ask clarification before searching if ambiguous."
                   }
                 },
                 "required": [
                   "size",
-                  "heel_mode"
+                  "heel_selection"
                 ]
               }
             }

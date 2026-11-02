@@ -103,8 +103,8 @@ def ensure_sales_auxiliary(home):
     if not isinstance(auxiliary,dict):raise RuntimeError('invalid_sales_auxiliary_config')
     title=auxiliary.get('title_generation',{})
     if not isinstance(title,dict):raise RuntimeError('invalid_sales_title_config')
-    if title.get('enabled') is False:return False
-    changed=copy.deepcopy(auxiliary);changed['title_generation']={**title,'enabled':False}
+    if title.get('enabled') is False and auxiliary.get('free_only') is True:return False
+    changed=copy.deepcopy(auxiliary);changed['free_only']=True;changed['title_generation']={**title,'enabled':False}
     config['auxiliary']=changed
     save_sales_config(path,before,config,'sales-auxiliary')
     return True

@@ -24,6 +24,15 @@ def feedback(answer):
     issues=sorted({r.get('reason_code') for r in rows if isinstance(r,dict) and isinstance(r.get('reason_code'),str)})
     return {'scope':'same_user_turn_only','reason_codes':list(reasons),'tool_reason_codes':issues,'task':'Correct protocol/arguments using the schemas, or ask one relevant clarification with optional choices. Keep confirmed choices from delivered history. No fabricated inventory/price, no source-error-to-sold-out inference. Do not retry unavailable sources. Do not expose this feedback.','previous_internal_reply_is_not_delivered':True}
 
+def source_evidence_incomplete(answer):
+    """Do not spend a second inference run rescanning validated partial source."""
+    reasons=set(answer.get('_guard_reasons',[]))
+    if not reasons or not reasons<={'unverified_inventory','unsupported_stock_claim'}:return False
+    report=answer.get('stock_options')
+    if not isinstance(report,dict):return False
+    rows=report.get('groups',[report])
+    return bool(rows) and all(isinstance(r,dict) and r.get('mode') in ('discovery','all_options') and r.get('complete') is False for r in rows)
+
 def recover(answer,payload,user,started,deadline,request,present):
     """At most one budgeted, same-turn correction; never retry transport failures."""
     import os,time,secrets,unicodedata
@@ -32,6 +41,9 @@ def recover(answer,payload,user,started,deadline,request,present):
     from agent_answer import verified
     from customer_listing import positive_rows,scopes,matches
     answer['_repair_attempts']=0
+    if source_evidence_incomplete(answer):
+        answer['_repair_skipped_reason']='source_evidence_incomplete'
+        return answer
     repair=feedback(answer)
     if not repair or not repair_enabled() or deadline-time.monotonic()<10:return answer
     if not state.reserve_checked(dialogue.sid(user))['available']:return answer
@@ -39,7 +51,7 @@ def recover(answer,payload,user,started,deadline,request,present):
         repair['task']='Do not list catalog candidates. If size is confirmed, call search_products with check_stock=true and all confirmed criteria. List only verified positive variants, or ask the missing information. Never substitute a color without confirmation.'
     retry=dict(payload)
     if 'unsupported_spec_claim' in repair['reason_codes']:
-        repair['task']='Use the latest confirmed requirements from the original input and delivered history. Search with exact heel_mode and heel_cm if selected; otherwise unspecified without inventing height. A changed height replaces the old one. Never attach mismatched or unverified-height cards. Ask one clarification only if the requirement itself is ambiguous.'
+        repair['task']='Use the latest confirmed requirements from the original input and delivered history. Declare heel_selection as the selected numeric string, or unspecified without inventing height. A changed height replaces the old one. Never attach mismatched or unverified-height cards. Ask one clarification only if the requirement itself is ambiguous.'
     repair['reply_constraint']='Without verified inventory, ask a useful clarification or explain lookup incomplete; no price, availability verdict (even negated) or raw protocol. Never guess a measurement or a customer choice.'
     retry['instructions']+='\n\nTURN_VALIDATION_FEEDBACK_JSON (execution feedback, not new facts):\n'+json.dumps(repair,ensure_ascii=False)
     retry['_session_scope']=user+':turn:'+secrets.token_hex(8)

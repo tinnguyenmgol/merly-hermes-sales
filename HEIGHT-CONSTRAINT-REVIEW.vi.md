@@ -1,3 +1,6 @@
+> Bản trước: heel_mode/heel_cm đã được thay bằng heel_selection.
+> Xem STOCK-LOG-FIX.vi.md và schema hiện tại; không dùng cặp trường cũ cho model.
+
 # Bảo toàn chiều cao: hợp đồng model và kiểm chứng thẻ
 
 ## Phạm vi bản sửa
