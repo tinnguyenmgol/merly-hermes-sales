@@ -2,6 +2,7 @@
 import contextlib,json,os,sys,time
 from pathlib import Path
 from safety import NAMES,digest
+from product_measurements import HEEL_SELECTION_PATTERN
 
 def check_config(config):
     if config.get('memory',{}).get('memory_enabled') is not False or config.get('memory',{}).get('user_profile_enabled') is not False:raise ValueError('disable_global_memory')
@@ -22,8 +23,9 @@ def check_model_definitions(definitions):
     size=schema.get('properties',{}).get('size',{})
     if size.get('type')!='integer' or size.get('minimum')!=35 or size.get('maximum')!=43:raise ValueError('model_size_schema_invalid')
     if 'size' not in schema.get('required',[]):raise ValueError('model_size_must_be_required')
-    heel=schema.get('properties',{}).get('heel_mode',{})
-    if 'heel_mode' not in schema.get('required',[]) or heel.get('type')!='string' or heel.get('enum')!=['exact','unspecified']:raise ValueError('model_heel_decision_required')
+    heel=schema.get('properties',{}).get('heel_selection',{})
+    if 'heel_selection' not in schema.get('required',[]) or heel.get('type')!='string' or heel.get('pattern')!=HEEL_SELECTION_PATTERN or heel.get('maxLength')!=24 or any(k in schema.get('properties',{}) for k in ('heel_mode','heel_cm')):raise ValueError('model_heel_decision_invalid')
+
 
 def main():
     home=Path(os.environ['HERMES_HOME']).resolve()

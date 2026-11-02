@@ -88,6 +88,7 @@
   "auxiliary": {
     "title_generation": {
       "enabled": false
-    }
+    },
+    "free_only": true
   }
 }

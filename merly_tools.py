@@ -47,10 +47,13 @@ def variant_price(variant):
 
 from product_measurements import measurement_specs as verified_product_specs
 
-SEARCH_FIELDS={'heel_mode':(str,1,11),'model_code':(str,1,32),'query':(str,1,120),'collection':(str,1,120),'collection_hint':(str,1,120),'color':(str,1,40),'size':(int,35,43),'heel_cm':(float,0,15),'category':(str,1,60),'occasion':(str,1,60),'limit':(int,1,6),'check_stock':(bool,0,0),'stock_request_id':(str,32,32)}
+SEARCH_FIELDS={'heel_selection':(str,1,24),'heel_mode':(str,1,11),'model_code':(str,1,32),'query':(str,1,120),'collection':(str,1,120),'collection_hint':(str,1,120),'color':(str,1,40),'size':(int,35,43),'heel_cm':(float,0,15),'category':(str,1,60),'occasion':(str,1,60),'limit':(int,1,6),'check_stock':(bool,0,0),'stock_request_id':(str,32,32)}
 
 def search_products(data,candidate_only=False,candidate_limit=None):
     validate(data,SEARCH_FIELDS)
+    from product_measurements import search_scope
+    try:data=search_scope(data)
+    except ValueError as exc:raise Invalid(str(exc)) from None
     mode=data.get('heel_mode')
     if mode is not None and (mode not in ('exact','unspecified') or (mode=='exact')!=('heel_cm' in data)):raise Invalid('inconsistent_heel_requirement')
     if candidate_limit is not None and (not candidate_only or type(candidate_limit) is not int or not 1<=candidate_limit<=catalog_query.MAX_SCAN_PRODUCTS):raise Invalid('invalid_internal_candidate_limit')

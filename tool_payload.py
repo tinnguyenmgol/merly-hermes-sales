@@ -48,8 +48,13 @@ def describe(value,name,arguments=None):
         try:
             args=parse_json(arguments) if isinstance(arguments,str) else arguments
             if not isinstance(args,dict):raise ValueError()
-            fields=('query','collection','collection_hint','model_code','size','color','heel_cm','category','occasion','check_stock','limit')
+            fields=('query','collection','collection_hint','model_code','size','color','heel_selection','heel_cm','category','occasion','check_stock','limit')
             result['argument_fields']=[k for k in fields if k in args]
+            if 'heel_selection' not in args:result['heel_argument']='missing_or_legacy'
+            else:
+                from product_measurements import search_scope
+                try:result['heel_argument']='selected' if 'heel_cm' in search_scope(args) else 'unspecified'
+                except ValueError:result['heel_argument']='invalid'
             result['size_argument']='missing' if 'size' not in args else 'valid_integer' if type(args['size']) is int and 35<=args['size']<=43 else 'invalid_type_or_range'
         except (ValueError,TypeError,KeyError):result['size_argument']='unreadable_arguments'
     return result

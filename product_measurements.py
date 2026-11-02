@@ -28,3 +28,17 @@ def measurement_specs(product,approved):
     elif len(values)>1:meta.pop('heel_cm',None)
     return meta
 
+
+# Typed tool token, NEVER a customer-message parser. One atomic decision avoids
+# exact+missing-cm contradictions. Legacy numeric callers remain internal-compatible.
+HEEL_SELECTION_PATTERN=r'^(?:unspecified|(?:[0-9]|1[0-4])(?:\.[0-9]+)?|15(?:\.0+)?)$'
+def search_scope(data):
+    out=dict(data)
+    if 'heel_selection' not in out:return out
+    value=out.pop('heel_selection')
+    if 'heel_mode' in out or 'heel_cm' in out:raise ValueError('conflicting_heel_selection')
+    if not isinstance(value,str) or len(value)>24 or not re.fullmatch(HEEL_SELECTION_PATTERN,value):raise ValueError('invalid_heel_selection')
+    if value!='unspecified':
+        number=float(value)
+        out['heel_cm']=int(number) if number.is_integer() else number
+    return out

@@ -6,7 +6,10 @@ from datetime import datetime,timezone
 KEYS=('query','collection','model_code','size','color','heel_cm','category','occasion')
 MAX_PRODUCTS=catalog_query.MAX_SCAN_PRODUCTS;MAX_VARIANTS=40;BATCH=10;SECONDS=15
 
-def criteria(data):return {k:data[k] for k in KEYS if k in data}
+def criteria(data):
+    from product_measurements import search_scope
+    data=search_scope(data)
+    return {k:data[k] for k in KEYS if k in data}
 def matching_specs(product,data,tools,meta):
     specs=catalog_query.specs(product,meta.get(str(product['id']),{}),data,tools.verified_product_specs)
     if 'query' in data and not catalog_query.name_matches(product,data['query']):return specs,'changed'
@@ -113,6 +116,9 @@ def validate(report,args,turn_started):
     from stock_report import InvalidReport,clean_variant,safe_url
     from merly_tools import catalog,LOCATIONS,enrichment
     def bad(code):raise InvalidReport(code)
+    from product_measurements import search_scope
+    try:args=search_scope(args)
+    except (ValueError,TypeError):bad('invalid_scope')
     if not isinstance(report,dict) or report.get('schema')!='merly-product-discovery-v1' or report.get('mode')!='discovery':bad('invalid_shape')
     if report.get('criteria')!=criteria(args):bad('wrong_scope')
     for k,v in criteria(args).items():

@@ -20,17 +20,17 @@ def argument_error(name,arguments,reason):
     definition=DEFINITIONS.get(name)
     schema=definition['requestBody']['content']['application/json']['schema'] if definition else {'type':'object','additionalProperties':False}
     fields=set(schema.get('properties',{}))
-    known={'unknown_fields','unknown_tool','required_ids','stock_scope_required','stock_check_required','inconsistent_heel_requirement','verify_specs_before_stock_scope','unknown_topic'}|{'invalid_'+field for field in fields}
+    known={'invalid_heel_cm','invalid_heel_mode','unknown_fields','unknown_tool','required_ids','stock_scope_required','stock_check_required','inconsistent_heel_requirement','conflicting_heel_selection','verify_specs_before_stock_scope','unknown_topic'}|{'invalid_'+field for field in fields}
     code=reason if reason in known else 'validation_failed'
     received={field:type(arguments[field]).__name__ for field in sorted(fields&set(arguments))} if isinstance(arguments,dict) else {}
     result={'status':'invalid_arguments','reason':code,'received_field_types':received,'input_schema':schema,'do_not_infer_no_stock':True,
       'repair_hint':'Correct the arguments using input_schema. Omit unused optional fields, not null/empty placeholders. Do not repeat identical failing arguments. Never guess product/variant IDs or infer zero stock from this error.'}
     if name=='search_products':
-        result['stock_requirements']={'when':'check_stock=true','required':['size'],'model_code':'optional exact string; do not invent for criteria search','size':'integer 35-43, not a quoted string','criteria':['query','collection','heel_cm','category','occasion','color']}
+        result['stock_requirements']={'when':'check_stock=true','required':['size','heel_selection'],'model_code':'optional exact string; do not invent for criteria search','size':'integer 35-43, not a quoted string','criteria':['query','collection','heel_selection','category','occasion','color']}
     if name=='search_products' and code=='stock_scope_required' and isinstance(arguments,dict) and arguments.get('check_stock') is True and 'size' not in arguments:
         result['needs_clarification']={'fields':['size'],'source_read_attempted':False}
         result['repair_hint']='Ask the customer for the missing confirmed size. Preserve their other criteria. Do not invent a size or repeat the same call; no source lookup has run.'
-    if code=='inconsistent_heel_requirement':result['repair_hint']='Declare heel_mode=exact together with the confirmed numeric heel_cm, or unspecified with no heel_cm. Never guess height; foot length is not heel height. Preserve the latest customer selection.'
+    if code in ('inconsistent_heel_requirement','invalid_heel_selection','conflicting_heel_selection'):result['repair_hint']='Use ONLY heel_selection: a numeric string in cm (0 to 15) for the latest confirmed height, or unspecified. No heel_mode, separate heel_cm, units, comma, null or foot length. Never guess height.'
     if code=='stock_check_required':result['repair_hint']='Customer search requires check_stock=true and confirmed size. Without size ask the customer. Catalog-only results cannot be listed.'
     diagnostic('MERLY_TOOL_ARGUMENT_ERROR',json.dumps({'tool':name if definition else 'unknown_tool','reason':code,'received_field_types':received}))
     return result,True
