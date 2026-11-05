@@ -72,7 +72,8 @@ def chat(message,user,previous_response_id=''):
              '_session_scope':user+':turn:'+secrets.token_hex(8)}
     try:knowledge,revision,approved=policy_knowledge.context(Path(__file__).parent)
     except policy_knowledge.InvalidKnowledge:raise HermesError('knowledge_context_invalid') from None
-    payload['instructions']+=turn_contract.runtime_context()+knowledge
+    reference_context=dialogue.size_reference_context(dialogue.sid(user))
+    payload['instructions']+=turn_contract.runtime_context()+reference_context+knowledge
     snapshot=json.loads(knowledge.rsplit('\n',1)[-1])
     reference_links=[u for row in snapshot['policies'] for u in row.get('website_reference',{}).get('customer_links',[])]
     model=os.getenv('HERMES_SALES_MODEL_ALIAS','')
@@ -90,6 +91,7 @@ def chat(message,user,previous_response_id=''):
     answer=turn_contract.recover(answer,payload,user,turn_started,deadline,request,present)
     answer['source_links']=list(dict.fromkeys(answer.get('source_links',[])+reference_links))[:64]
     answer['_history_messages']=len(payload['conversation_history'])
+    answer['_size_reference_attached']=bool(reference_context)
     answer['knowledge_revision']=revision
     answer['approved_policy_topics']=approved
     return answer

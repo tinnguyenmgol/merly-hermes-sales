@@ -135,6 +135,33 @@ def ensure_sales_execution_budget(home):
     save_sales_config(path,before,config,'sales-execution-budget')
     return True
 
+def ensure_sales_loop_guardrails(home):
+    """Native SDK policy in dedicated sales only; preserve unrelated settings."""
+    import json,copy,hermes_yaml
+    from audit_instance import check_config
+    path=Path(home)/'config.yaml'
+    if path.is_symlink():raise RuntimeError('sales_config_symlink_not_supported')
+    before=path.read_bytes();config=hermes_yaml.safe_load(before.decode());check_config(config)
+    model=config.get('model',{})
+    if isinstance(model,dict) and model.get('api_key'):raise RuntimeError('model_inline_key_requires_review')
+    old=config.get('agent',{})
+    if not isinstance(old,dict):raise RuntimeError('invalid_sales_agent_config')
+    agent=copy.deepcopy(old);existing=agent.get('tool_loop_guardrails',{})
+    if not isinstance(existing,dict):raise RuntimeError('invalid_sales_loop_guardrails')
+    desired=json.loads((ROOT/'hermes-config.template.json').read_text())['agent']
+    merged=copy.deepcopy(existing)
+    for key,value in desired['tool_loop_guardrails'].items():
+        if isinstance(value,dict):
+            prior=merged.get(key,{})
+            if not isinstance(prior,dict):raise RuntimeError('invalid_sales_loop_guardrails')
+            merged[key]={**prior,**value}
+        else:merged[key]=value
+    agent['stall_guards']=True;agent['tool_loop_guardrails']=merged
+    if json.dumps(old,sort_keys=True)==json.dumps(agent,sort_keys=True):return False
+    config['agent']=agent
+    save_sales_config(path,before,config,'sales-loop-guardrails')
+    return True
+
 def ensure_sales_execution_prompt(home):
     """Replace only the managed execution block/legacy cap, not custom SOUL text."""
     begin='<!-- MERLY_EXECUTION_POLICY_BEGIN -->';end='<!-- MERLY_EXECUTION_POLICY_END -->'
@@ -224,10 +251,11 @@ def main():
     ensure_merly_child_env(home)
     ensure_sales_model(home)
     ensure_sales_auxiliary(home)
+    loop_changed=ensure_sales_loop_guardrails(home)
     budget_changed=ensure_sales_execution_budget(home)
     prompt_changed=ensure_sales_execution_prompt(home)
     import json
-    print(json.dumps({'status':'sales_execution_policy_ready',**sales_execution_budget(),'config_migrated':budget_changed,'prompt_migrated':prompt_changed}),flush=True)
+    print(json.dumps({'status':'sales_execution_policy_ready',**sales_execution_budget(),'config_migrated':budget_changed,'prompt_migrated':prompt_changed,'loop_guardrails_migrated':loop_changed,'loop_hard_stop_enabled':True}),flush=True)
     os.environ.setdefault('MERLY_MCP_PYTHON',sys.executable)
     def audit():
         return subprocess.run([sys.executable,str(ROOT/'audit_instance.py')],cwd=home).returncode==0
