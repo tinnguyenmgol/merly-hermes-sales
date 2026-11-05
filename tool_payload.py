@@ -27,6 +27,16 @@ def unpack(value,expected_tool=None):
             if len(value)!=1 or not isinstance(value[0],dict) or value[0].get('type') not in (None,'text','input_text','output_text'):raise ValueError('invalid_tool_blocks')
             value=value[0].get('text');continue
         if isinstance(value,dict):
+            # SDK isError envelopes may contain serialized typed failures.
+            # Never unwrap an error into stock/policy evidence or scrape prose.
+            if set(value)=={'error'}:
+                error=value['error']
+                if isinstance(error,str):
+                    try:error=parse_json(error,expected_tool)
+                    except (ValueError,TypeError):return value
+                if isinstance(error,dict) and error.get('status') in ('invalid_arguments','source_unavailable','tool_unavailable') and 'stock_report' not in error:
+                    return error
+                return value
             for key in ('structuredContent','result'):
                 if key in value:value=value[key];break
             else:return value
@@ -58,3 +68,8 @@ def describe(value,name,arguments=None):
             result['size_argument']='missing' if 'size' not in args else 'valid_integer' if type(args['size']) is int and 35<=args['size']<=43 else 'invalid_type_or_range'
         except (ValueError,TypeError,KeyError):result['size_argument']='unreadable_arguments'
     return result
+
+
+def missing_size_feedback():
+    """Canonical no-source control. Missing API argument != missing customer info."""
+    return {'status':'invalid_arguments','reason':'missing_required_fields','missing_fields':['size'],'next_action':'recover_confirmed_fields_or_ask','source_read_attempted':False,'stock_checked':False,'products':[],'required_fields':['size','heel_selection'],'do_not_infer_no_stock':True,'repair_hint':'The TOOL CALL omitted size; this does not prove the customer omitted it. Read the original current message and delivered customer history. Resend with explicitly confirmed size and all current criteria. Ask the customer only if size is genuinely unknown or conflicting. Never guess or repeat an incomplete call.'}

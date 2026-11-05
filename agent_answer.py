@@ -153,5 +153,9 @@ def present(data,rid,started):
         for key in ('stock_options','quotes','products'):body.pop(key,None)
         body['source_links']=[u for u in body['source_links'] if '/products/' not in u]
         body.update(reply='Thông tin chiều cao chưa được đối chiếu khớp nên mình chưa gửi danh sách mẫu. Mình vẫn giữ các điều kiện bạn đã gửi.',lookup_incomplete=True,answer_mode='evidence_guard')
+    # A no-source control can justify a question, never an inventory statement.
+    if body.get('needs_clarification') and not has_positive and not any(positive(q) for q in quotes) and not only_question(text):
+        reasons.append('unverified_inventory')
+        body.update(reply=FAILURE,answer_mode='evidence_guard',lookup_incomplete=True,needs_clarification=False)
     body['_guard_reasons']=list(dict.fromkeys(reasons))
     return body
