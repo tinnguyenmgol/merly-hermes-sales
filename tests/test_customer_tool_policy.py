@@ -19,7 +19,7 @@ def test_missing_size_returns_no_candidates_and_never_reads_source(monkeypatch,a
     monkeypatch.setattr(t,'dispatch',lambda *a:pytest.fail('must not read source'))
     before=copy.deepcopy(args);data,error=m.invoke('search_products',args)
     assert not error and args==before
-    assert data['status']=='needs_clarification' and data['missing_fields']==['size']
+    assert data['status']=='invalid_arguments' and data['missing_fields']==['size']
     assert data['products']==[] and data['stock_checked'] is False and data['source_read_attempted'] is False
     assert stock.clarification_request(data,args)
 
@@ -93,7 +93,7 @@ def test_actual_mcp_result_and_pinned_native_wire_preserve_clarification(args):
     from gateway.platforms.api_server_openai_routes import OpenAICompatRoutesMixin as NativeAPI
     began=time.time()
     result=asyncio.run(m.call_tool(None,mt.CallToolRequestParams(name='search_products',arguments=args)))
-    assert not result.is_error and result.structured_content['status']=='needs_clarification'
+    assert not result.is_error and result.structured_content['status']=='invalid_arguments'
     rendered=_render_call_tool_result(result,'merly')
     question='Chị đi size mấy để em kiểm tra mẫu còn hàng ạ?'
     messages=[{'role':'assistant','tool_calls':[{'id':'native_missing','type':'function','function':{'name':'mcp__merly__search_products','arguments':json.dumps(args)}}]},{'role':'tool','tool_call_id':'native_missing','content':rendered}]

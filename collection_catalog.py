@@ -109,8 +109,9 @@ def prioritize(rows,preferred_ids,window):
     """
     ordered=[];batch=max(1,min(4,window//2))
     for rank in sorted({r['_candidate_rank'] for r in rows}):
-        inside=[r for r in rows if r['_candidate_rank']==rank and r['product_id'] in preferred_ids]
-        outside=[r for r in rows if r['_candidate_rank']==rank and r['product_id'] not in preferred_ids]
+        ranked=sorted((r for r in rows if r['_candidate_rank']==rank),key=lambda r:not r.get('_stock_hint',False))
+        inside=[r for r in ranked if r['product_id'] in preferred_ids]
+        outside=[r for r in ranked if r['product_id'] not in preferred_ids]
         for start in range(0,max(len(inside),len(outside)),batch):
             ordered.extend(inside[start:start+batch]);ordered.extend(outside[start:start+batch])
     return ordered

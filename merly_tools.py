@@ -100,9 +100,10 @@ def search_products(data,candidate_only=False,candidate_limit=None):
         if mismatch:continue
         if missing:
             unknown+=1;unverified.update(missing);continue
-        variants=[]
+        variants=[];stock_hint=False
         for v in p['variants']:
             size=variant_size(p,v);color=variant_color(p,v)
+            if type(v.get('inventory_quantity')) is int and v['inventory_quantity']>0 and ('size' not in data or size==str(data['size'])) and ('color' not in data or color is not None and catalog.norm(color)==catalog.norm(data['color'])):stock_hint=True
             if not candidate_only and 'size' in data and str(data['size'])!=size:continue
             if not candidate_only and 'color' in data and (color is None or catalog.norm(data['color'])!=catalog.norm(color)):continue
             variants.append({'variant_id':v['id'],'size':size,'color':color})
@@ -112,9 +113,10 @@ def search_products(data,candidate_only=False,candidate_limit=None):
             if 'query' in data:evidence['query']={'field':'title/product_type','value':data['query']}
             hint=any(('size' not in data or v['size']==str(data['size'])) and ('color' not in data or v['color'] is not None and catalog.norm(v['color'])==catalog.norm(data['color'])) for v in variants)
             unknown_hint=any(v['size'] is None or ('color' in data and v['color'] is None) for v in variants)
-            results.append({'_candidate_rank':0 if hint else 1 if unknown_hint else 2,'product_id':p['id'],'title':p.get('title',''),'product_type':p.get('product_type'),'image_url':image(p),'image_scope':'product','product_url':product_url(p),'variants':variants[:12],'variants_total':len(variants),'variants_truncated':len(variants)>12,'verified_specs':{k:meta[k] for k in ('heel_cm','category','occasion') if k in meta},'match_evidence':evidence,'availability':'not_checked'})
+            results.append({'_stock_hint':stock_hint,'_candidate_rank':0 if hint else 1 if unknown_hint else 2,'product_id':p['id'],'title':p.get('title',''),'product_type':p.get('product_type'),'image_url':image(p),'image_scope':'product','product_url':product_url(p),'variants':variants[:12],'variants_total':len(variants),'variants_truncated':len(variants)>12,'verified_specs':{k:meta[k] for k in ('heel_cm','category','occasion') if k in meta},'match_evidence':evidence,'availability':'not_checked'})
     if candidate_only:results=collection_catalog.prioritize(results,preferred_ids,candidate_limit or catalog_query.MAX_SCAN_PRODUCTS)
-    for p in results:p.pop('_candidate_rank',None)
+    for p in results:
+        p.pop('_candidate_rank',None);p.pop('_stock_hint',None)
     limit=candidate_limit if candidate_limit is not None else data.get('limit',4)
     result={'status':'partial_metadata' if unknown else 'ok','products':results[:limit],'unknown_spec_products':unknown,'unverified_criteria':sorted(unverified),'stock_checked':False,'matched_products':len(results),'products_truncated':len(results)>limit,'note':'Names/types are retrieval evidence, not stock, fit or comfort. Fetch fresh inventory before claiming availability.'}
     types=sorted({p['product_type'] for p in rows if isinstance(p.get('product_type'),str) and 1<=len(p['product_type'])<=255 and catalog.eligible(p)})

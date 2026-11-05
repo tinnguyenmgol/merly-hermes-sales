@@ -21,6 +21,9 @@ def only_question(text):
     if PROTOCOL.search(text) or re.search(r'https?://|www\.|\b(?:ben duoi|cac the|the san pham)\b',n):return False
     if risky_stock_wording(text,{'variants':[]}):return False
     if re.search(r'\d[\d.,]*\s*(?:k\b|đ(?:ồng)?\b|₫|vnd\b)',text,re.I):return False
+    # A bounded trailing PURPOSE clause is a planned lookup, not an assertion.
+    # Do not remove sentences, numbers, prices, links or affirmative tense words.
+    n=re.sub(r'\b(?:de|nham)(?:\s+(?:em|minh|toi|shop|merly))?\s+(?:kiem tra|doi chieu|tra cuu)\s+(?:(?:mau|san pham|giay|size|mau sac|xem|co|nao|con hang|ton kho|hang|a|nhe|nha)\s*)+[?!.]?$', '', n)
     if re.search(r'\b(?:con hang|het hang|co san|san hang|san kho|trong kho|ton kho|in stock|sold out|out of stock|available|availability|stock)\b',n):return False
     if re.search(r'\b(?:con|het|du)\s+(?:size|mau|hang)|\b(?:hien|van|dang)\s+con\b|\b(?:con|co)\s+\d+\s*(?:doi|mau|san pham|sku|chiec)\b',n):return False
     return True

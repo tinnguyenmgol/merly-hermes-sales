@@ -14,7 +14,7 @@ def test_wrong_size_type_has_repair_details(capsys):
 
 def test_missing_stock_scope_is_explicit():
     r,e=server.invoke('search_products',{'model_code':'1514','check_stock':True})
-    assert not e and r['status']=='needs_clarification'
+    assert not e and r['status']=='invalid_arguments'
     assert r['missing_fields']==['size'] and r['source_read_attempted'] is False
 
 def test_unknown_fields_values_and_names_not_echoed(capsys):

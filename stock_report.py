@@ -134,7 +134,9 @@ def clarification_request(data,args):
     try:validate(args,SEARCH_FIELDS)
     except (Invalid,TypeError,ValueError):return False
     expected={'status':'needs_clarification','missing_fields':['size'],'next_action':'ask_missing_customer_fields','source_read_attempted':False,'stock_checked':False,'products':[]}
-    return (isinstance(data,dict) and data==expected and data.get('source_read_attempted') is False and data.get('stock_checked') is False and 'size' not in args and args.get('check_stock',True) is True)
+    from tool_payload import missing_size_feedback
+    new=missing_size_feedback()
+    return (isinstance(data,dict) and (data==expected or data==new and data.get('do_not_infer_no_stock') is True) and data.get('source_read_attempted') is False and data.get('stock_checked') is False and 'size' not in args and args.get('check_stock',True) is True)
 
 def extract(items,request_id,turn_started=None):
     calls={};reports={};failures={};duplicates=set()

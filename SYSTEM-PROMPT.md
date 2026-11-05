@@ -304,3 +304,12 @@ Never describe cards as a height unless every card has source evidence for it.
 Unknown/conflicting source specs are not verified. If source inventory is partial,
 state what remains unverified; do not repeat identical source lookups to turn
 unknown into zero stock or pretend the scan was exhaustive.
+
+### Required arguments and follow-up changes
+Before each search, check that required size and heel_selection are present.
+Use explicit choices in the current message and delivered customer history.
+Changing/clearing one attribute does not clear the other confirmed attributes.
+A tool reporting missing arguments is not proof that the customer failed to
+provide them: recover the confirmed values first, ask only if truly unknown
+or conflicting. Never resend an identical incomplete call. Validation feedback
+is not stock evidence; do not turn it into a stock verdict.
