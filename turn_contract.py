@@ -33,6 +33,13 @@ def source_evidence_incomplete(answer):
     rows=report.get('groups',[report])
     return bool(rows) and all(isinstance(r,dict) and r.get('mode') in ('discovery','all_options') and r.get('complete') is False for r in rows)
 
+def repeated_argument_failures(answer):
+    if not answer.get('_guard_reasons') or answer.get('needs_clarification'):return False
+    rows=answer.get('_tool_diagnostics',[])
+    if not isinstance(rows,list) or not rows:return False
+    if any(not isinstance(r,dict) or r.get('tool')!='mcp__merly__search_products' or r.get('has_stock_report') is True for r in rows):return False
+    return sum(r.get('source_status')=='invalid_arguments' for r in rows)>=2
+
 def recover(answer,payload,user,started,deadline,request,present):
     """At most one budgeted, same-turn correction; never retry transport failures."""
     import os,time,secrets,unicodedata
@@ -41,6 +48,10 @@ def recover(answer,payload,user,started,deadline,request,present):
     from agent_answer import verified
     from customer_listing import positive_rows,scopes,matches
     answer['_repair_attempts']=0
+    if repeated_argument_failures(answer):
+        from agent_answer import FAILURE
+        answer.update(reply=FAILURE,answer_mode='evidence_guard',lookup_incomplete=True,_repair_skipped_reason='repeated_argument_failures')
+        return answer
     if source_evidence_incomplete(answer):
         answer['_repair_skipped_reason']='source_evidence_incomplete'
         return answer

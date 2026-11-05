@@ -1,3 +1,5 @@
+> Bổ sung mới: xem NATIVE-LOOP-GUARD.vi.md; tiêu chí live bên dưới vẫn bắt buộc.
+
 # Nghiệm thu chatbot Merly: tìm hàng và hội thoại
 
 ## Cách chấm

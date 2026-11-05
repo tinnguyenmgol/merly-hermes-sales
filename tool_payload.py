@@ -71,5 +71,7 @@ def describe(value,name,arguments=None):
 
 
 def missing_size_feedback():
-    """Canonical no-source control. Missing API argument != missing customer info."""
-    return {'status':'invalid_arguments','reason':'missing_required_fields','missing_fields':['size'],'next_action':'recover_confirmed_fields_or_ask','source_read_attempted':False,'stock_checked':False,'products':[],'required_fields':['size','heel_selection'],'do_not_infer_no_stock':True,'repair_hint':'The TOOL CALL omitted size; this does not prove the customer omitted it. Read the original current message and delivered customer history. Resend with explicitly confirmed size and all current criteria. Ask the customer only if size is genuinely unknown or conflicting. Never guess or repeat an incomplete call.'}
+    """Canonical control; error first for native SDK failure detection.
+    Structured-only rendering keeps transport healthy but counts logical failure.
+    """
+    return {'error':'missing_required_fields','status':'invalid_arguments','reason':'missing_required_fields','missing_fields':['size'],'next_action':'recover_confirmed_fields_or_ask','source_read_attempted':False,'stock_checked':False,'products':[],'required_fields':['size','heel_selection'],'do_not_infer_no_stock':True,'repair_hint':'The TOOL CALL omitted size; this does not prove the customer omitted it. Read the original current message and delivered customer history. Resend with explicitly confirmed size and all current criteria. Ask the customer only if size is genuinely unknown or conflicting. Never guess or repeat an incomplete call.'}

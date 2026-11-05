@@ -110,4 +110,4 @@ def test_entrypoint_migrates_existing_volume_before_launch(tmp_path,monkeypatch,
     with pytest.raises(SystemExit) as result:r.main()
     assert result.value.code==0 and len(launched)==1
     log=json.loads(capsys.readouterr().out)
-    assert log=={'status':'sales_execution_policy_ready','max_turns':8,'run_budget_seconds':40,'config_migrated':True,'prompt_migrated':True}
+    assert log=={'status':'sales_execution_policy_ready','max_turns':8,'run_budget_seconds':40,'config_migrated':True,'prompt_migrated':True,'loop_guardrails_migrated':False,'loop_hard_stop_enabled':True}

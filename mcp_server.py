@@ -77,6 +77,8 @@ def wire_feedback(result):
 async def call_tool(ctx,params):
     result,error=await asyncio.to_thread(invoke,params.name,params.arguments if params.arguments is not None else {})
     result=wire_feedback(result)
+    from tool_payload import missing_size_feedback
+    if result==missing_size_feedback():return t.CallToolResult(content=[],structuredContent=result,isError=False)
     return t.CallToolResult(content=[t.TextContent(text=json.dumps(result,ensure_ascii=False))],structuredContent=result,isError=error)
 
 server=Server('merly-sales',version='0.1.0',on_list_tools=list_tools,on_call_tool=call_tool)

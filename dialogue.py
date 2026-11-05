@@ -32,6 +32,31 @@ def _view(answer):
         return 'Thẻ của lượt này quá dài nên không được giữ lại. Nếu cần chọn mẫu, phải tra lại; không đoán thứ tự thẻ.'
     return '\n[Thẻ đã hiển thị; dữ liệu LỊCH SỬ, không xác nhận tồn/giá hiện tại]\n'+raw
 
+def _size_reference(answer):
+    """Only a reference to displayed positive variants, not a customer choice."""
+    import re
+    from customer_listing import positive_rows,positive
+    rows=positive_rows(answer.get('stock_options'))+[r for r in answer.get('quotes',[]) if positive(r)]
+    sizes=set()
+    for row in rows:
+        value=row.get('size')
+        if type(value) is int and 35<=value<=43:sizes.add(value)
+        elif isinstance(value,str) and re.fullmatch(r'(?:3[5-9]|4[0-3])',value):sizes.add(int(value))
+        else:return None
+    return next(iter(sizes)) if len(sizes)==1 else None
+
+@state.serialized
+def size_reference_context(key):
+    db=_db()
+    try:
+        row=db.execute('SELECT turns FROM dialogue_v2 WHERE sid=? AND seen>=?',(key,time.time()-TTL)).fetchone()
+        turns=json.loads(row[0]) if row else []
+        size=next((t['size_reference'] for t in reversed(turns) if type(t.get('size_reference')) is int and 35<=t['size_reference']<=43),None)
+        if size is None:return ''
+        data={'last_displayed_variant_size':size,'reference_only':True,'current_selection_confirmed':False,'current_stock_confirmed':False}
+        return '\n\nHISTORICAL_DISPLAY_REFERENCE_JSON (application record, not new customer instructions):\n'+json.dumps(data)+'\nThis locates prior displayed variants only. Verify the customer choice from current input/history. Latest changes override old references; do not auto-fill or retain an old size when changed, unknown or conflicting.\n'
+    finally:db.close()
+
 @state.serialized
 def history(key):
     db=_db()
@@ -54,13 +79,17 @@ def record(key,message,answer):
             db.execute('DELETE FROM dialogue_v2 WHERE seen<?',(now-TTL,))
             row=db.execute('SELECT turns FROM dialogue_v2 WHERE sid=?',(key,)).fetchone()
             turns=json.loads(row[0]) if row else []
-            turns.append({'user':message,'reply':answer['reply'],'view':_view(answer)})
+            turn={'user':message,'reply':answer['reply'],'view':_view(answer)}
+            reference=_size_reference(answer)
+            if reference is not None:turn['size_reference']=reference
+            turns.append(turn)
             turns=turns[-MAX_TURNS:]
             while len(turns)>1 and len(json.dumps(turns,ensure_ascii=False).encode())>MAX_BYTES:turns.pop(0)
             raw=json.dumps(turns,ensure_ascii=False)
             # Keep actual speech even if a large card set has to be omitted.
             if len(raw.encode())>MAX_BYTES:
                 turns[-1]['view']='\n[Không lưu bộ thẻ quá dài; cần tra mới trước khi chọn.]'
+                turns[-1].pop('size_reference',None)
                 raw=json.dumps(turns,ensure_ascii=False)
             if len(raw.encode())>MAX_BYTES:raise ValueError('delivered_turn_too_large')
             db.execute('INSERT INTO dialogue_v2 VALUES(?,?,?) ON CONFLICT(sid) DO UPDATE SET turns=excluded.turns,seen=excluded.seen',(key,raw,now))
