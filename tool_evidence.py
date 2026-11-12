@@ -22,6 +22,11 @@ def usable(call,output,started):
         if call['name']=='mcp__merly__search_products' and (data.get('status')=='needs_clarification' or 'missing_fields' in data):return clarification_request(data,args)
         if isinstance(data.get('stock_report'),dict):return call['name']=='mcp__merly__search_products' and args.get('check_stock',True) is True
         name=call['name'];status=data.get('status')
+        # Successful no-data control, not a campaign/eligibility assertion.
+        # Absence of an owner-published catalog must not invalidate approved FAQ.
+        # Keep the producer's exact shape; never accept offers/claims here.
+        if name=='mcp__merly__get_promotions' and status=='publication_not_configured':
+            return args=={} and set(data)=={'status','offers','shop_has_no_offers'} and data.get('offers')==[] and data.get('shop_has_no_offers') is False
         if status not in STATUSES[name]:return False
         if name=='mcp__merly__search_products' and status in ('ok','partial_metadata'):
             return isinstance(data.get('products'),list)
