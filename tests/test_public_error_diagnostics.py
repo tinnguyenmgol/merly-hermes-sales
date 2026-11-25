@@ -29,3 +29,7 @@ def test_failed_turn_has_safe_category_and_matching_log_id(public,monkeypatch,ca
 @pytest.mark.parametrize('value',[None,{},[],1,True,'constructor','__proto__'])
 def test_unknown_reason_does_not_become_public_text(value):
     assert p.error_category({'reason_code':value})=='request_failed'
+
+@pytest.mark.parametrize('provider,category',[('provider_billing','configuration'),('provider_auth','configuration'),('provider_model_unavailable','configuration'),('provider_rate_limit','upstream_limit'),('provider_unavailable','response_incomplete'),('constructor','response_incomplete')])
+def test_provider_reason_maps_to_public_category(provider,category):
+    assert p.error_category({'reason_code':'turn_not_completed','provider_reason':provider})==category

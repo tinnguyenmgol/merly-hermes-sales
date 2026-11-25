@@ -86,3 +86,19 @@ def test_explicit_model_selection_is_preserved(approved,monkeypatch):
         return responses()
     monkeypatch.setattr(c,'request',request)
     assert c.chat('test','offline-test')['reply']=='FINAL'
+
+@pytest.mark.parametrize('message,reason',[
+ ('HTTP 402: Insufficient credits. Add more using https://openrouter.ai/settings/credits','provider_billing'),
+ ('HTTP 401: No auth credentials found','provider_auth'),
+ ('HTTP 404: No endpoints found for model','provider_model_unavailable'),
+ ('HTTP 429: Rate limit exceeded','provider_rate_limit'),
+ ('HTTP 503: upstream overloaded','provider_unavailable'),
+ ('something odd happened','agent_error'),
+ (None,'not_available')])
+def test_failed_run_carries_fixed_provider_reason(approved,monkeypatch,message,reason):
+    # Shapes taken from the pinned Hermes runtime when OpenRouter rejects a call.
+    data=responses('failed')
+    if message is not None:data['error']={'code':'agent_error','message':message}
+    monkeypatch.setattr(c,'audit',lambda:True);monkeypatch.setattr(c,'request',lambda *a:data)
+    with pytest.raises(c.HermesError,match='turn_not_completed') as info:c.chat('hello','x')
+    assert info.value.provider_reason==reason and info.value.response_status=='failed'

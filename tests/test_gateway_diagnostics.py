@@ -30,3 +30,18 @@ def test_timeout_distinct_from_network_error(approved,monkeypatch,wrapped):
             raise TimeoutError('private-connection-details')
     monkeypatch.setattr(c.urllib.request,'build_opener',lambda *a:Opener())
     with pytest.raises(c.HermesError,match='^hermes_timeout$'):c.request('/responses',{'input':'private'})
+
+def test_provider_reason_logged_without_provider_text(configured,monkeypatch,caplog):
+    def fail(*a):
+        exc=c.HermesError('turn_not_completed');exc.response_status='failed';exc.provider_reason='provider_billing';raise exc
+    monkeypatch.setattr(c,'chat',fail)
+    out=call('private-fixture-message')
+    assert out['body']['provider_reason']=='provider_billing'
+    assert '"provider_reason": "provider_billing"' in caplog.text and out['body']['diagnostic_id'] in caplog.text
+
+def test_untrusted_provider_reason_is_dropped(configured,monkeypatch,caplog):
+    def fail(*a):
+        exc=c.HermesError('turn_not_completed');exc.provider_reason='sk-or-secret-from-provider';raise exc
+    monkeypatch.setattr(c,'chat',fail)
+    out=call('x')
+    assert out['body']['provider_reason']=='not_available' and 'sk-or-secret' not in caplog.text
