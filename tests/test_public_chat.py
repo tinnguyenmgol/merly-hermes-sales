@@ -86,7 +86,7 @@ def test_legacy_embed_script_public_without_key(public):
 def test_notice_instead_of_checkbox(public):
     html=req('/')['raw'].decode()
     assert 'type="checkbox"' not in html and 'Tôi đồng ý' not in html
-    assert 'có thể lưu lịch sử' in html and 'dữ liệu nhạy cảm' in html
+    assert 'lưu tối đa 30 ngày' in html and 'dữ liệu nhạy cảm' in html
     assert html.index('id="privacy-notice"')>html.index('id="send"')
     js=req('/public.js')['raw'].decode()
     assert 'JSON.stringify({message})' in js and 'consent:true' not in js

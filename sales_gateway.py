@@ -3,7 +3,7 @@ import hmac,json,os,time,secrets,logging,re
 from pathlib import Path
 import hermes_client,state
 import explicit_stock,fast_limits,dialogue
-import public_chat,customer_listing,learning_events
+import public_chat,customer_listing,learning_events,insights
 LOGGER=logging.getLogger('merly.gateway')
 LOGGER.setLevel(logging.INFO)
 if not LOGGER.hasHandlers():LOGGER.addHandler(logging.StreamHandler())
@@ -61,17 +61,23 @@ def application(env,start):
     if not hermes_client.configured():return result('503 Service Unavailable',{'error':'hermes_not_approved_or_configured'})
     turn_started=time.monotonic()
     diagnostic_id=secrets.token_hex(8)
+    sid=None
+    visitor_message=data['message'] if not probe else 'Tra tồn theo lựa chọn: '+json.dumps(data,ensure_ascii=False)
+    def elapsed():return round((time.monotonic()-turn_started)*1000)
     try:
         token,sid=state.identity(env.get('HTTP_COOKIE'))
         def limited(error,retry=1):
+            insights.record_failure(sid,visitor_message,error,status='limited',channel='probe' if probe else 'web',elapsed_ms=elapsed())
             return result('429 Too Many Requests',{'error':error,'retry_after':retry,'retry_automatically':False})
         with fast_limits.session(sid) as acquired:
             if not acquired:return limited('turn_in_progress')
             cid=state.touch(sid)
             def deliver(answer,trace=None):
+                original=answer
                 answer=customer_listing.project(answer)
-                message=data['message'] if not probe else 'Tra tồn theo lựa chọn: '+json.dumps(data,ensure_ascii=False)
+                message=visitor_message
                 dialogue.record(sid,message,answer)
+                insights.record(sid,message,original,answer,trace,channel='probe' if probe else 'web',elapsed_ms=elapsed())
                 answer['diagnostic_id']=diagnostic_id
                 learning_events.emit(diagnostic_id,answer,trace)
                 logging.getLogger('merly.gateway').info('MERLY_CHAT_COMPLETED %s',json.dumps({'diagnostic_id':diagnostic_id,'engine':answer.get('engine'),'answer_mode':answer.get('answer_mode'),'knowledge_revision':answer.get('knowledge_revision'),'elapsed_ms':round((time.monotonic()-turn_started)*1000),**(trace or {})}))
@@ -110,8 +116,10 @@ def application(env,start):
         if provider not in hermes_client.PROVIDER_REASONS:provider='not_available'
         logging.getLogger('merly.gateway').error('MERLY_CHAT_FAILED %s',json.dumps({'diagnostic_id':diagnostic_id,'reason_code':code,'response_status':status,'provider_reason':provider,'elapsed_ms':round((time.monotonic()-turn_started)*1000)}))
         learning_events.emit(diagnostic_id,failure=code)
+        if sid:insights.record_failure(sid,visitor_message,code,channel='probe' if probe else 'web',elapsed_ms=elapsed())
         return result('503 Service Unavailable',{'error':'hermes_unavailable','reason_code':code,'provider_reason':provider,'diagnostic_id':diagnostic_id,'retry_automatically':False})
     except Exception:
         logging.getLogger('merly.gateway').error('MERLY_CHAT_FAILED %s',json.dumps({'diagnostic_id':diagnostic_id,'reason_code':'pilot_unavailable','elapsed_ms':round((time.monotonic()-turn_started)*1000)}))
         learning_events.emit(diagnostic_id,failure='pilot_unavailable')
+        if sid:insights.record_failure(sid,visitor_message,'pilot_unavailable',channel='probe' if probe else 'web',elapsed_ms=elapsed())
         return result('503 Service Unavailable',{'error':'pilot_unavailable','diagnostic_id':diagnostic_id,'retry_automatically':False})
