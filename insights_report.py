@@ -27,10 +27,21 @@ def load(days):
         db.row_factory=sqlite3.Row
         turns=[dict(r) for r in db.execute('SELECT * FROM turns WHERE ts>=? ORDER BY ts',(since,))]
         found=[dict(r) for r in db.execute('SELECT s.*,t.session FROM searches s JOIN turns t ON t.id=s.turn_id WHERE s.ts>=? ORDER BY s.ts',(since,))]
-        return turns,found
+        try:events=[dict(r) for r in db.execute('SELECT * FROM events WHERE ts>=?',(since,))]
+        except sqlite3.OperationalError:events=[]
+        return turns,found,events
     finally:db.close()
 
-def summarize(turns,found,chats=5):
+FUNNEL=(('open_teaser','Bấm lời chào'),('open_button','Bấm nút trợ lý'),('size_chip','Chọn size nhanh'),('add_to_cart','Thêm vào giỏ từ chat'),('add_to_cart_failed','Thêm giỏ lỗi'),('checkout','Bấm thanh toán từ chat'))
+
+def funnel(events):
+    out=[]
+    for name,label in FUNNEL:
+        rows=[e for e in events if e['name']==name]
+        out.append({'name':name,'label':label,'count':len(rows),'visitors':len({e['session'] for e in rows})})
+    return out
+
+def summarize(turns,found,chats=5,events=()):
     for s in found:
         if s['positive_skus']>0 and s['outcome'] in ('partial','source_error','unverified','catalog_loading'):s['outcome']='partial_available'
     ok=[t for t in turns if t['status']=='ok'];failed=[t for t in turns if t['status']=='failed'];limited=[t for t in turns if t['status']=='limited']
@@ -63,13 +74,14 @@ def summarize(turns,found,chats=5):
         'outcomes':[[OUTCOME.get(k,k),c] for k,c in Counter(s['outcome'] for s in found).most_common()],
         'unmet_demand':[{'criteria':dict(k),'count':c,'outcomes':dict(unmet_outcomes[k])} for k,c in unmet.most_common(15)],
         'review_sessions':review,
+        'funnel':funnel(list(events)),
     }
 
 def dashboard(days=7,chats=10):
     """Data for the /admin page: summary plus the transcripts worth reviewing."""
     if not insights.path().exists():
         return {'days':days,'no_data':True,**summarize([],[],0),'reasons':REASON,'conversations':{}}
-    turns,found=load(days);s=summarize(turns,found,chats)
+    turns,found,events=load(days);s=summarize(turns,found,chats,events)
     recent=[]
     for t in reversed(turns):
         if t['session'] not in recent:recent.append(t['session'])
@@ -108,6 +120,10 @@ def render(days,s,chats):
     print(f'Tra tồn nhanh theo mã: {s["quick_stock"]} · Tư vấn AI: {s["ai"]} · Thời gian trả lời (trung vị): {s["median_seconds"]}s')
     if s['per_day']:print('Theo ngày:',', '.join(f'{d}: {c}' for d,c in s['per_day']))
     if s['failure_reasons']:print('Lý do không trả lời được:',', '.join(f'{r} ({c})' for r,c in s['failure_reasons']))
+    if any(f['count'] for f in s['funnel']):
+        print('\nPHỄU CHỐT ĐƠN (khách)')
+        for f in s['funnel']:
+            if f['count']:print(f'- {f["label"]}: {f["visitors"]} khách ({f["count"]} lần)')
     print('\nKHÁCH HỎI GÌ')
     print(f'- Tìm/tra hàng: {s["product_search_turns"]} lượt · Bot phải hỏi lại khách: {s["clarification_turns"]} lượt')
     if s['policy_topics']:print('- Chính sách:',', '.join(f'{t} ({c})' for t,c in s['policy_topics']))
@@ -137,7 +153,7 @@ def main(argv=None):
         elif rows:print_chat(a.session,rows,2000)
         else:print('Không tìm thấy phiên này (có thể đã quá hạn lưu).')
         return 0
-    turns,found=load(a.days);s=summarize(turns,found,a.chats)
+    turns,found,events=load(a.days);s=summarize(turns,found,a.chats,events)
     if a.json:print(json.dumps(s,ensure_ascii=False,indent=2))
     else:render(a.days,s,a.chats)
     return 0
