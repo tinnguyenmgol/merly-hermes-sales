@@ -7,6 +7,27 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self,*a,**kw):return None
 EXPECTED={'mcp__merly__'+name for name in ('search_products','quote_variant','size_guide','get_policy','get_promotions')}
 
+PROVIDER_REASONS=('provider_billing','provider_auth','provider_model_unavailable','provider_rate_limit','provider_unavailable','agent_error','not_available')
+
+def provider_reason(data):
+    """Fixed category for a failed native run; the provider text is never logged.
+    Hermes returns e.g. "HTTP 402: Insufficient credits" in error.message when the
+    model provider rejects the call; without this the operator only sees
+    turn_not_completed and cannot tell billing from a missing model.
+    """
+    error=data.get('error') if isinstance(data,dict) else None
+    message=error.get('message') if isinstance(error,dict) else None
+    if not isinstance(message,str):return 'not_available'
+    text=message[:2000].casefold()
+    code=re.search(r'\bhttp\s*([1-5][0-9]{2})\b',text)
+    status=int(code.group(1)) if code else None
+    if status==402 or re.search(r'insufficient credits|billing|quota exceeded|credits? (?:exhausted|balance)',text):return 'provider_billing'
+    if status in (401,403) or re.search(r'invalid api key|unauthori[sz]ed|no auth credentials',text):return 'provider_auth'
+    if status==404 or re.search(r'no endpoints found|model not found|not a valid model',text):return 'provider_model_unavailable'
+    if status==429 or 'rate limit' in text:return 'provider_rate_limit'
+    if (status and status>=500) or re.search(r'timed? ?out|temporarily unavailable|connection',text):return 'provider_unavailable'
+    return 'agent_error'
+
 def configured():
     return all(os.getenv(k)=='1' for k in ('HERMES_SALES_ISOLATION_APPROVED','HERMES_CUSTOMER_DATA_APPROVED','HERMES_MODEL_COST_APPROVED')) and bool(os.getenv('HERMES_SALES_API_BASE')) and bool(os.getenv('HERMES_SALES_API_KEY'))
 
@@ -83,6 +104,7 @@ def chat(message,user,previous_response_id=''):
     if data.get('status')!='completed':
         exc=HermesError('turn_not_completed')
         exc.response_status=data.get('status') if data.get('status') in ('failed','cancelled','in_progress','incomplete','queued') else 'unrecognized'
+        exc.provider_reason=provider_reason(data)
         raise exc
     rid=data.get('id')
     if not isinstance(rid,str) or not re.fullmatch(r'resp_[A-Za-z0-9_-]{1,120}',rid):raise HermesError('invalid_response_id')

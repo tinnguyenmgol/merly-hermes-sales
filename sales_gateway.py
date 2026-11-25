@@ -106,9 +106,11 @@ def application(env,start):
         if code not in allowed and not re.fullmatch(r'hermes_http_[1-5][0-9]{2}',code):code='unclassified_hermes_error'
         status=getattr(exc,'response_status','not_available')
         if status not in ('failed','cancelled','in_progress','incomplete','queued','unrecognized'):status='not_available'
-        logging.getLogger('merly.gateway').error('MERLY_CHAT_FAILED %s',json.dumps({'diagnostic_id':diagnostic_id,'reason_code':code,'response_status':status,'elapsed_ms':round((time.monotonic()-turn_started)*1000)}))
+        provider=getattr(exc,'provider_reason','not_available')
+        if provider not in hermes_client.PROVIDER_REASONS:provider='not_available'
+        logging.getLogger('merly.gateway').error('MERLY_CHAT_FAILED %s',json.dumps({'diagnostic_id':diagnostic_id,'reason_code':code,'response_status':status,'provider_reason':provider,'elapsed_ms':round((time.monotonic()-turn_started)*1000)}))
         learning_events.emit(diagnostic_id,failure=code)
-        return result('503 Service Unavailable',{'error':'hermes_unavailable','reason_code':code,'diagnostic_id':diagnostic_id,'retry_automatically':False})
+        return result('503 Service Unavailable',{'error':'hermes_unavailable','reason_code':code,'provider_reason':provider,'diagnostic_id':diagnostic_id,'retry_automatically':False})
     except Exception:
         logging.getLogger('merly.gateway').error('MERLY_CHAT_FAILED %s',json.dumps({'diagnostic_id':diagnostic_id,'reason_code':'pilot_unavailable','elapsed_ms':round((time.monotonic()-turn_started)*1000)}))
         learning_events.emit(diagnostic_id,failure='pilot_unavailable')

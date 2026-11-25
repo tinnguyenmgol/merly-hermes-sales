@@ -14,7 +14,12 @@ _ERROR_CATEGORIES={
     **dict.fromkeys(('invalid_agent_settings','knowledge_context_invalid','sales_not_approved_or_configured','responses_not_supported','tool_discovery_unavailable','invalid_tool_inventory','unsafe_enabled_toolset','sales_runtime_attestation_required','invalid_sales_endpoint','https_required','hermes_http_401','hermes_http_403'),'configuration'),
     'hermes_http_429':'upstream_limit',
 }
+# Provider rejections (billing/key/model) are operator configuration, not a
+# transient glitch worth retrying; rate limits are upstream limits.
+_PROVIDER_CATEGORIES={'provider_billing':'configuration','provider_auth':'configuration','provider_model_unavailable':'configuration','provider_rate_limit':'upstream_limit'}
 def error_category(details):
+    provider=details.get('provider_reason')
+    if isinstance(provider,str) and provider in _PROVIDER_CATEGORIES:return _PROVIDER_CATEGORIES[provider]
     code=details.get('reason_code')
     if code is None:code=details.get('error')
     return _ERROR_CATEGORIES.get(code,'request_failed') if isinstance(code,str) else 'request_failed'
