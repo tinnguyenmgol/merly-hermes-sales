@@ -103,6 +103,9 @@ def searches(report):
     positive=[r for r in rows if type(r.get('known_available')) is int and r['known_available']>0]
     outcome=report.get('operation_status') if isinstance(report.get('operation_status'),str) else mode
     if outcome=='complete':outcome='available' if positive else ('verified_zero' if rows else 'no_variant')
+    # Verified in-stock rows shown with an incomplete check are a partial success,
+    # not a lookup failure.
+    elif positive and outcome in ('partial','source_error','unverified','catalog_loading'):outcome='partial_available'
     entry={k:_clean(source.get(k),int if k=='size' else float if k=='heel_cm' else str) for k in CRITERIA}
     entry.update(outcome=outcome[:40],positive_skus=len({r.get('variant_id') for r in positive}),positive_products=len({r.get('product_id') for r in positive}),complete=1 if report.get('complete') is True else 0)
     return [entry]

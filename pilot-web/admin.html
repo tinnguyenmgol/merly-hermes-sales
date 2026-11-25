@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Merly · Thống kê trợ lý chat</title><link rel="stylesheet" href="/admin.css">
+<script src="/admin.js" defer></script>
+</head>
+<body><main>
+<header><h1>Thống kê trợ lý chat</h1><p>Khách hỏi gì, tìm gì, và tìm gì mà chưa có hàng.</p></header>
+
+<form id="login" autocomplete="off">
+  <label for="key">Mã truy cập quản trị (PILOT_ACCESS_KEY)</label>
+  <input id="key" type="password" minlength="32" required>
+  <label class="inline"><input id="remember" type="checkbox"> Ghi nhớ trên thiết bị này</label>
+  <button type="submit">Xem thống kê</button>
+</form>
+
+<section id="dashboard" hidden>
+  <div class="toolbar">
+    <div class="range" role="group" aria-label="Khoảng thời gian">
+      <button type="button" data-days="1">Hôm nay</button><button type="button" data-days="7" class="on">7 ngày</button><button type="button" data-days="30">30 ngày</button>
+    </div>
+    <button type="button" id="reload" class="ghost">Tải lại</button>
+    <button type="button" id="logout" class="ghost">Thoát</button>
+  </div>
+  <p id="status" role="status" aria-live="polite"></p>
+
+  <div class="kpis" id="kpis"></div>
+
+  <article><h2>Lượt chat theo ngày</h2><div id="per-day" class="bars"></div></article>
+
+  <article class="highlight"><h2>Nhu cầu chưa đáp ứng</h2><p class="hint">Khách tìm nhưng bot không có hàng còn để giới thiệu. Dùng để quyết định nhập/sản xuất.</p>
+    <div id="unmet"></div></article>
+
+  <div class="grid">
+    <article><h2>Khách tìm size</h2><div id="sizes" class="bars"></div></article>
+    <article><h2>Khách tìm màu</h2><div id="colors" class="bars"></div></article>
+    <article><h2>Kiểu giày</h2><div id="categories" class="bars"></div></article>
+    <article><h2>Chiều cao gót</h2><div id="heels" class="bars"></div></article>
+    <article><h2>Mã mẫu được hỏi</h2><div id="models" class="bars"></div></article>
+    <article><h2>Kết quả tra hàng</h2><div id="outcomes" class="bars"></div></article>
+    <article><h2>Câu hỏi chính sách</h2><div id="topics" class="bars"></div></article>
+    <article><h2>Lý do không trả lời được</h2><div id="failures" class="bars"></div></article>
+  </div>
+
+  <article><h2>Đoạn chat cần xem lại</h2><p class="hint">Lượt lỗi hoặc bot chưa trả lời trọn.</p><div id="review"></div></article>
+  <article><h2>Đoạn chat gần đây</h2><div id="recent"></div></article>
+
+  <footer id="footer"></footer>
+</section>
+</main></body></html>
