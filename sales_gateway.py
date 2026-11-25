@@ -56,7 +56,7 @@ def application(env,start):
             if not isinstance(data,dict) or set(data)-{'model_code','size','color'} or not {'model_code','size'}<=set(data):raise ValueError()
             if not isinstance(data['model_code'],str) or not 1<=len(data['model_code'])<=32 or type(data['size']) is not int or not 35<=data['size']<=43:raise ValueError()
             if 'color' in data and (not isinstance(data['color'],str) or not 1<=len(data['color'])<=40):raise ValueError()
-        elif not isinstance(data,dict) or set(data)!={'message'} or not isinstance(data['message'],str) or not 0<len(data['message'].strip())<=1000:raise ValueError()
+        elif not isinstance(data,dict) or set(data)!={'message'} or not isinstance(data['message'],str) or not data['message'].strip() or len(data['message'])>1000:raise ValueError()
     except (ValueError,TypeError):return result('400 Bad Request',{'error':'invalid_message'})
     if not hermes_client.configured():return result('503 Service Unavailable',{'error':'hermes_not_approved_or_configured'})
     turn_started=time.monotonic()

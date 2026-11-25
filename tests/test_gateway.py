@@ -45,3 +45,10 @@ def test_failure_never_becomes_answer(configured,monkeypatch):
 def test_budget_persisted(configured):
     for _ in range(6):assert state.reserve('a') is not None
     assert state.reserve('b') is None
+
+def test_padded_message_rejected_before_paid_call(configured,monkeypatch):
+    # Raw length is bounded too: whitespace padding must not pass validation,
+    # spend a model call and then fail when the delivered turn is recorded.
+    monkeypatch.setattr(client,'chat',lambda *a:pytest.fail('padded message reached Hermes'))
+    r=call('a'*1000+' '*1500)
+    assert r['status'].startswith('400') and r['body']['error']=='invalid_message'

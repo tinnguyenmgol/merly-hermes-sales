@@ -13,8 +13,14 @@ def risky_stock_wording(text,report):
     # Output evidence guard, never customer-phrase routing. Exhaustive/global
     # claims are intentionally left to the bounded deterministic evidence view.
     from clarification import folded
+    import unicodedata
     n=folded(text)
-    if re.search(r'\b(?:only|sole|chi|duy nhat|toan he thong|toan bo|tat ca|het hang|sold out|out of stock)\b',n):return True
+    if re.search(r'\b(?:only|sole|duy nhat|toan he thong|toan bo|tat ca|het hang|sold out|out of stock)\b',n):return True
+    # Exclusivity "chỉ" is checked before folding: folded "chi" also covers
+    # ordinary words (chi nhánh, chi tiết, chi phí). Unaccented "chi" stays
+    # risky unless it is one of those compounds.
+    raw=unicodedata.normalize('NFC',text.casefold())
+    if re.search(r'\bchỉ\b',raw) or re.search(r'\bchi\b(?!\s+(?:nhánh|nhanh|tiết|tiet|phí|phi|tiêu|tieu|trả|tra)\b)',raw):return True
     reports=report.get('groups',[report])
     prices={row.get('price_vnd') for r in reports for row in r.get('variants',[]) if type(row.get('price_vnd')) is int}
     for amount,k in re.findall(r'(?<!\w)([0-9]+(?:[.,][0-9]+)*)(k)?\s*(?:đ(?:ồng)?|vnd|₫)(?!\w)',text.casefold()):

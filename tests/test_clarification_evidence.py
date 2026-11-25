@@ -58,9 +58,14 @@ def test_question_mark_never_excuses_unverified_claim(claim):
 def test_vietnamese_address_is_not_exclusivity(address):
     assert not risky_stock_wording(address+' muốn xem mẫu nào?',{'variants':[]})
 
-@pytest.mark.parametrize('text',['Chỉ còn một màu','chỉ có mẫu này','Only one color','Hết hàng toàn hệ thống'])
+@pytest.mark.parametrize('text',['Chỉ còn một màu','chỉ có mẫu này','chi con mot mau',unicodedata.normalize('NFD','Chỉ còn một màu'),'Only one color','Hết hàng toàn hệ thống'])
 def test_exclusivity_guard_remains(text):
     assert risky_stock_wording(text,{'variants':[]})
+
+@pytest.mark.parametrize('text',['Bạn muốn xem chi tiết mẫu nào ạ?','Bạn muốn nhận ở chi nhánh nào?','Chi phí giao hàng tùy khu vực, bạn ở quận nào?',unicodedata.normalize('NFD','Bạn muốn xem chi tiết mẫu nào ạ?')])
+def test_ordinary_chi_compounds_are_not_exclusivity(text):
+    assert not risky_stock_wording(text,{'variants':[]})
+    assert only_question(text)
 
 def test_positive_source_cards_and_native_address_are_preserved(source):
     d=output('Chị muốn xem kỹ lựa chọn nào?');d['output']=wire(fresh())[:2]+d['output']

@@ -60,7 +60,7 @@ def handle(env,start,forward):
         # Older open tabs can still send their genuinely checked legacy field.
         # New UI sends message only; never manufacture a consent claim.
         if 'consent' in data and data['consent'] is not True:raise ValueError()
-        if not isinstance(data['message'],str) or not 1<=len(data['message'].strip())<=1000:raise ValueError()
+        if not isinstance(data['message'],str) or not data['message'].strip() or len(data['message'])>1000:raise ValueError()
     except (ValueError,TypeError,KeyError):return result('400 Bad Request',{'error':'invalid_message'})
     if not allow_turn(token):return result('429 Too Many Requests',{'error':'visitor_rate_limit','retry_after':60})
     try:rate=state.resource('PUBLIC')
