@@ -43,3 +43,18 @@ Test real size->heel/corrections/promos, tool-grounded facts, session isolation,
 images/links, denied mutations/injection, latency and costs. Metadata/promotion
 publication still require approved real data. No automatic cutover. Route website
 only after real acceptance. Rollback only new resources, never delete old volumes.
+
+## Model provider: OpenAI Platform
+
+OpenRouter currently refuses inference from the production server (HTTP 400
+"Request path cannot be relayed" on chat/completions and responses, while
+/api/v1/key works). To use OpenAI Platform directly, on the hermes-sales service:
+
+- `MERLY_SALES_PROVIDER=openai`
+- `OPENAI_API_KEY=<key from platform.openai.com>` (hermes-sales only; the gateway refuses it)
+- `MERLY_OPENAI_MODEL=<model id from the OpenAI dashboard>`
+
+Startup replaces only our own managed OpenRouter/Gemini model settings with
+`provider: openai-api`, `base_url: https://api.openai.com/v1` (a backup of the old
+config is kept). Hermes uses the Responses API with `store: false`. Switch back by
+setting `MERLY_SALES_PROVIDER=openrouter` (or `gemini`) and redeploying.
