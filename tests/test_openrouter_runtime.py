@@ -84,3 +84,28 @@ def test_removing_key_does_not_silently_revert_to_gemini(config,monkeypatch):
     monkeypatch.delenv('OPENROUTER_API_KEY');monkeypatch.setenv('MERLY_GEMINI_MODEL','gemini-stale')
     with pytest.raises(RuntimeError,match='openrouter_runtime_key_missing'):run_sales.ensure_sales_model(config)
     assert Y.safe_load((config/'config.yaml').read_text())['model']['provider']=='openrouter'
+
+def test_explicit_gemini_switches_back_from_managed_openrouter(config,monkeypatch):
+    # OpenRouter can refuse inference from some server locations; operators must be
+    # able to move an existing OpenRouter volume to Gemini without a crash loop.
+    monkeypatch.setenv('OPENROUTER_API_KEY',KEY);assert run_sales.ensure_sales_model(config)
+    monkeypatch.setenv('MERLY_SALES_PROVIDER','gemini');monkeypatch.setenv('MERLY_GEMINI_MODEL','gemini-offline-next');monkeypatch.setenv('GEMINI_API_KEY','synthetic-gemini-key')
+    assert run_sales.ensure_sales_model(config)
+    model=Y.safe_load((config/'config.yaml').read_text())['model']
+    assert model=={'provider':'gemini','default':'gemini-offline-next'}
+    assert not run_sales.ensure_sales_model(config)
+    raw=(config/'config.yaml').read_text()
+    assert KEY not in raw and 'synthetic-gemini-key' not in raw
+
+def test_gemini_switch_refuses_modified_openrouter_routing(config,monkeypatch):
+    c=Y.safe_load((config/'config.yaml').read_text())
+    c['model']={'provider':'openrouter','default':'x/y','base_url':'https://other.example/v1','api_mode':'chat_completions'}
+    (config/'config.yaml').write_text(Y.safe_dump(c))
+    monkeypatch.setenv('MERLY_SALES_PROVIDER','gemini');monkeypatch.setenv('MERLY_GEMINI_MODEL','gemini-offline-next');monkeypatch.setenv('GEMINI_API_KEY','synthetic-gemini-key')
+    with pytest.raises(RuntimeError,match='existing_model_provider_requires_review'):run_sales.ensure_sales_model(config)
+    assert Y.safe_load((config/'config.yaml').read_text())==c
+
+def test_implicit_gemini_does_not_replace_openrouter(config,monkeypatch):
+    monkeypatch.setenv('OPENROUTER_API_KEY',KEY);assert run_sales.ensure_sales_model(config)
+    monkeypatch.setenv('MERLY_GEMINI_MODEL','gemini-offline-next');monkeypatch.setenv('GEMINI_API_KEY','synthetic-gemini-key')
+    with pytest.raises(RuntimeError,match='existing_model_provider_requires_review'):run_sales.ensure_gemini_model(config)

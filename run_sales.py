@@ -39,8 +39,14 @@ def ensure_merly_child_env(home):
     save_sales_config(path,before,config,'merly-env')
     return True
 
-def ensure_gemini_model(home):
-    """Explicit operator model choice; credentials stay in process env, not YAML."""
+OPENROUTER_MANAGED={'provider':'openrouter','base_url':'https://openrouter.ai/api/v1','api_mode':'chat_completions'}
+
+def ensure_gemini_model(home,from_openrouter=False):
+    """Explicit operator model choice; credentials stay in process env, not YAML.
+    from_openrouter: only for an explicit MERLY_SALES_PROVIDER=gemini. Reverts the
+    exact routing written by ensure_openrouter_model; any other provider/base_url
+    still requires review.
+    """
     import hermes_yaml,re,hmac
     model=os.getenv('MERLY_GEMINI_MODEL','')
     if not model:return False
@@ -57,8 +63,11 @@ def ensure_gemini_model(home):
     previous=config.get('model')
     if previous is None:previous={}
     if not isinstance(previous,dict):raise RuntimeError('existing_model_config_requires_review')
-    if previous.get('provider') not in (None,'','gemini','google','google-gemini','google-ai-studio'):raise RuntimeError('existing_model_provider_requires_review')
     if previous.get('api_key'):raise RuntimeError('model_inline_key_requires_review')
+    if from_openrouter and previous.get('provider')=='openrouter':
+        if any(k in previous and previous[k]!=v for k,v in OPENROUTER_MANAGED.items()):raise RuntimeError('existing_model_provider_requires_review')
+        previous={k:v for k,v in previous.items() if k not in OPENROUTER_MANAGED}
+    if previous.get('provider') not in (None,'','gemini','google','google-gemini','google-ai-studio'):raise RuntimeError('existing_model_provider_requires_review')
     configured=dict(previous);configured.update({'provider':'gemini','default':model})
     if configured==previous:return False
     config['model']=configured
@@ -202,7 +211,7 @@ def ensure_sales_model(home):
         config=hermes_yaml.safe_load(path.read_text())
         model=config.get('model') if isinstance(config,dict) else None
         if isinstance(model,dict) and model.get('provider')=='openrouter':return ensure_openrouter_model(home)
-    return ensure_gemini_model(home)
+    return ensure_gemini_model(home,from_openrouter=provider=='gemini')
 
 def ensure_customer_policy_prompt(home):
     """Update only FAQ block in dedicated SALES SOUL; preserve other instructions."""
