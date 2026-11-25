@@ -238,26 +238,27 @@ def classify(report):
     return report
 
 def summary(report):
+    from stock_report import RETRY
     state=report['operation_status']
     if report.get('collection_status')=='ambiguous' and report.get('collection_choices'):
         names='; '.join(c['title'] for c in report['collection_choices'])
-        return 'Có nhiều nhóm phù hợp tên bạn hỏi: '+names+'. Bạn muốn xem nhóm nào? Mình chưa tra tồn và vẫn giữ các điều kiện bạn đã gửi.'
+        return 'Merly có vài nhóm gần với tên chị hỏi: '+names+'. Chị muốn xem nhóm nào ạ?'
     if state in ('available','partial_available'):
         n=len({r['product_id'] for r in report['variants'] if r['available'] is True})
-        return 'Đã kiểm tra theo tiêu chí bạn hỏi: có '+str(n)+' mẫu còn hàng đã xác minh ở bên dưới. '+('Phạm vi tra chưa đầy đủ; không kết luận các mẫu khác hết hàng. ' if not report['complete'] else '')+'Chưa giữ hàng.'
-    if state=='catalog_loading':return 'Danh mục đang đồng bộ. Chưa có kết quả tìm mẫu và tồn; không phải thông báo hết hàng.'
+        return 'Em tìm được '+str(n)+' mẫu còn hàng đúng yêu cầu của chị, chị xem ở thẻ bên dưới nhé.'+(' Em chưa kiểm tra hết kho nên có thể còn mẫu khác ạ.' if not report['complete'] else ' Chị ưng mẫu nào em tư vấn thêm cho chị ạ.')
+    if state=='catalog_loading':return 'Hệ thống đang cập nhật danh mục nên em chưa tìm mẫu được ngay ạ. '+RETRY
     if state=='metadata_missing':
-        labels={'collection':'nhóm sản phẩm','heel_cm':'chiều cao gót','category':'kiểu giày','occasion':'dịp sử dụng','size':'size của biến thể','color':'màu của biến thể'}
+        labels={'collection':'nhóm sản phẩm','heel_cm':'chiều cao gót','category':'kiểu giày','occasion':'dịp sử dụng','size':'size','color':'màu'}
         if 'unverified_criteria' in report:missing=set(report['unverified_criteria'])
         else:
             missing={k for p in report['products'] if p['status']=='metadata_unverified' for k in labels if k in report['criteria'] and k not in p['verified_specs']}
             if report['coverage']['unknown_spec_products']:missing.update(k for k in labels if k in report['criteria'])
         if report.get('collection_status')=='resolved':missing.discard('collection')
         elif 'collection' in report.get('criteria',{}):missing.add('collection')
-        subject=', '.join(labels[k] for k in labels if k in missing) or 'thuộc tính của biến thể'
-        return 'Dữ liệu sản phẩm chưa đủ để xác minh '+subject+' theo yêu cầu. Mình chưa thể giới thiệu mẫu đã xác minh phù hợp; đây không phải kết luận hết hàng.'
-    if state=='source_error':return 'Đã tìm được ứng viên trong danh mục nhưng chưa kiểm tra xong dữ liệu hoặc tồn. Mình chưa gửi những mẫu chưa xác minh; đây không phải kết luận hết hàng.'
-    if state=='partial_no_match':return 'Chưa kiểm tra hết phạm vi tìm kiếm nên chưa xác minh được lựa chọn có tồn; không phải kết luận hết hàng.'
-    if state=='verified_zero':return 'Các biến thể khớp yêu cầu đã kiểm tra có tồn 0 tại các kho trả đủ dữ liệu. Không kết luận toàn bộ website hoặc các mẫu chưa kiểm tra đều hết hàng.'
-    if state=='partial':return 'Đã tìm được biến thể phù hợp nhưng tồn chưa được xác minh đầy đủ. Mình chưa gửi những lựa chọn chưa xác minh; không thể kết luận hết hàng.'
-    return 'Chưa tìm thấy biến thể khớp yêu cầu trong danh mục và phạm vi đã kiểm tra. Không tự bỏ tiêu chí, không phải khẳng định toàn hệ thống hết hàng.'
+        subject=', '.join(labels[k] for k in labels if k in missing) or 'thông tin sản phẩm'
+        return 'Dữ liệu sản phẩm chưa ghi rõ '+subject+' nên em chưa chọn chắc được mẫu đúng ý chị ạ. Chị gửi em mã mẫu hoặc ảnh mẫu chị thích, hoặc '+__import__('stock_report').CONTACT+' nhé.'
+    if state=='source_error':return 'Em đã thấy vài mẫu phù hợp nhưng chưa kiểm tra xong tồn kho ạ. '+RETRY
+    if state=='partial_no_match':return 'Em chưa kiểm tra hết được các mẫu phù hợp nên chưa tìm ra lựa chọn còn hàng ạ. Chị thử lại sau ít phút, hoặc nới bớt một điều kiện để em tìm rộng hơn nhé.'
+    if state=='verified_zero':return 'Những mẫu em tìm được đúng yêu cầu của chị hiện đều hết hàng ạ. Chị có muốn em nới bớt một điều kiện (màu, chiều cao gót…) để tìm thêm không?'
+    if state=='partial':return 'Em đã thấy mẫu phù hợp nhưng chưa kiểm tra xong tồn kho ạ. '+RETRY
+    return 'Em chưa tìm thấy mẫu nào khớp đủ các điều kiện của chị ạ. Chị có muốn nới bớt một điều kiện để em tìm rộng hơn không?'

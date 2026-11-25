@@ -13,12 +13,12 @@
     const figure=document.createElement('figure');figure.className='product-visual';
     const img=document.createElement('img');img.className='product-thumbnail';img.width=72;img.height=72;img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';
     img.alt=typeof row.title==='string'?row.title.slice(0,160):'Ảnh mẫu sản phẩm Merly';
-    const caption=document.createElement('figcaption');caption.textContent=row.image_scope==='variant'?'Ảnh biến thể từ Haravan.':'Ảnh mẫu; chưa xác minh đúng màu đang chọn.';
-    img.addEventListener('error',()=>{figure.replaceChildren(document.createTextNode('Chưa tải được ảnh mẫu.'));},{once:true});
+    const caption=row.image_scope==='variant'?null:document.createElement('figcaption');if(caption)caption.textContent='Ảnh minh họa, màu có thể khác';
+    img.addEventListener('error',()=>{figure.replaceChildren(document.createTextNode('Chưa tải được ảnh.'));},{once:true});
     if(typeof row.product_url==='string'&&/^https:\/\/merlyshoes\.com\/products\/[A-Za-z0-9_-]+$/.test(row.product_url)){
       const link=document.createElement('a');link.href=row.product_url;link.target='_blank';link.rel='noopener noreferrer';link.append(img);figure.append(link);
     }else figure.append(img);
-    figure.append(caption);parent.append(figure);img.src=src;
+    if(caption)figure.append(caption);parent.append(figure);img.src=src;
   }
   window.MerlyMedia=Object.freeze({append,reset:()=>{shown=new Set();},safe});
 })();

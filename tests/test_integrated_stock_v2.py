@@ -43,7 +43,7 @@ def test_retry_failure_preserves_but_marks_previous_evidence(source):
     start=time.time();items=wire(fresh());bad=wire(fresh(),cid='retry');bad[1]['output']='{"status":"invalid_arguments"}'
     r,_=s.extract(items+bad,'unused',turn_started=start)
     assert len(r['variants'])==20 and r['recheck_failed'] and not r['complete']
-    assert 'không phải xác nhận tồn mới' in s.summary(r)
+    assert 'không phải số tồn mới nhất' in s.summary(r)
 
 def test_valid_retry_recovers_after_failure(source):
     start=time.time();bad=wire(fresh(),cid='bad');bad[1]['output']='invalid json'

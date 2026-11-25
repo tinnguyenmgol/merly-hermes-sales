@@ -67,7 +67,7 @@ with tempfile.TemporaryDirectory(prefix='catalog-image-ui-',dir='/workspace/tmp'
             page=ctx.new_page();page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:requests.append(r.url))
             page.goto('https://chat.merlyshoes.com/');expect(page.locator('#status')).to_contain_text('sẵn sàng')
             page.locator('#message').fill('Xem ảnh minh hoạ từ dữ liệu kiểm thử');page.locator('#message').press('Enter')
-            expect(page.locator('#status')).to_contain_text('Đã nhận phản hồi')
+            expect(page.locator('.assistant').last).to_be_visible();expect(page.locator('#send')).to_be_disabled()
             assert page.locator('.stock,.product-thumbnail').count()==0
             page.locator('#message').fill('Tra nhóm kiểm thử và tồn theo điều kiện');page.locator('#message').press('Enter')
             expect(page.locator('.stock')).to_have_count(1)
@@ -78,7 +78,7 @@ with tempfile.TemporaryDirectory(prefix='catalog-image-ui-',dir='/workspace/tmp'
             thumb=page.locator('.product-thumbnail');thumb.scroll_into_view_if_needed()
             expect(thumb).to_have_js_property('complete',True);assert thumb.evaluate('e=>e.naturalWidth>0')
             assert thumb.bounding_box()['width']==72 and thumb.bounding_box()['height']==72
-            expect(page.locator('.product-visual figcaption')).to_contain_text('chưa xác minh đúng màu')
+            expect(page.locator('.product-visual figcaption')).to_contain_text('màu có thể khác')
             assert images and all('referer' not in h and 'authorization' not in h for h in images)
             assert page.locator('.assistant img,script:not([src])').count()==0
             for width in (320,390,1440):
@@ -101,7 +101,7 @@ with tempfile.TemporaryDirectory(prefix='catalog-image-ui-',dir='/workspace/tmp'
             assert page.locator('#bounded-images img').count()==4
             ctx.route('https://product.hstatic.net/failure.jpg',lambda r:r.abort())
             page.evaluate('''()=>{const box=document.createElement('div');box.id='failed-image';document.body.append(box);MerlyMedia.reset();MerlyMedia.append(box,{product_id:99999,image_url:'https://product.hstatic.net/failure.jpg'});}''')
-            page.locator('#failed-image').scroll_into_view_if_needed();expect(page.locator('#failed-image')).to_contain_text('Chưa tải được ảnh mẫu')
+            page.locator('#failed-image').scroll_into_view_if_needed();expect(page.locator('#failed-image')).to_contain_text('Chưa tải được ảnh')
             ctx.route('https://merlyshoes.com/',lambda r:r.fulfill(body='<meta name="viewport" content="width=device-width,initial-scale=1"><script src="https://chat.merlyshoes.com/embed.js" defer></script>',content_type='text/html'))
             framed=ctx.new_page();framed.goto('https://merlyshoes.com/')
             framed.locator('#merly-chat-widget button').click()

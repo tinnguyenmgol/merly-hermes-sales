@@ -35,21 +35,21 @@ with tempfile.TemporaryDirectory(prefix='public-errors-',dir='/workspace/tmp') a
             page.goto('https://chat.merlyshoes.com/');expect(page.locator('#status')).to_contain_text('sẵn sàng')
             def send(message):page.locator('#message').fill(message);page.locator('#message').press('Enter')
             send('tôi cần mua giày nữ');expect(page.locator('.assistant').last).to_have_text('Bạn đang tìm kiểu giày nào?')
-            for message,expected in [('43 đen','không phải do bạn diễn đạt sai'),('TIMEOUT','hết thời gian chờ'),('CONFIG','lỗi cấu hình hoặc quyền kết nối'),('LIMIT','giới hạn lượt xử lý'),('UNKNOWN','Hệ thống chưa hoàn tất')]:
+            for message,expected in [('43 đen','đang gặp trục trặc'),('TIMEOUT','bị ngắt giữa chừng'),('CONFIG','tạm bảo trì'),('LIMIT','nhiều khách hỏi cùng lúc'),('UNKNOWN','đang gặp trục trặc')]:
                 with page.expect_response(lambda r:r.url.endswith('/api/public/chat')) as result:send(message)
                 response=result.value;data=response.json()
                 expect(page.locator('#status')).to_contain_text(expected)
-                expect(page.locator('#status')).to_contain_text('HTTP 503')
+                assert 'HTTP' not in page.locator('#status').inner_text()
                 expect(page.locator('#status')).to_contain_text(data['diagnostic_id'])
                 expect(page.locator('#message')).to_be_editable()
                 before=len(calls);page.wait_for_timeout(150);assert len(calls)==before
                 assert page.locator('.assistant').count()==1 # system errors are not AI dialogue
             assert calls==['tôi cần mua giày nữ','43 đen','TIMEOUT','CONFIG','LIMIT','UNKNOWN']
-            send('NON_JSON');expect(page.locator('#status')).to_contain_text('phản hồi không hợp lệ (HTTP 502)')
-            send('BAD_TRACE');expect(page.locator('#status')).to_contain_text('HTTP 503')
+            send('NON_JSON');expect(page.locator('#status')).to_contain_text('đang gặp trục trặc')
+            send('BAD_TRACE');expect(page.locator('#status')).to_contain_text('đang gặp trục trặc')
             assert 'Mã hỗ trợ:' not in page.locator('#status').inner_text()
             assert 'function ' not in page.locator('#status').inner_text()
-            send('NETWORK');expect(page.locator('#status')).to_contain_text('Không nhận được phản hồi hoàn chỉnh')
+            send('NETWORK');expect(page.locator('#status')).to_contain_text('kiểm tra kết nối mạng')
             assert len(calls)==6 and page.locator('.assistant').count()==1
             assert page.locator('.turn img,.turn script').count()==0
             text=page.locator('body').inner_text()
