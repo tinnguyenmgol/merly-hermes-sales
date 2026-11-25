@@ -248,7 +248,7 @@ def summary(report):
         if positive:
             colors=list(dict.fromkeys(r['color'] for r in report['variants'] if r['available'] is True and isinstance(r.get('color'),str) and r['color']))
             listed=(' màu '+', '.join(colors[:4])) if colors and not report.get('color_filter') else ''
-            return scope+' hiện còn hàng'+listed+' ạ. Chị xem ảnh và giá ở thẻ bên dưới, ưng màu nào chị bấm vào thẻ để đặt trên website nhé.'
+            return scope+' hiện còn hàng'+listed+' ạ. Chị xem ảnh và giá ở thẻ bên dưới, ưng màu nào chị bấm "Thêm vào giỏ" là đặt được luôn ạ.'
         if not report['variants']:return scope+' hiện không có trong danh mục ạ. Chị có muốn em xem size hoặc màu khác không?'
         return scope+' hiện đã hết hàng ạ. Chị có muốn em xem size, màu khác hoặc mẫu tương tự không?'
     if positive:return scope+': em mới kiểm tra được một phần kho, hiện thấy '+str(positive)+' lựa chọn còn hàng ở thẻ bên dưới; có thể vẫn còn lựa chọn khác ạ.'

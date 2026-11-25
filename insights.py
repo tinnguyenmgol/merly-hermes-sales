@@ -29,7 +29,12 @@ CREATE TABLE IF NOT EXISTS searches (turn_id INTEGER NOT NULL REFERENCES turns(i
   model_code TEXT, size INTEGER, color TEXT, category TEXT, heel_cm REAL, occasion TEXT, query TEXT, collection TEXT,
   outcome TEXT, positive_skus INTEGER, positive_products INTEGER, complete INTEGER);
 CREATE INDEX IF NOT EXISTS searches_ts ON searches(ts);
+CREATE TABLE IF NOT EXISTS events (ts REAL NOT NULL, day TEXT NOT NULL, session TEXT NOT NULL, name TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS events_ts ON events(ts);
 '''
+# Sales funnel events sent by the widget/chat page; fixed names only.
+EVENTS=('open_button','open_teaser','size_chip','add_to_cart','add_to_cart_failed','checkout')
+EVENTS_PER_SESSION_DAY=60
 
 def enabled():
     return os.getenv('MERLY_INSIGHTS_ENABLED','1')=='1'
@@ -121,7 +126,8 @@ def _write(sid,channel,status,message,reply,answer,trace,reason,elapsed_ms):
         try:
             with db:
                 if now-_LAST_PURGE[0]>3600:
-                    db.execute('DELETE FROM turns WHERE ts<?',(now-retention_days()*86400,));_LAST_PURGE[0]=now
+                    cutoff=now-retention_days()*86400
+                    db.execute('DELETE FROM turns WHERE ts<?',(cutoff,));db.execute('DELETE FROM events WHERE ts<?',(cutoff,));_LAST_PURGE[0]=now
                 turn=db.execute('SELECT coalesce(max(turn),0)+1 FROM turns WHERE session=?',(session,)).fetchone()[0]
                 cur=db.execute('INSERT INTO turns(ts,day,session,turn,channel,status,reason,engine,answer_mode,message,reply,tools,policy_topics,guard_reasons,needs_clarification,lookup_incomplete,shown,elapsed_ms) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
                     (now,day,session,turn,channel,status,reason,answer.get('engine'),answer.get('answer_mode'),redact(message),redact(reply),names(trace.get('tools_used')),names(trace.get('policy_topics')),names(trace.get('guard_reasons')),
@@ -150,3 +156,20 @@ def record_failure(sid,message,reason,status='failed',channel='web',elapsed_ms=N
         return True
     except Exception:
         LOG.warning('MERLY_INSIGHTS_RECORD_DROPPED');return False
+
+def record_event(sid,name):
+    """One funnel event (fixed name) for a pseudonymous session; bounded per day."""
+    if not enabled() or name not in EVENTS:return False
+    try:
+        now=time.time();day=datetime.fromtimestamp(now,VN).date().isoformat();session=_session(sid)
+        with _LOCK:
+            db=connect()
+            try:
+                with db:
+                    count=db.execute('SELECT count(*) FROM events WHERE session=? AND day=?',(session,day)).fetchone()[0]
+                    if count>=EVENTS_PER_SESSION_DAY:return False
+                    db.execute('INSERT INTO events(ts,day,session,name) VALUES(?,?,?,?)',(now,day,session,name))
+            finally:db.close()
+        return True
+    except Exception:
+        LOG.warning('MERLY_INSIGHTS_EVENT_DROPPED');return False

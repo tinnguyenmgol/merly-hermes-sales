@@ -34,7 +34,7 @@ def visitor(env):
 
 def handle(env,start,forward):
     path=env.get('PATH_INFO','')
-    if not enabled() or path not in ('/','/public.js','/safe-links.js','/product-images.js','/public.css','/embed.js','/merly-logo.png','/api/public/session','/api/public/chat'):return None
+    if not enabled() or path not in ('/','/public.js','/safe-links.js','/product-images.js','/public.css','/embed.js','/merly-logo.png','/api/public/session','/api/public/chat','/api/public/event'):return None
     def result(status,data,cookie=None):
         raw=json.dumps(data,ensure_ascii=False).encode();headers=[('Content-Type','application/json; charset=utf-8'),('Content-Length',str(len(raw))),('Cache-Control','no-store'),('X-Content-Type-Options','nosniff')]
         if type(data.get('retry_after')) is int:headers.append(('Retry-After',str(data['retry_after'])))
@@ -56,6 +56,19 @@ def handle(env,start,forward):
     if env.get('HTTP_ORIGIN')!=expected:return result('403 Forbidden',{'error':'origin'})
     token=visitor(env)
     if not token or not hmac.compare_digest(env.get('HTTP_X_MERLY_CSRF','').encode(),csrf(token).encode()):return result('403 Forbidden',{'error':'session'})
+    if path=='/api/public/event':
+        import insights
+        try:
+            if env.get('CONTENT_TYPE','').split(';')[0]!='application/json':raise ValueError()
+            size=int(env.get('CONTENT_LENGTH','0'))
+            if not 0<size<=256:raise ValueError()
+            data=json.loads(env['wsgi.input'].read(size))
+            if not isinstance(data,dict) or set(data)!={'event'} or data['event'] not in insights.EVENTS:raise ValueError()
+        except (ValueError,TypeError,KeyError):return result('400 Bad Request',{'error':'invalid_event'})
+        if not allow_event(token):return result('429 Too Many Requests',{'error':'visitor_rate_limit','retry_after':60})
+        _,sid=state.identity('merly_hermes_pilot='+token)
+        insights.record_event(sid,data['event'])
+        return result('200 OK',{'ok':True})
     try:
         if env.get('CONTENT_TYPE','').split(';')[0]!='application/json':raise ValueError()
         size=int(env.get('CONTENT_LENGTH','0'))
@@ -104,4 +117,15 @@ def allow_turn(token):
         if len(bucket)>=limit('VISITOR_PER_MINUTE'):return False
         bucket.append(now)
         while len(_RATE)>256:_RATE.popitem(last=False)
+        return True
+
+_EVENTS=OrderedDict()
+def allow_event(token):
+    key=hashlib.sha256(token.encode()).digest();now=time.monotonic()
+    with _LOCK:
+        bucket=_EVENTS.setdefault(key,deque());_EVENTS.move_to_end(key)
+        while bucket and now-bucket[0]>=60:bucket.popleft()
+        if len(bucket)>=20:return False
+        bucket.append(now)
+        while len(_EVENTS)>512:_EVENTS.popitem(last=False)
         return True

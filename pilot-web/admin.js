@@ -86,6 +86,7 @@
     $('login').hidden = true; $('dashboard').hidden = false;
     kpis(d);
     bars('per-day', d.per_day);
+    bars('funnel', (d.funnel || []).filter(f => f.name !== 'add_to_cart_failed' || f.count).map(f => [f.label, f.visitors]));
     unmet(d.unmet_demand || []);
     bars('sizes', d.sizes); bars('colors', d.colors); bars('categories', d.categories); bars('heels', d.heels);
     bars('models', d.models); bars('outcomes', d.outcomes); bars('topics', d.policy_topics); bars('failures', d.failure_reasons, { warn: true });
