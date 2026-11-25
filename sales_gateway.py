@@ -1,5 +1,5 @@
 """Authenticated pilot. Only standalone complete shortcuts skip Hermes; Hermes owns free-form dialogue."""
-import hmac,json,os,time,secrets,logging,re
+import hmac,json,os,time,secrets,logging,re,sqlite3
 from pathlib import Path
 import hermes_client,state
 import explicit_stock,fast_limits,dialogue
@@ -9,7 +9,7 @@ LOGGER.setLevel(logging.INFO)
 if not LOGGER.hasHandlers():LOGGER.addHandler(logging.StreamHandler())
 WEB=Path(__file__).resolve().with_name('pilot-web')
 SECURITY=[('X-Content-Type-Options','nosniff'),('Referrer-Policy','no-referrer'),('X-Frame-Options','DENY'),('Permissions-Policy','camera=(), microphone=(), geolocation=()'),('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'")]
-ASSETS={'/operator':('index.html','text/html; charset=utf-8'),'/':('index.html','text/html; charset=utf-8'),'/pilot.js':('pilot.js','application/javascript; charset=utf-8'),'/pilot.css':('pilot.css','text/css; charset=utf-8')}
+ASSETS={'/admin':('admin.html','text/html; charset=utf-8'),'/admin.js':('admin.js','application/javascript; charset=utf-8'),'/admin.css':('admin.css','text/css; charset=utf-8'),'/operator':('index.html','text/html; charset=utf-8'),'/':('index.html','text/html; charset=utf-8'),'/pilot.js':('pilot.js','application/javascript; charset=utf-8'),'/pilot.css':('pilot.css','text/css; charset=utf-8')}
 def application(env,start):
     def result(code,data,cookie=None):
         body=json.dumps(data,ensure_ascii=False).encode();headers=[('Content-Type','application/json; charset=utf-8'),('Content-Length',str(len(body))),('Cache-Control','no-store'),('X-Content-Type-Options','nosniff')]
@@ -26,6 +26,21 @@ def application(env,start):
     key=os.getenv('PILOT_ACCESS_KEY','')
     if len(key)<32:return result('503 Service Unavailable',{'error':'pilot_key_not_configured'})
     if not hmac.compare_digest(env.get('HTTP_AUTHORIZATION','').encode(),('Bearer '+key).encode()):return result('401 Unauthorized',{'error':'unauthorized'})
+    if env.get('PATH_INFO') in ('/api/admin/insights','/api/admin/conversation') and env.get('REQUEST_METHOD')=='GET':
+        import insights_report,urllib.parse,re as _re
+        query=urllib.parse.parse_qs(env.get('QUERY_STRING',''),max_num_fields=4)
+        try:
+            if env['PATH_INFO']=='/api/admin/conversation':
+                session=(query.get('session') or [''])[0]
+                if not _re.fullmatch(r'[0-9a-f]{16}',session):return result('400 Bad Request',{'error':'invalid_session'})
+                rows=insights_report.conversation(session,50) if insights.path().exists() else []
+                return result('200 OK',{'session':session,'turns':rows})
+            days=(query.get('days') or ['7'])[0];chats=(query.get('chats') or ['10'])[0]
+            if not (days.isdecimal() and 1<=int(days)<=365 and chats.isdecimal() and int(chats)<=20):return result('400 Bad Request',{'error':'invalid_range'})
+            return result('200 OK',insights_report.dashboard(int(days),int(chats)))
+        except (sqlite3.Error,OSError,ValueError):
+            logging.getLogger('merly.gateway').warning('MERLY_INSIGHTS_DASHBOARD_FAILED')
+            return result('503 Service Unavailable',{'error':'insights_unavailable'})
     if env.get('PATH_INFO')=='/health' and env.get('REQUEST_METHOD')=='GET':return result('200 OK',{'hermes_configured':hermes_client.configured(),'pilot_only':True})
     if env.get('PATH_INFO')=='/api/readiness' and env.get('REQUEST_METHOD')=='GET':
         missing=[k for k in ('HERMES_SALES_ISOLATION_APPROVED','HERMES_CUSTOMER_DATA_APPROVED','HERMES_MODEL_COST_APPROVED') if os.getenv(k)!='1']

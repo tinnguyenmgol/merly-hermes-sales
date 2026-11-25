@@ -31,6 +31,8 @@ def load(days):
     finally:db.close()
 
 def summarize(turns,found,chats=5):
+    for s in found:
+        if s['positive_skus']>0 and s['outcome'] in ('partial','source_error','unverified','catalog_loading'):s['outcome']='partial_available'
     ok=[t for t in turns if t['status']=='ok'];failed=[t for t in turns if t['status']=='failed'];limited=[t for t in turns if t['status']=='limited']
     topics=Counter(TOPIC.get(x,x) for t in ok for x in json.loads(t['policy_topics'] or '[]'))
     search_turns={s['turn_id'] for s in found}
@@ -62,6 +64,18 @@ def summarize(turns,found,chats=5):
         'unmet_demand':[{'criteria':dict(k),'count':c,'outcomes':dict(unmet_outcomes[k])} for k,c in unmet.most_common(15)],
         'review_sessions':review,
     }
+
+def dashboard(days=7,chats=10):
+    """Data for the /admin page: summary plus the transcripts worth reviewing."""
+    if not insights.path().exists():
+        return {'days':days,'no_data':True,**summarize([],[],0),'reasons':REASON,'conversations':{}}
+    turns,found=load(days);s=summarize(turns,found,chats)
+    recent=[]
+    for t in reversed(turns):
+        if t['session'] not in recent:recent.append(t['session'])
+        if len(recent)>=chats:break
+    sessions=list(dict.fromkeys(s['review_sessions']+recent))[:chats*2]
+    return {'days':days,'no_data':False,**s,'recent_sessions':recent,'conversations':{k:conversation(k,8) for k in sessions},'reasons':REASON,'retention_days':insights.retention_days()}
 
 def conversation(session,limit=12):
     db=insights.connect(readonly=True)
