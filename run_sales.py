@@ -67,6 +67,9 @@ def ensure_gemini_model(home,from_openrouter=False):
     if from_openrouter and previous.get('provider')=='openrouter':
         if any(k in previous and previous[k]!=v for k,v in OPENROUTER_MANAGED.items()):raise RuntimeError('existing_model_provider_requires_review')
         previous={k:v for k,v in previous.items() if k not in OPENROUTER_MANAGED}
+    if from_openrouter and previous.get('provider')=='openai-api':
+        if previous.get('base_url') not in (None,'https://api.openai.com/v1'):raise RuntimeError('existing_model_provider_requires_review')
+        previous={k:v for k,v in previous.items() if k not in ('provider','base_url','api_mode')}
     if previous.get('provider') not in (None,'','gemini','google','google-gemini','google-ai-studio'):raise RuntimeError('existing_model_provider_requires_review')
     configured=dict(previous);configured.update({'provider':'gemini','default':model})
     if configured==previous:return False
@@ -91,13 +94,50 @@ def ensure_openrouter_model(home):
     previous=config.get('model')
     if previous is None:previous={}
     if not isinstance(previous,dict):raise RuntimeError('existing_model_config_requires_review')
-    if previous.get('provider') not in (None,'','gemini','google','google-gemini','google-ai-studio','openrouter'):raise RuntimeError('existing_model_provider_requires_review')
+    if previous.get('provider')=='openai-api' and previous.get('base_url') in (None,OPENAI_BASE):previous={k:v for k,v in previous.items() if k!='base_url'}
+    if previous.get('provider') not in (None,'','gemini','google','google-gemini','google-ai-studio','openrouter','openai-api'):raise RuntimeError('existing_model_provider_requires_review')
     if previous.get('api_key'):raise RuntimeError('model_inline_key_requires_review')
     configured=dict(previous)
     configured.update({'provider':'openrouter','default':model,'base_url':'https://openrouter.ai/api/v1','api_mode':'chat_completions'})
     if configured==previous:return False
     config['model']=configured
     save_sales_config(path,before,config,'openrouter')
+    return True
+
+OPENAI_BASE='https://api.openai.com/v1'
+
+def ensure_openai_model(home):
+    """Explicit sales-only OpenAI Platform choice (Hermes provider openai-api).
+    Key stays in process env; base_url is pinned so an inherited OPENAI_BASE_URL
+    cannot redirect customer conversations. Only our own managed OpenRouter or
+    Gemini settings are replaced; anything else requires review.
+    """
+    import hermes_yaml,re
+    key=os.getenv('OPENAI_API_KEY','')
+    if not key:raise RuntimeError('openai_runtime_key_missing')
+    if re.search(r'\s',key):raise RuntimeError('openai_key_whitespace')
+    if not 20<=len(key)<=512:raise RuntimeError('invalid_openai_key_length')
+    model=os.getenv('MERLY_OPENAI_MODEL','')
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._:-]{0,99}',model):raise RuntimeError('invalid_openai_model_id')
+    path=Path(home)/'config.yaml'
+    if path.is_symlink():raise RuntimeError('sales_config_symlink_not_supported')
+    before=path.read_bytes();config=hermes_yaml.safe_load(before.decode())
+    from audit_instance import check_config
+    check_config(config)
+    previous=config.get('model')
+    if previous is None:previous={}
+    if not isinstance(previous,dict):raise RuntimeError('existing_model_config_requires_review')
+    if previous.get('api_key'):raise RuntimeError('model_inline_key_requires_review')
+    if previous.get('provider')=='openrouter':
+        if any(k in previous and previous[k]!=v for k,v in OPENROUTER_MANAGED.items()):raise RuntimeError('existing_model_provider_requires_review')
+        previous={k:v for k,v in previous.items() if k not in OPENROUTER_MANAGED}
+    if previous.get('provider') not in (None,'','openai-api','gemini','google','google-gemini','google-ai-studio'):raise RuntimeError('existing_model_provider_requires_review')
+    if previous.get('base_url') not in (None,OPENAI_BASE):raise RuntimeError('existing_model_provider_requires_review')
+    configured={k:v for k,v in previous.items() if k!='api_mode'}
+    configured.update({'provider':'openai-api','default':model,'base_url':OPENAI_BASE})
+    if configured==config.get('model'):return False
+    config['model']=configured
+    save_sales_config(path,before,config,'openai')
     return True
 
 def ensure_sales_auxiliary(home):
@@ -202,7 +242,8 @@ def ensure_sales_execution_prompt(home):
 
 def ensure_sales_model(home):
     provider=os.getenv('MERLY_SALES_PROVIDER','')
-    if provider not in ('','gemini','openrouter'):raise RuntimeError('invalid_sales_provider')
+    if provider not in ('','gemini','openrouter','openai'):raise RuntimeError('invalid_sales_provider')
+    if provider=='openai':return ensure_openai_model(home)
     if provider=='openrouter' or (not provider and os.getenv('OPENROUTER_API_KEY')):return ensure_openrouter_model(home)
     if not provider:
         import hermes_yaml
@@ -211,6 +252,7 @@ def ensure_sales_model(home):
         config=hermes_yaml.safe_load(path.read_text())
         model=config.get('model') if isinstance(config,dict) else None
         if isinstance(model,dict) and model.get('provider')=='openrouter':return ensure_openrouter_model(home)
+        if isinstance(model,dict) and model.get('provider')=='openai-api':return ensure_openai_model(home)
     return ensure_gemini_model(home,from_openrouter=provider=='gemini')
 
 def ensure_customer_policy_prompt(home):
@@ -246,7 +288,7 @@ def main():
         for name in fast_limits.DEFAULTS:fast_limits.limit(name)
         if fast_limits.limit('AI_CONCURRENT')+fast_limits.limit('STOCK_CONCURRENT')>3:raise RuntimeError('fast_worker_reservation_required')
         if os.getenv('HARAVAN_ACCESS_TOKEN'):raise RuntimeError('gateway_must_not_hold_haravan_token')
-        if any(os.getenv(k) for k in ('GEMINI_API_KEY','GOOGLE_API_KEY','OPENROUTER_API_KEY')):raise RuntimeError('gateway_must_not_hold_model_key')
+        if any(os.getenv(k) for k in ('GEMINI_API_KEY','GOOGLE_API_KEY','OPENROUTER_API_KEY','OPENAI_API_KEY')):raise RuntimeError('gateway_must_not_hold_model_key')
         os.execvp(sys.executable,[sys.executable,'-m','gunicorn','--no-control-socket','--bind','0.0.0.0:8080','--workers','1','--threads','4','--timeout','60','sales_gateway:application'])
     if role!='hermes':raise RuntimeError('invalid_role')
     home=Path(os.environ['HERMES_HOME']).resolve()
