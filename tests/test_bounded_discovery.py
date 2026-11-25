@@ -57,7 +57,7 @@ def test_scan_cap_is_partial_not_global_no_match(items):
     assert len(report['products'])==24 and report['coverage']['omitted_products']==6
     assert report['scan']['stop_reason']=='product_limit' and not report['complete']
     assert report['operation_status']=='partial_no_match' and not report['variants']
-    assert 'Chưa kiểm tra hết' in stock_report.summary(report)
+    assert 'chưa kiểm tra hết' in stock_report.summary(report)
 
 def test_display_limit_does_not_limit_candidate_scanning(items,monkeypatch):
     _,prepare=items;prepare(8)

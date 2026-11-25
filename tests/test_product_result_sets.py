@@ -72,11 +72,11 @@ def test_verified_zero_and_unknown_inventory_do_not_become_same_result(catalog,m
     monkeypatch.setattr(t.h,'inventory',lambda ids,locs:[{'variant_id':int(v),'loc_id':loc,'qty_available':0} for v in ids.split(',') for loc in t.LOCATIONS])
     zero=execute(args);assert zero['operation_status']=='verified_zero' and zero['selection']['kind']=='none_verified'
     view=customer_listing.project({'reply':stock_report.summary(zero),'answer_mode':'evidence_guard','stock_options':zero})
-    assert view['listing']['shown']==0 and 'tồn 0' in view['reply']
+    assert view['listing']['shown']==0 and 'hết hàng' in view['reply'] and 'nới bớt' in view['reply']
     monkeypatch.setattr(t.h,'inventory',lambda *a:[])
     unknown=execute(args);assert unknown['operation_status']=='partial' and not unknown['complete']
     view=customer_listing.project({'reply':stock_report.summary(unknown),'answer_mode':'evidence_guard','stock_options':unknown})
-    assert view['listing']['shown']==0 and 'chưa được xác minh' in view['reply']
+    assert view['listing']['shown']==0 and 'chưa kiểm tra xong tồn kho' in view['reply'] and 'hết hàng' not in view['reply']
 
 
 def test_fresh_product_attributes_still_have_to_match(catalog,monkeypatch):

@@ -223,21 +223,33 @@ def lookup_diagnostics(report):
         output.append(entry)
     return output
 
+# Customer-facing copy: consultant voice (em - chị). Keep the evidence meaning:
+# "hết hàng" only for a complete, fresh check; never for partial/source errors.
+CONTACT='nhắn Zalo Merly (https://oa.zalo.me/2969822963244380594) để nhân viên kiểm tra giúp chị'
+RETRY='Chị thử lại sau ít phút hoặc '+CONTACT+' nhé.'
+
+def _scope(report):
+    scope='Mẫu '+str(report.get('model_code') or '')+' size '+str(report.get('size'))
+    if report.get('color_filter'):scope+=' màu '+report['color_filter']
+    return scope
+
 def summary(report):
     if report.get('mode')=='discovery':
         import product_discovery
         return product_discovery.summary(report)
-    if report['mode']=='groups':return 'Có '+str(len(report['groups']))+' phạm vi mẫu/size trong lượt tra này. Xem từng bảng bên dưới; bảng kiểm tra chưa đủ không phải kết luận hết hàng.'
-    if report.get('operation_status')=='no_match':return 'Chưa tìm thấy mẫu phù hợp trong danh mục đã đồng bộ. Cần kiểm tra lại mã mẫu; đây không phải kết luận hết hàng.'
-    if report.get('operation_status')=='catalog_loading':return 'Danh mục sản phẩm đang đồng bộ từ Haravan; lượt này chưa có kết quả tra tồn. Không phải thông báo hết hàng.'
-    if report.get('operation_status')=='source_error':return 'Haravan chưa trả đủ dữ liệu hợp lệ để xác nhận tồn cho lượt này. Nếu có danh sách màu bên dưới thì đó mới là thông tin biến thể, chưa xác nhận còn hàng.'
-    if report['mode']=='unverified':return 'Lượt tra tồn chưa hoàn tất do lỗi công cụ hoặc dữ liệu trả về không hợp lệ. Đây không phải kết quả hết hàng; chưa xác định được các màu còn.'
-    if report.get('recheck_failed'):return 'Lần kiểm tra lại chưa thành công. Bên dưới giữ kết quả đã xác minh trước đó trong lượt hỏi này, không phải xác nhận tồn mới; chưa giữ hàng.'
+    if report['mode']=='groups':return 'Em đã kiểm tra '+str(len(report['groups']))+' mẫu/size chị hỏi, kết quả ở các thẻ bên dưới ạ.'
+    if report.get('operation_status')=='no_match':return 'Em chưa tìm thấy mẫu '+str(report.get('model_code') or 'này')+' trong danh mục ạ. Chị kiểm tra giúp em mã mẫu, hoặc gửi tên/ảnh mẫu để em tìm nhé.'
+    if report.get('operation_status')=='catalog_loading':return 'Hệ thống đang cập nhật danh mục nên em chưa tra được ngay ạ. '+RETRY
+    if report.get('operation_status')=='source_error' or report['mode']=='unverified':return 'Em chưa lấy được số tồn kho lúc này nên chưa trả đủ thông tin cho chị được ạ. '+RETRY
+    if report.get('recheck_failed'):return 'Em chưa kiểm tra lại được lúc này ạ. Thông tin bên dưới là kết quả em tra lúc nãy, không phải số tồn mới nhất.'
     positive=sum(r['available'] is True for r in report['variants'])
-    scope='Mẫu '+report['model_code']+', size '+str(report['size'])
-    if report.get('color_filter'):scope+=', màu '+report['color_filter']
+    scope=_scope(report)
     if report['complete']:
-        if positive:return scope+': có '+str(positive)+' lựa chọn còn hàng đã xác minh. Danh sách ở bên dưới; chưa giữ hàng.'
-        if not report['variants']:return scope+': không thấy biến thể phù hợp trong các sản phẩm đã kiểm tra; không phải kết luận các size khác hết hàng.'
-        return scope+': các biến thể đã kiểm tra đều có tồn 0 tại các kho đã trả đủ dữ liệu. Chưa kiểm tra size khác.'
-    return scope+': mới xác minh được một phần. Danh sách bên dưới có '+str(positive)+' lựa chọn còn hàng đã xác minh, nhưng chưa phải toàn bộ; không kết luận các lựa chọn chưa kiểm tra là hết hàng.'
+        if positive:
+            colors=list(dict.fromkeys(r['color'] for r in report['variants'] if r['available'] is True and isinstance(r.get('color'),str) and r['color']))
+            listed=(' màu '+', '.join(colors[:4])) if colors and not report.get('color_filter') else ''
+            return scope+' hiện còn hàng'+listed+' ạ. Chị xem ảnh và giá ở thẻ bên dưới, ưng màu nào chị bấm vào thẻ để đặt trên website nhé.'
+        if not report['variants']:return scope+' hiện không có trong danh mục ạ. Chị có muốn em xem size hoặc màu khác không?'
+        return scope+' hiện đã hết hàng ạ. Chị có muốn em xem size, màu khác hoặc mẫu tương tự không?'
+    if positive:return scope+': em mới kiểm tra được một phần kho, hiện thấy '+str(positive)+' lựa chọn còn hàng ở thẻ bên dưới; có thể vẫn còn lựa chọn khác ạ.'
+    return scope+': em mới kiểm tra được một phần kho nên chưa chắc chắn còn hay hết ạ. '+RETRY

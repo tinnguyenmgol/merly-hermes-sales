@@ -3,7 +3,8 @@ from stock_report import extract,summary,lookup_diagnostics
 from source_links import collect
 import re
 from decimal import Decimal,InvalidOperation
-FAILURE='Mình chưa xác minh được dữ liệu cho lượt này nên chưa thể kết luận còn hay hết hàng. Bạn không cần nhập lại các điều kiện đã gửi; mình có thể hướng dẫn liên hệ nhân viên Merly để kiểm tra tiếp.'
+FAILURE='Em chưa kiểm tra được tồn kho cho câu này nên chưa trả lời chắc được ạ. Chị không cần gửi lại thông tin, chị thử lại sau ít phút hoặc nhắn Zalo Merly (https://oa.zalo.me/2969822963244380594) để nhân viên kiểm tra giúp chị nhé.'
+UNAVAILABLE='Em chưa lấy được dữ liệu để trả lời chắc chắn câu này ạ. Chị thử lại sau ít phút hoặc nhắn Zalo Merly (https://oa.zalo.me/2969822963244380594) để nhân viên hỗ trợ chị nhé.'
 
 def verified(report):
     if report.get('mode')=='groups':return all(verified(r) for r in report['groups'])
@@ -110,29 +111,29 @@ def present(data,rid,started):
                         lookup_incomplete=bool(missing or invalid or not verified(report)),answer_mode='evidence_guard')
     elif quotes and not missing and not invalid and risky_stock_wording(text,{'variants':quotes}):
         reasons.append('unsupported_stock_claim')
-        body.update(reply='Mình đã gửi thông tin biến thể đã tra trong thẻ bên dưới; chưa giữ hàng.',answer_mode='evidence_guard')
+        body.update(reply='Em gửi chị thông tin mẫu ở thẻ bên dưới ạ.',answer_mode='evidence_guard')
     elif missing or invalid:
-        body.update(reply='Mình chưa lấy được dữ liệu hợp lệ để trả lời chắc chắn lượt này. Bạn không cần nhập lại thông tin đã gửi; có thể nhờ nhân viên Merly kiểm tra tiếp.',lookup_incomplete=True,answer_mode='evidence_guard')
+        body.update(reply=UNAVAILABLE,lookup_incomplete=True,answer_mode='evidence_guard')
     expected=scopes(report) if requested else []
     if expected and quotes:
         accepted=[r for r in quotes if any(matches(r,s) for s in expected)]
         if len(accepted)!=len(quotes):
             reasons.append('wrong_selection_scope')
             body['quotes']=accepted
-            body.update(reply='Mình chưa xác minh được lựa chọn đúng các điều kiện bạn yêu cầu; mình vẫn giữ các điều kiện đã gửi.',lookup_incomplete=True,answer_mode='evidence_guard')
+            body.update(reply='Em chưa tìm được lựa chọn khớp hết các điều kiện chị đưa ra ạ. Chị có muốn em nới bớt điều kiện nào không?',lookup_incomplete=True,answer_mode='evidence_guard')
         quotes=accepted
     urls={r.get('product_url') for r in positive_rows(report)+[r for r in quotes if positive(r)]}
     mentioned=re.findall(r'https://(?:www\.)?merlyshoes\.com/products/[A-Za-z0-9_-]+',text)
     if len(set(mentioned))>4:
         reasons.append('too_many_product_listings')
-        body.update(reply='Mình sẽ giữ phần giới thiệu gọn theo các lựa chọn có tồn đã xác minh.',lookup_incomplete=body.get('lookup_incomplete',False),answer_mode='evidence_guard')
+        body.update(reply='Em gửi chị các lựa chọn còn hàng ở thẻ bên dưới nhé.',lookup_incomplete=body.get('lookup_incomplete',False),answer_mode='evidence_guard')
     if any(u not in urls for u in mentioned):
         reasons.append('unverified_product_listing')
-        body.update(reply='Mình chưa xác minh được mẫu có tồn đúng yêu cầu nên chưa gửi danh sách sản phẩm.',lookup_incomplete=True,answer_mode='evidence_guard')
+        body.update(reply='Em chưa kiểm tra xong tồn kho nên chưa gửi mẫu cho chị được ạ. Chị thử lại sau ít phút hoặc nhắn Zalo Merly (https://oa.zalo.me/2969822963244380594) để nhân viên hỗ trợ nhé.',lookup_incomplete=True,answer_mode='evidence_guard')
     from turn_contract import PROTOCOL
     if PROTOCOL.search(text):
         reasons.append('protocol_text')
-        body.update(reply='Phản hồi tư vấn chưa hoàn tất nên mình chưa thể xác nhận kết quả lượt này. Bạn không cần nhập lại các điều kiện đã gửi.',answer_mode='protocol_guard',lookup_incomplete=True)
+        body.update(reply=UNAVAILABLE,answer_mode='protocol_guard',lookup_incomplete=True)
     # Asking a data-free question is not an inventory assertion. Invalid tool
     # calls/source failures remain in diagnostics, but cannot erase the useful
     # native question or force an extra model call. No unverified cards escape.
@@ -158,7 +159,7 @@ def present(data,rid,started):
         reasons.append('unsupported_spec_claim')
         for key in ('stock_options','quotes','products'):body.pop(key,None)
         body['source_links']=[u for u in body['source_links'] if '/products/' not in u]
-        body.update(reply='Thông tin chiều cao chưa được đối chiếu khớp nên mình chưa gửi danh sách mẫu. Mình vẫn giữ các điều kiện bạn đã gửi.',lookup_incomplete=True,answer_mode='evidence_guard')
+        body.update(reply='Em chưa đối chiếu chắc được chiều cao gót của các mẫu này nên chưa gửi, tránh tư vấn sai cho chị ạ. Chị có thể nhắn Zalo Merly (https://oa.zalo.me/2969822963244380594) để nhân viên đo và tư vấn kỹ hơn nhé.',lookup_incomplete=True,answer_mode='evidence_guard')
     # A no-source control can justify a question, never an inventory statement.
     if body.get('needs_clarification') and not has_positive and not any(positive(q) for q in quotes) and not only_question(text):
         reasons.append('unverified_inventory')

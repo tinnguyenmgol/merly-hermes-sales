@@ -28,6 +28,27 @@ def scopes(report):
 def matches(row,scope):
     return ('variant_pairs' not in scope or (row.get('product_id'),row.get('variant_id')) in scope['variant_pairs']) and ('size' not in scope or str(scope['size'])==row.get('size')) and ('color' not in scope or norm(scope['color'])==norm(row.get('color')))
 
+def lead(original,shown):
+    """Deterministic lead-in for a projected card set, consultant voice.
+    With no card shown, a single all_options/discovery report explains its own
+    outcome (verified zero, no match, partial, source error) instead of a vague
+    "not verified" line; a mismatch between report and shown cards stays generic.
+    """
+    from stock_report import summary as full,RETRY
+    def summary(report):
+        try:return full(report)
+        except (KeyError,TypeError,ValueError):return None
+    if shown:
+        text=summary(original) if isinstance(original,dict) and original.get('mode') in ('all_options','discovery') and positive_rows(original) else None
+        return text or 'Em gửi chị các lựa chọn còn hàng ở thẻ bên dưới nhé. Chị ưng mẫu nào em tư vấn thêm cho chị ạ.'
+    text=None
+    if isinstance(original,dict) and not positive_rows(original):
+        if original.get('mode')=='all_options' and not any(isinstance(r,dict) and r.get('available') is True for r in original.get('variants',[])) and original.get('operation_status') in ('complete','partial','source_error','catalog_loading','no_match'):
+            text=summary(original)
+        elif original.get('mode')=='discovery' and original.get('operation_status') in {'catalog_loading','metadata_missing','source_error','partial_no_match','verified_zero','partial','no_match'}:
+            text=summary(original)
+    return text or 'Em chưa tìm được lựa chọn còn hàng đúng yêu cầu của chị ạ. '+RETRY
+
 def project(answer):
     """Never mutate the complete report used by the evidence gate."""
     out=copy.deepcopy(answer);out.pop('products',None)
@@ -68,10 +89,6 @@ def project(answer):
     allowed={r.get('product_url') for r in shown}
     out['source_links']=[u for u in out.get('source_links',[]) if isinstance(u,str) and ('/products/' not in u or u in allowed)]
     if any(k in answer for k in ('stock_options','quotes','products')) and (answer.get('answer_mode')=='evidence_guard' or answer.get('engine')=='haravan-readonly'):
-        out['reply']='Các lựa chọn bên dưới đã xác minh có tồn; chưa giữ hàng.' if shown else 'Chưa xác minh được mẫu có tồn đúng yêu cầu trong lượt này.'
-        original=answer.get('stock_options',{})
-        if not shown and isinstance(original,dict) and original.get('mode')=='discovery' and original.get('operation_status') in {'catalog_loading','metadata_missing','source_error','partial_no_match','verified_zero','partial','no_match'}:
-            from stock_report import summary
-            out['reply']=summary(original)
+        out['reply']=lead(answer.get('stock_options'),shown)
     out['listing']={'mode':'verified_positive_only','shown':len(shown),'verified_positive_skus':total,'shown_products':len({r['product_id'] for r in shown}),'verified_positive_products':total_products,'has_more_products':total_products>len({r['product_id'] for r in shown}),'has_more':total>len(shown),'limit':MAX_CARDS}
     return out

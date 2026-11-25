@@ -63,10 +63,23 @@ def test_only_operational_fallbacks_are_shortened_not_native_speech():
     answer={'reply':'CUSTOM_NATIVE_QUESTION','stock_options':report([row(1)])}
     assert v.project(answer)['reply']=='CUSTOM_NATIVE_QUESTION'
     answer['answer_mode']='evidence_guard'
-    assert v.project(answer)['reply']=='Các lựa chọn bên dưới đã xác minh có tồn; chưa giữ hàng.'
+    assert v.project(answer)['reply']=='Em gửi chị các lựa chọn còn hàng ở thẻ bên dưới nhé. Chị ưng mẫu nào em tư vấn thêm cho chị ạ.'
     answer['stock_options']=report([row(1,0)])
-    assert v.project(answer)['reply']=='Chưa xác minh được mẫu có tồn đúng yêu cầu trong lượt này.'
+    assert v.project(answer)['reply'].startswith('Em chưa tìm được lựa chọn còn hàng')
 
 def test_no_dangling_card_message_when_zero_quote_is_hidden():
     out=v.project({'reply':'Mình đã gửi thẻ bên dưới','answer_mode':'evidence_guard','quotes':[row(1,0)]})
     assert 'quotes' not in out and 'bên dưới' not in out['reply'] and out['listing']['shown']==0
+
+def test_direct_stock_reply_names_scope_and_outcome():
+    # Explicit stock shortcut: a complete verified-zero check must answer the
+    # question ("hết hàng") instead of a vague "not verified" line.
+    def rep(rows):
+        return {'mode':'all_options','model_code':'1676','size':38,'complete':True,'variants':rows,'issues':[],'operation_status':'complete'}
+    zero=v.project({'reply':'x','engine':'haravan-readonly','stock_options':rep([row(1,0,size="38")])})
+    assert zero['reply'].startswith('Mẫu 1676 size 38 hiện đã hết hàng') and 'chưa xác minh' not in zero['reply']
+    some=v.project({'reply':'x','engine':'haravan-readonly','stock_options':rep([row(1,size="38")])})
+    assert some['reply'].startswith('Mẫu 1676 size 38 hiện còn hàng') and some['listing']['shown']==1
+    partial=rep([row(1,0,size="38")]);partial.update(complete=False,operation_status='partial')
+    out=v.project({'reply':'x','engine':'haravan-readonly','stock_options':partial})
+    assert 'một phần' in out['reply'] and 'hết hàng' not in out['reply']
