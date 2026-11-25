@@ -78,6 +78,8 @@
 
 !learning_contract.py
 !learning_events.py
+!insights.py
+!insights_report.py
 !learning-service/
 !learning-service/learning_store.py
 !learning-service/learning_server.py
