@@ -14,7 +14,8 @@ def rows(sql):
  ('gọi em 0912 345 678 nhé','gọi em [SĐT] nhé'),('sđt +84912345678','sđt [SĐT]'),
  ('mail chi.lan+shop@gmail.com','mail [email]'),('stk 1903 6655 4433 21','stk [số]'),
  ('mã 1676 size 38 còn màu gì','mã 1676 size 38 còn màu gì'),('giá 359.000đ','giá 359.000đ'),
- ('xem https://oa.zalo.me/2969822963244380594 nhé','xem https://oa.zalo.me/2969822963244380594 nhé')])
+ ('xem https://oa.zalo.me/2969822963244380594 nhé','xem https://oa.zalo.me/2969822963244380594 nhé'),
+ ('Hotline/Zalo: 0908 190 856 ạ','Hotline/Zalo: 0908 190 856 ạ'),('gọi 0908190856 hoặc 0987654321','gọi 0908190856 hoặc [SĐT]')])
 def test_redaction(text,expected):
     assert insights.redact(text)==expected
 

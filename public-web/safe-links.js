@@ -1,6 +1,8 @@
 'use strict';
 (() => {
-  const staticLinks=new Set(['https://merlyshoes.com/','https://www.merlyshoes.com/','https://care.merlyshoes.com/','https://oa.zalo.me/2969822963244380594']);
+  const staticLinks=new Set(['https://merlyshoes.com/','https://www.merlyshoes.com/','https://care.merlyshoes.com/','https://oa.zalo.me/2969822963244380594','https://zalo.me/0908190856']);
+  // The shop's own published hotline only; any other number stays plain text.
+  const HOTLINE=/(?<!\d)0908[ .]?190[ .]?856(?!\d)/;
   const reviewedProfiles=new Set(["https://www.facebook.com/merlyshoes", "https://www.facebook.com/giaysizelon", "https://www.tiktok.com/@merlyshoes", "https://shopee.vn/merlyofficial", "https://www.lazada.vn/shop/merly"]);
   function checked(raw,known){
     if(typeof raw!=='string'||/[\u0000-\u0020\u007f]/.test(raw)||raw.length>2000)return null;
@@ -16,10 +18,11 @@
   }
   function append(root,text,urls=[]){
     const known=new Set(urls.filter(u=>typeof u==='string'));
-    const tokens=/\[([^\]\n]{1,160})\]\(([^\s<>]{1,2000}?)\)|https?:\/\/[^\s<>"'\u0000-\u001f]{1,2000}/g;
+    const tokens=/\[([^\]\n]{1,160})\]\(([^\s<>]{1,2000}?)\)|https?:\/\/[^\s<>"'\u0000-\u001f]{1,2000}|(?<!\d)0908[ .]?190[ .]?856(?!\d)/g;
     let start=0,m;
     while((m=tokens.exec(text))!==null){
       root.append(document.createTextNode(text.slice(start,m.index)));
+      if(HOTLINE.test(m[0])&&!/^https?:/.test(m[0])&&m[1]===undefined){const a=document.createElement('a');a.href='tel:0908190856';a.textContent=m[0];root.append(a);start=tokens.lastIndex;continue;}
       const markdown=m[1]!==undefined;
       let url=markdown?m[2]:m[0],tail='';
       if(!markdown){

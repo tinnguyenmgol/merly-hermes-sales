@@ -78,10 +78,15 @@ def redact(text):
     parts.append(_mask(text[last:]))
     return ''.join(parts)[:4000]
 
+SHOP_NUMBERS=re.compile(r'(?<!\d)0908[\s.-]?190[\s.-]?856(?!\d)')
+
 def _mask(text):
+    keep=[]
+    text=SHOP_NUMBERS.sub(lambda m:(keep.append(m.group(0)),'\x00%d\x00'%(len(keep)-1))[1],text)
     text=_EMAIL.sub('[email]',text)
     text=_PHONE.sub('[SĐT]',text)
-    return _LONG.sub('[số]',text)
+    text=_LONG.sub('[số]',text)
+    return re.sub(r'\x00(\d+)\x00',lambda m:keep[int(m.group(1))],text)
 
 def _session(sid):
     return hashlib.sha256(('merly-insights:'+str(sid)).encode()).hexdigest()[:16]
