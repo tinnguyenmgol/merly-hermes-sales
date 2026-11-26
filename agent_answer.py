@@ -3,8 +3,8 @@ from stock_report import extract,summary,lookup_diagnostics
 from source_links import collect
 import re
 from decimal import Decimal,InvalidOperation
-FAILURE='Em chưa kiểm tra được tồn kho cho câu này nên chưa trả lời chắc được ạ. Chị không cần gửi lại thông tin, chị thử lại sau ít phút hoặc nhắn Zalo Merly (https://oa.zalo.me/2969822963244380594) để nhân viên kiểm tra giúp chị nhé.'
-UNAVAILABLE='Em chưa lấy được dữ liệu để trả lời chắc chắn câu này ạ. Chị thử lại sau ít phút hoặc nhắn Zalo Merly (https://oa.zalo.me/2969822963244380594) để nhân viên hỗ trợ chị nhé.'
+FAILURE='Em chưa kiểm tra được tồn kho cho câu này nên chưa trả lời chắc được ạ. Chị không cần gửi lại thông tin, chị thử lại sau ít phút hoặc nhắn Zalo OA Merly (https://oa.zalo.me/2969822963244380594) hoặc gọi/Zalo hotline 0908 190 856 để nhân viên kiểm tra giúp chị nhé.'
+UNAVAILABLE='Em chưa lấy được dữ liệu để trả lời chắc chắn câu này ạ. Chị thử lại sau ít phút hoặc nhắn Zalo OA Merly (https://oa.zalo.me/2969822963244380594) hoặc gọi/Zalo hotline 0908 190 856 để nhân viên hỗ trợ chị nhé.'
 
 def verified(report):
     if report.get('mode')=='groups':return all(verified(r) for r in report['groups'])
@@ -129,7 +129,7 @@ def present(data,rid,started):
         body.update(reply='Em gửi chị các lựa chọn còn hàng ở thẻ bên dưới nhé.',lookup_incomplete=body.get('lookup_incomplete',False),answer_mode='evidence_guard')
     if any(u not in urls for u in mentioned):
         reasons.append('unverified_product_listing')
-        body.update(reply='Em chưa kiểm tra xong tồn kho nên chưa gửi mẫu cho chị được ạ. Chị thử lại sau ít phút hoặc nhắn Zalo Merly (https://oa.zalo.me/2969822963244380594) để nhân viên hỗ trợ nhé.',lookup_incomplete=True,answer_mode='evidence_guard')
+        body.update(reply='Em chưa kiểm tra xong tồn kho nên chưa gửi mẫu cho chị được ạ. Chị thử lại sau ít phút hoặc nhắn Zalo OA Merly (https://oa.zalo.me/2969822963244380594) hoặc gọi/Zalo hotline 0908 190 856 để nhân viên hỗ trợ nhé.',lookup_incomplete=True,answer_mode='evidence_guard')
     from turn_contract import PROTOCOL
     if PROTOCOL.search(text):
         reasons.append('protocol_text')
@@ -159,7 +159,7 @@ def present(data,rid,started):
         reasons.append('unsupported_spec_claim')
         for key in ('stock_options','quotes','products'):body.pop(key,None)
         body['source_links']=[u for u in body['source_links'] if '/products/' not in u]
-        body.update(reply='Em chưa đối chiếu chắc được chiều cao gót của các mẫu này nên chưa gửi, tránh tư vấn sai cho chị ạ. Chị có thể nhắn Zalo Merly (https://oa.zalo.me/2969822963244380594) để nhân viên đo và tư vấn kỹ hơn nhé.',lookup_incomplete=True,answer_mode='evidence_guard')
+        body.update(reply='Em chưa đối chiếu chắc được chiều cao gót của các mẫu này nên chưa gửi, tránh tư vấn sai cho chị ạ. Chị có thể nhắn Zalo OA Merly (https://oa.zalo.me/2969822963244380594) hoặc gọi/Zalo hotline 0908 190 856 để nhân viên đo và tư vấn kỹ hơn nhé.',lookup_incomplete=True,answer_mode='evidence_guard')
     # A no-source control can justify a question, never an inventory statement.
     if body.get('needs_clarification') and not has_positive and not any(positive(q) for q in quotes) and not only_question(text):
         reasons.append('unverified_inventory')

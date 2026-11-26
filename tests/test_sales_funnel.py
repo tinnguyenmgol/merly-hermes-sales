@@ -65,3 +65,16 @@ def test_cart_button_only_for_verified_in_stock_rows():
 def test_prompt_explains_cart_without_claiming_orders():
     prompt=(ROOT/'SYSTEM-PROMPT.md').read_text()
     assert 'Thêm vào giỏ' in prompt and 'không phải bot đã đặt đơn' in prompt and 'không tạo đơn hay giữ hàng' in prompt
+
+def test_zalo_answer_gives_oa_and_hotline_clearly():
+    prompt=(ROOT/'SYSTEM-PROMPT.md').read_text()
+    assert '- Zalo OA Merly: https://oa.zalo.me/2969822963244380594' in prompt
+    assert '- Hotline/Zalo: 0908 190 856 (chị gọi điện hoặc nhắn Zalo số này đều được ạ)' in prompt
+    import agent_answer,stock_report
+    for text in (agent_answer.FAILURE,agent_answer.UNAVAILABLE,stock_report.CONTACT):
+        assert 'https://oa.zalo.me/2969822963244380594' in text and '0908 190 856' in text
+
+def test_only_shop_hotline_becomes_tel_link():
+    js=(ROOT/'public-web/safe-links.js').read_text()
+    assert "a.href='tel:0908190856'" in js and 'https://zalo.me/0908190856' in js
+    assert js.count('tel:')==1

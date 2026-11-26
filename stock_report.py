@@ -225,7 +225,7 @@ def lookup_diagnostics(report):
 
 # Customer-facing copy: consultant voice (em - chị). Keep the evidence meaning:
 # "hết hàng" only for a complete, fresh check; never for partial/source errors.
-CONTACT='nhắn Zalo Merly (https://oa.zalo.me/2969822963244380594) để nhân viên kiểm tra giúp chị'
+CONTACT='nhắn Zalo OA Merly (https://oa.zalo.me/2969822963244380594) hoặc gọi/Zalo hotline 0908 190 856 để nhân viên kiểm tra giúp chị'
 RETRY='Chị thử lại sau ít phút hoặc '+CONTACT+' nhé.'
 
 def _scope(report):
