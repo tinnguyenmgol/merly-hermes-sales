@@ -3,6 +3,7 @@ import threading,time,unicodedata,re
 import haravan_client as h
 import catalog_store
 FIELDS='id,title,handle,published_at,published_scope,status,variants,options,image,images,product_type'
+REFRESH_AFTER=240
 LOCK=threading.Lock(); PRODUCTS=[]; UPDATED=0; LOADING=False; ERROR=None; ATTEMPT=0; STORE_ERROR=None; STARTED=False
 
 def norm(text):
@@ -40,7 +41,9 @@ def snapshot():
     global LOADING
     with LOCK:
         age=time.monotonic()-UPDATED if UPDATED else float('inf')
-        if not LOADING and age>300 and time.monotonic()-ATTEMPT>60:
+        # Refresh before the 300s freshness window used for "complete" lookups
+        # closes, so a warm process never answers from a just-expired catalog.
+        if not LOADING and age>REFRESH_AFTER and time.monotonic()-ATTEMPT>60:
             LOADING=True; threading.Thread(target=sync,daemon=True).start()
         if age>86400: return None
         return list(PRODUCTS)

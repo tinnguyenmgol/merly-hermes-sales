@@ -149,3 +149,20 @@ def test_admin_dashboard_explains_failure_reasons(configured,monkeypatch):
     monkeypatch.setattr(client,'chat',fail);call('sandal size 43')
     d=get('/api/admin/insights')['body']
     assert d['reasons']['turn_not_completed']=='nhà cung cấp AI từ chối/lỗi' and d['review_sessions']
+
+def test_incomplete_lookup_reasons_recorded_and_reported(configured,monkeypatch):
+    report={'mode':'all_options','model_code':'1632','size':40,'complete':False,'operation_status':'partial','catalog_age_seconds':412.0,
+            'issues':[{'stage':'inventory','code':'haravan_unavailable'}],'variants':[{'product_id':1,'variant_id':2,'known_available':0}]}
+    monkeypatch.setattr(client,'chat',lambda *a:{'reply':'ok','conversation_id':'resp_1','stock_options':report})
+    call('mã 1632 size 40 còn màu gì')
+    s=rows('SELECT issues,catalog_age FROM searches')[0]
+    assert json.loads(s['issues'])==['haravan_unavailable'] and s['catalog_age']==412.0
+    d=get('/api/admin/insights')['body']
+    assert dict(d['incomplete_reasons'])=={'không kết nối được Haravan':1,'danh mục quá 5 phút chưa làm mới':1}
+
+def test_old_store_gains_new_columns(configured):
+    import sqlite3 as sq
+    p=insights.path();p.parent.mkdir(parents=True,exist_ok=True)
+    db=sq.connect(p);db.executescript(insights._SCHEMA.replace(', issues TEXT','').replace(', catalog_age REAL',''));db.close()
+    db=insights.connect();cols={r[1] for r in db.execute('PRAGMA table_info(searches)')};db.close()
+    assert {'issues','catalog_age'}<=cols

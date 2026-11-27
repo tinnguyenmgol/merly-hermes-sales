@@ -89,7 +89,7 @@
     bars('funnel', (d.funnel || []).filter(f => f.name !== 'add_to_cart_failed' || f.count).map(f => [f.label, f.visitors]));
     unmet(d.unmet_demand || []);
     bars('sizes', d.sizes); bars('colors', d.colors); bars('categories', d.categories); bars('heels', d.heels);
-    bars('models', d.models); bars('outcomes', d.outcomes); bars('topics', d.policy_topics); bars('failures', d.failure_reasons, { warn: true });
+    bars('models', d.models); bars('outcomes', d.outcomes); bars('topics', d.policy_topics); bars('failures', d.failure_reasons, { warn: true }); bars('incomplete', d.incomplete_reasons, { warn: true });
     chats('review', d.review_sessions, d.conversations || {}, d.reasons || {});
     chats('recent', d.recent_sessions, d.conversations || {}, d.reasons || {});
     $('footer').textContent = (d.no_data ? 'Chưa có lượt chat nào được ghi. ' : '') + 'Số điện thoại, email và dãy số dài đã được che. Dữ liệu tự xoá sau ' + (d.retention_days || 30) + ' ngày.';

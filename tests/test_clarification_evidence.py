@@ -124,3 +124,18 @@ def test_question_gate_never_changes_customer_message(configured,monkeypatch):
     raw='Giày lạ gì đó, không phải màu cũ — sz 42 mja'
     call(raw)
     assert seen==[raw]
+
+def test_complete_check_allows_only_proven_seller_wording():
+    zero={'mode':'all_options','complete':True,'variants':[{'price_vnd':359000,'color':'Trắng','known_available':0,'available':False}]}
+    assert not risky_stock_wording('Mẫu 1632 size 42 màu trắng hiện đã hết hàng ạ, chị xem size 41 nhé?',zero)
+    one={'mode':'all_options','complete':True,'variants':[{'price_vnd':359000,'color':'Đen Pearl','known_available':2,'available':True},{'price_vnd':359000,'color':'Hồng Pearl','known_available':0,'available':False}]}
+    assert not risky_stock_wording('Size 38 chỉ còn màu Đen Pearl ạ, giá 359.000đ.',one)
+    assert risky_stock_wording('Size 38 chỉ còn màu Hồng Pearl ạ.',one)
+    assert risky_stock_wording('Mẫu này hết hàng rồi ạ.',one)
+    two=dict(one,variants=[dict(v,known_available=1,available=True) for v in one['variants']])
+    assert risky_stock_wording('Chỉ còn một màu ạ.',two) and risky_stock_wording('Only one color',two)
+    assert risky_stock_wording('Toàn hệ thống đã hết hàng ạ.',zero)
+    assert risky_stock_wording('Giá chỉ 299.000đ ạ.',one)
+    partial=dict(zero,complete=False)
+    assert risky_stock_wording('Mẫu này hết hàng rồi ạ.',partial)
+    assert risky_stock_wording('Mẫu này hết hàng rồi ạ.',{'mode':'groups','groups':[zero,partial]})

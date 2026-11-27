@@ -41,6 +41,17 @@ def funnel(events):
         out.append({'name':name,'label':label,'count':len(rows),'visitors':len({e['session'] for e in rows})})
     return out
 
+ISSUE={'catalog_stale':'danh mục quá 5 phút chưa làm mới','inventory':'Haravan chưa trả đủ tồn kho','haravan_unavailable':'không kết nối được Haravan','variant_lookup_budget_exceeded':'tra biến thể quá thời gian','variant_size_metadata_unverified':'dữ liệu size của biến thể chưa rõ','product':'lỗi đọc sản phẩm','collection':'lỗi đọc nhóm sản phẩm'}
+
+def incomplete(found):
+    counter=Counter()
+    for s in found:
+        if s.get('complete'):continue
+        codes=json.loads(s.get('issues') or '[]') if s.get('issues') else []
+        if s.get('catalog_age') is not None and s['catalog_age']>300:codes=codes+['catalog_stale']
+        for code in codes or ['unknown']:counter[ISSUE.get(code,code)]+=1
+    return counter.most_common(10)
+
 def summarize(turns,found,chats=5,events=()):
     for s in found:
         if s['positive_skus']>0 and s['outcome'] in ('partial','source_error','unverified','catalog_loading'):s['outcome']='partial_available'
@@ -75,6 +86,7 @@ def summarize(turns,found,chats=5,events=()):
         'unmet_demand':[{'criteria':dict(k),'count':c,'outcomes':dict(unmet_outcomes[k])} for k,c in unmet.most_common(15)],
         'review_sessions':review,
         'funnel':funnel(list(events)),
+        'incomplete_reasons':incomplete(found),
     }
 
 def dashboard(days=7,chats=10):

@@ -28,6 +28,7 @@ def test_different_identifier_preserved_not_hardcoded():
 def test_ambiguous_or_additional_criteria_not_shortcut(text):assert e.parse(text) is None
 
 def test_gateway_timeout_in_model_cannot_block_literal_query(configured,monkeypatch):
+    monkeypatch.setenv('MERLY_STOCK_VIA_AI','0')  # shortcut-only mode
     def timeout(*a,**k):pytest.fail('literal query must never wait for model/audit')
     monkeypatch.setattr(client,'chat',timeout);monkeypatch.setattr(client,'audit',timeout)
     scopes=[]
@@ -65,6 +66,7 @@ def test_greeting_keeps_hint_but_commerce_turn_clears_it():
     memory.after_model_turn(user,[{'type':'function_call','name':'mcp__merly__search_products'}]);assert memory.get(sid) is None
 
 def test_stock_shortcut_does_not_overwrite_native_response_id(configured,monkeypatch):
+    monkeypatch.setenv('MERLY_STOCK_VIA_AI','0')  # shortcut-only mode
     import state
     token,sid=state.identity('');state.reserve(sid);state.save(sid,'resp_previous_real')
     monkeypatch.setattr(client,'chat',lambda *a:pytest.fail('must skip AI'))
@@ -90,3 +92,34 @@ def test_delivered_history_replaces_legacy_scope_hints(configured,monkeypatch):
     monkeypatch.setattr(client,'request',request)
     assert client.chat('cảm ơn','merly-sales:web:'+sid)['reply']=='FINAL'
     memory.forget(sid)
+
+# Owner decision 2026-11-27: literal stock questions are answered by the AI (it can
+# suggest alternatives and benefits); the deterministic shortcut is the fallback.
+def test_literal_query_goes_to_ai_first(configured,monkeypatch):
+    seen=[]
+    monkeypatch.setattr(client,'probe_stock',lambda *a:pytest.fail('AI available: no shortcut'))
+    monkeypatch.setattr(client,'chat',lambda m,u,c:seen.append(m) or {'reply':'Mẫu 1514 size 38 còn màu Đen ạ.','conversation_id':'resp_ai'})
+    r=call('mẫu 1514 size 38 còn màu gì')
+    assert r['status'].startswith('200') and r['body']['reply']=='Mẫu 1514 size 38 còn màu Đen ạ.' and seen==['mẫu 1514 size 38 còn màu gì']
+
+def test_literal_query_falls_back_to_shortcut_when_ai_fails(configured,monkeypatch,caplog):
+    def fail(*a):raise client.HermesError('turn_not_completed')
+    monkeypatch.setattr(client,'chat',fail)
+    scopes=[]
+    monkeypatch.setattr(client,'probe_stock',lambda s:scopes.append(dict(s)) or {'reply':'fixture','model_called':False,'stock_options':{'mode':'all_options','variants':[]}})
+    r=call('mẫu 1514 size 38 còn màu gì')
+    assert r['status'].startswith('200') and scopes==[{'model_code':'1514','size':38}] and 'MERLY_STOCK_AI_FALLBACK' in caplog.text
+
+def test_literal_query_falls_back_when_ai_limited(configured,monkeypatch):
+    monkeypatch.setenv('MERLY_AI_PER_MINUTE','1')
+    monkeypatch.setattr(client,'chat',lambda *a:{'reply':'ai','conversation_id':'resp_1'})
+    scopes=[]
+    monkeypatch.setattr(client,'probe_stock',lambda s:scopes.append(dict(s)) or {'reply':'fixture','model_called':False,'stock_options':{'mode':'all_options','variants':[]}})
+    r1=call('xin chào');cookie=r1['headers']['Set-Cookie'].split(';')[0]
+    r2=call('mẫu 1514 size 38 còn màu gì',cookie=cookie)
+    assert r2['status'].startswith('200') and scopes==[{'model_code':'1514','size':38}]
+
+def test_non_stock_ai_failure_still_reports_error(configured,monkeypatch):
+    def fail(*a):raise client.HermesError('turn_not_completed')
+    monkeypatch.setattr(client,'chat',fail);monkeypatch.setattr(client,'probe_stock',lambda *a:pytest.fail('no scope'))
+    assert call('ship bao lâu')['status'].startswith('503')
