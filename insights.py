@@ -59,6 +59,9 @@ def connect(readonly=False):
         fd=os.open(str(p),os.O_WRONLY|os.O_CREAT|os.O_APPEND,0o600);os.close(fd)
         db=sqlite3.connect(str(p),timeout=1)
         db.executescript(_SCHEMA)
+        cols={r[1] for r in db.execute('PRAGMA table_info(searches)')}
+        for col,kind in (('issues','TEXT'),('catalog_age','REAL')):
+            if col not in cols:db.execute(f'ALTER TABLE searches ADD COLUMN {col} {kind}')
     db.execute('PRAGMA foreign_keys=ON')
     return db
 
@@ -117,6 +120,13 @@ def searches(report):
     # not a lookup failure.
     elif positive and outcome in ('partial','source_error','unverified','catalog_loading'):outcome='partial_available'
     entry={k:_clean(source.get(k),int if k=='size' else float if k=='heel_cm' else str) for k in CRITERIA}
+    codes=[]
+    for item in report.get('issues',[]) if isinstance(report.get('issues'),list) else []:
+        if isinstance(item,dict):
+            code=item.get('code') or item.get('stage')
+            if isinstance(code,str) and re.fullmatch(r'[a-z_]{1,48}',code) and code not in codes:codes.append(code)
+    age=report.get('catalog_age_seconds')
+    entry['issues']=json.dumps(codes[:8]);entry['catalog_age']=float(age) if type(age) in (int,float) else None
     entry.update(outcome=outcome[:40],positive_skus=len({r.get('variant_id') for r in positive}),positive_products=len({r.get('product_id') for r in positive}),complete=1 if report.get('complete') is True else 0)
     return [entry]
 
@@ -138,8 +148,8 @@ def _write(sid,channel,status,message,reply,answer,trace,reason,elapsed_ms):
                     (now,day,session,turn,channel,status,reason,answer.get('engine'),answer.get('answer_mode'),redact(message),redact(reply),names(trace.get('tools_used')),names(trace.get('policy_topics')),names(trace.get('guard_reasons')),
                      1 if answer.get('needs_clarification') is True else 0,1 if answer.get('lookup_incomplete') is True else 0,listing.get('shown') if type(listing.get('shown')) is int else 0,elapsed_ms))
                 for row in found:
-                    db.execute('INSERT INTO searches(turn_id,ts,day,model_code,size,color,category,heel_cm,occasion,query,collection,outcome,positive_skus,positive_products,complete) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-                        (cur.lastrowid,now,day,*(row[k] for k in CRITERIA),row['outcome'],row['positive_skus'],row['positive_products'],row['complete']))
+                    db.execute('INSERT INTO searches(turn_id,ts,day,model_code,size,color,category,heel_cm,occasion,query,collection,outcome,positive_skus,positive_products,complete,issues,catalog_age) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                        (cur.lastrowid,now,day,*(row[k] for k in CRITERIA),row['outcome'],row['positive_skus'],row['positive_products'],row['complete'],row['issues'],row['catalog_age']))
         finally:db.close()
 
 def record(sid,message,original,shown,trace=None,channel='web',elapsed_ms=None):

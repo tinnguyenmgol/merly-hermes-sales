@@ -26,6 +26,7 @@ def test_public_has_no_login_or_embedded_secret(public):
         assert 'frame-ancestors https://merlyshoes.com' in r['headers']['Content-Security-Policy']
 
 def test_public_stock_without_pilot_key(public,monkeypatch):
+    monkeypatch.setenv('MERLY_STOCK_VIA_AI','0')  # shortcut-only mode
     monkeypatch.setattr(c,'chat',lambda *a:pytest.fail('must bypass model'))
     scopes=[]
     def probe(scope):scopes.append(scope);return {'reply':'synthetic source','stock_options':{},'model_called':False}

@@ -16,13 +16,24 @@ def risky_stock_wording(text,report):
     from clarification import folded
     import unicodedata
     n=folded(text)
-    if re.search(r'\b(?:only|sole|duy nhat|toan he thong|toan bo|tat ca|het hang|sold out|out of stock)\b',n):return True
+    reports=report.get('groups',[report])
+    # Seller wording is allowed only when the evidence proves it (owner: let the
+    # AI speak like a seller, never falsely): "hết hàng" needs a complete check
+    # with no in-stock row; "chỉ còn màu X" needs a complete check where X is the
+    # one colour still in stock. Broad claims stay with the evidence view.
+    complete=bool(reports) and all(isinstance(r,dict) and r.get('complete') is True and r.get('mode') in ('all_options','discovery') for r in reports)
+    in_stock=[row for r in reports if isinstance(r,dict) for row in r.get('variants',[]) if isinstance(row,dict) and (row.get('available') is True or (type(row.get('known_available')) is int and row['known_available']>0))]
+    colors={folded(row['color']) for row in in_stock if isinstance(row.get('color'),str) and row['color'].strip()}
+    sold_out_proven=complete and not in_stock
+    single_color_proven=complete and len(colors)==1 and len(in_stock)>0 and next(iter(colors)) in n
+    if re.search(r'\b(?:toan he thong|toan bo|tat ca)\b',n):return True
+    if re.search(r'\b(?:het hang|sold out|out of stock)\b',n) and not sold_out_proven:return True
+    if re.search(r'\b(?:only|sole|duy nhat)\b',n) and not single_color_proven:return True
     # Exclusivity "chỉ" is checked before folding: folded "chi" also covers
     # ordinary words (chi nhánh, chi tiết, chi phí). Unaccented "chi" stays
     # risky unless it is one of those compounds.
     raw=unicodedata.normalize('NFC',text.casefold())
-    if re.search(r'\bchỉ\b',raw) or re.search(r'\bchi\b(?!\s+(?:nhánh|nhanh|tiết|tiet|phí|phi|tiêu|tieu|trả|tra)\b)',raw):return True
-    reports=report.get('groups',[report])
+    if (re.search(r'\bchỉ\b',raw) or re.search(r'\bchi\b(?!\s+(?:nhánh|nhanh|tiết|tiet|phí|phi|tiêu|tieu|trả|tra)\b)',raw)) and not single_color_proven:return True
     prices={row.get('price_vnd') for r in reports for row in r.get('variants',[]) if type(row.get('price_vnd')) is int}
     for amount,k in re.findall(r'(?<!\w)([0-9]+(?:[.,][0-9]+)*)(k)?\s*(?:đ(?:ồng)?|vnd|₫)(?!\w)',text.casefold()):
         try:

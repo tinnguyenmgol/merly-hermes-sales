@@ -47,6 +47,9 @@ def make_server(address=('0.0.0.0',8644)):
 
 def start():
     server=make_server()
+    # Keep this process's catalog warm too. Without it the first lookup after a
+    # quiet period found the snapshot older than 300s and reported "partial".
+    import merly_tools;merly_tools.catalog.start()
     threading.Thread(target=server.serve_forever,daemon=True,name='merly-stock-probe').start()
     print(json.dumps({'status':'readonly_stock_probe_ready','port':8644}),flush=True)
     return server

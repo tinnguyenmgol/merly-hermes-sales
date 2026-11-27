@@ -82,6 +82,7 @@ def test_reset_disallows_old_model_plan():
     assert 'mã mẫu cũ' in ctx.observe('merly-sales:web:a',plan(model_code='1514',size=41))
 
 def test_gateway_followups_belong_to_hermes_not_legacy_slots(configured,monkeypatch):
+    monkeypatch.setenv('MERLY_STOCK_VIA_AI','0')  # shortcut-only mode
     scopes=[]
     turns=[]
     monkeypatch.setattr(client,'chat',lambda *a:turns.append(a) or {'reply':'native followup','conversation_id':'resp_followup'})

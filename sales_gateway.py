@@ -98,9 +98,12 @@ def application(env,start):
                 logging.getLogger('merly.gateway').info('MERLY_CHAT_COMPLETED %s',json.dumps({'diagnostic_id':diagnostic_id,'engine':answer.get('engine'),'answer_mode':answer.get('answer_mode'),'knowledge_revision':answer.get('knowledge_revision'),'elapsed_ms':round((time.monotonic()-turn_started)*1000),**(trace or {})}))
                 return result('200 OK',answer,token)
             # All policy/free-form language reaches Hermes, never phrase lookup.
-            # Only complete literal stock requests retain the independent shortcut.
+            # Literal stock requests ("mã 1676 size 38 còn màu gì") also go to the
+            # AI first, so it can suggest alternatives and help the customer decide
+            # (owner request). The deterministic Haravan shortcut answers them only
+            # when the AI is limited or fails, and always for the structured probe.
             scope=data if probe else explicit_stock.parse(data['message'])
-            if scope is not None:
+            def shortcut():
                 with fast_limits.slot('STOCK') as available:
                     if not available:return limited('stock_capacity')
                     rate=state.resource('STOCK')
@@ -108,11 +111,16 @@ def application(env,start):
                     direct=hermes_client.probe_stock(scope)
                     if isinstance(direct.get('stock_options'),dict):direct['stock_options']['resolution_path']='direct_haravan'
                     return deliver(direct)
+            if scope is not None and (probe or os.getenv('MERLY_STOCK_VIA_AI','1')!='1'):return shortcut()
             with fast_limits.slot('AI') as available:
-                if not available:return limited('ai_capacity')
+                if not available:return shortcut() if scope is not None else limited('ai_capacity')
                 reservation=state.reserve_checked(sid)
-                if not reservation['available']:return limited(reservation['reason'],reservation['retry_after'])
-                reply=hermes_client.chat(data['message'],'merly-sales:web:'+sid,cid)
+                if not reservation['available']:return shortcut() if scope is not None else limited(reservation['reason'],reservation['retry_after'])
+                try:reply=hermes_client.chat(data['message'],'merly-sales:web:'+sid,cid)
+                except hermes_client.HermesError as exc:
+                    if scope is None:raise
+                    logging.getLogger('merly.gateway').warning('MERLY_STOCK_AI_FALLBACK %s',json.dumps({'diagnostic_id':diagnostic_id,'reason_code':str(exc) if re.fullmatch(r'[a-z0-9_]{1,40}',str(exc)) else 'unclassified'}))
+                    return shortcut()
                 state.save(sid,reply['conversation_id'])
                 body={'reply':reply['reply'],'engine':'hermes','source_links':reply.get('source_links',[]),'needs_clarification':reply.get('needs_clarification') is True,'lookup_incomplete':reply.get('lookup_incomplete') is True,'answer_mode':reply.get('answer_mode','native')}
                 if 'stock_options' in reply:body['stock_options']=reply['stock_options']
